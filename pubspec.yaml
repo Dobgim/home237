@@ -1,0 +1,62 @@
+name: home237
+description: "A new Flutter project."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.7
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  provider: ^6.1.1
+  supabase_flutter: ^2.0.0
+  cupertino_icons: ^1.0.8
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  cloud_firestore: ^6.1.2
+  shared_preferences: ^2.2.2
+  image_picker: ^1.0.7
+  cached_network_image: ^3.3.1
+  permission_handler: ^11.3.0
+  device_info_plus: ^10.1.0
+  http: ^1.1.0
+  cloud_functions: ^6.0.6
+  flutter_map: ^8.1.1
+  latlong2: ^0.9.1
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  video_player: ^2.8.6
+  chewie: ^1.8.5
+  url_launcher: ^6.2.5
+  mailer: ^7.1.0
+  google_sign_in: ^6.2.1
+  timeago: ^3.7.1
+  uuid: ^4.2.2
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.4
+  flutter_native_splash: ^2.4.7
+
+flutter:
+  assets:
+    - assets/images/
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/home237_logo.jpg"
+  min_sdk_android: 21
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: "assets/images/home237_logo.jpg"
+  android_12:
+    image: "assets/images/home237_logo.jpg"
+    color: "#ffffff"

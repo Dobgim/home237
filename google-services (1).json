@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "254664754146",
+    "project_id": "home237-92c18",
+    "storage_bucket": "home237-92c18.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:254664754146:android:34d04e9d9bb0ced3196fbb",
+        "android_client_info": {
+          "package_name": "com.Joshua.home_237"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAqD7Yc9UlEMIKf41R_GFgILu_ldS8tvco"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
