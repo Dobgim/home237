@@ -7,6 +7,9 @@ import 'explore_screen.dart';
 import 'property_details_screen.dart';
 import 'widgets/favourite_button.dart';
 import 'location_service.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:provider/provider.dart';
 import 'locale_notifier.dart';
 import 'app_localizations.dart';
@@ -46,6 +49,11 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserCity();
+    if (kIsWeb) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAndShowMobileAppDialog();
+      });
+    }
   }
 
   Future<void> _loadUserCity() async {
@@ -60,6 +68,132 @@ class _HomePageState extends State<HomePage> {
       // Save it back to cache
       await LocationService.instance.saveCity(detected);
     }
+  }
+
+  Future<void> _checkAndShowMobileAppDialog() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeen = prefs.getBool('hasSeenMobileAppPrompt') ?? false;
+      if (!hasSeen) {
+        if (!mounted) return;
+        _showMobileAppDialog(prefs);
+      }
+    } catch (e) {
+      debugPrint('Error loading prefs for mobile prompt: $e');
+    }
+  }
+
+  void _showMobileAppDialog(SharedPreferences prefs) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        return AlertDialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+          contentPadding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+          actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 20),
+          title: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF3B82F6).withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.phone_android_rounded, color: Color(0xFF3B82F6), size: 24),
+              ),
+              const SizedBox(width: 14),
+              const Expanded(
+                child: Text(
+                  'Get the Mobile App!',
+                  style: TextStyle(fontSize: 18, fontStyle: FontStyle.normal, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'For a much faster, smoother, and data-friendly experience, we recommend downloading our Android mobile app.',
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.5,
+                  color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Icon(Icons.flash_on_rounded, color: Colors.amber.shade600, size: 16),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Loads instantly and saves internet data.',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.notifications_active_rounded, color: Color(0xFF10B981), size: 16),
+                  const SizedBox(width: 8),
+                  const Expanded(
+                    child: Text(
+                      'Receive instant push notifications for properties.',
+                      style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                prefs.setBool('hasSeenMobileAppPrompt', true);
+                Navigator.pop(ctx);
+              },
+              child: Text(
+                'Maybe Later',
+                style: TextStyle(color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B)),
+              ),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                prefs.setBool('hasSeenMobileAppPrompt', true);
+                Navigator.pop(ctx);
+                final Uri downloadUri = Uri.parse('${Uri.base.origin}/app-release.apk');
+                try {
+                  if (await canLaunchUrl(downloadUri)) {
+                    await launchUrl(downloadUri, mode: LaunchMode.externalApplication);
+                  } else {
+                    await launchUrl(downloadUri);
+                  }
+                } catch (e) {
+                  debugPrint('Could not launch download URL: $e');
+                }
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF3B82F6),
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+              ),
+              child: const Text('Download APK', style: TextStyle(fontWeight: FontWeight.bold)),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
