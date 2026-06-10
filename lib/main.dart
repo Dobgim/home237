@@ -14,6 +14,7 @@ import 'app_localizations.dart';
 import 'auth_service.dart';
 import 'inactivity_service.dart';
 import 'messages_screen.dart';
+import 'services/remote_config_service.dart';
 
 // Global navigator key to allow navigation from outside widget tree (e.g. AuthService)
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
@@ -36,6 +37,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // 🔑 Fetch secrets (Groq API key etc.) from Firebase Remote Config
+  await remoteConfigService.initialize();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 

@@ -2,12 +2,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'remote_config_service.dart';
 
 class AiService {
-  // IMPORTANT: Never hardcode API keys. Store this in a secure config or environment variable.
-  // For now, retrieve this from your secure storage (e.g. Firebase Remote Config).
-  static const String _apiKey = '';
-  
+  // Key is fetched at runtime from Firebase Remote Config — never stored in code.
+  String get _apiKey => remoteConfigService.groqApiKey;
+
   // Groq's lightning fast Llama 3 model
   static const String _model = 'llama-3.1-8b-instant';
 
