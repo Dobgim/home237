@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -263,48 +264,66 @@ class AuthService extends ChangeNotifier {
   Future<bool> signInWithGoogle({UserRole? defaultRole}) async {
     _lastError = null;
     try {
-      // Force account selection by signing out first
-      await GoogleSignIn().signOut();
-      
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        _lastError = 'Sign-in was canceled by the user.';
-        return false;
+      UserCredential userCredential;
+
+      if (kIsWeb) {
+        // ── WEB ──────────────────────────────────────────────────────────────
+        // Use Firebase's native popup — no google_sign_in package needed on web.
+        // Works with every account already created in the app (same Firebase project).
+        final GoogleAuthProvider googleProvider = GoogleAuthProvider()
+          ..addScope('email')
+          ..addScope('profile');
+        userCredential =
+            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+      } else {
+        // ── MOBILE ───────────────────────────────────────────────────────────
+        // Force account selection by signing out first.
+        await GoogleSignIn().signOut();
+        final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+        if (googleUser == null) {
+          _lastError = 'Sign-in was canceled by the user.';
+          return false;
+        }
+        final GoogleSignInAuthentication googleAuth =
+            await googleUser.authentication;
+        final OAuthCredential credential = GoogleAuthProvider.credential(
+          accessToken: googleAuth.accessToken,
+          idToken: googleAuth.idToken,
+        );
+        userCredential =
+            await FirebaseAuth.instance.signInWithCredential(credential);
       }
 
-      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential = await FirebaseAuth.instance.signInWithCredential(credential);
       final User? user = userCredential.user;
 
       if (user != null) {
         if (await _isEmailBanned(user.email ?? '')) {
           _lastError = 'This account has been permanently suspended.';
           await FirebaseAuth.instance.signOut();
-          await GoogleSignIn().signOut();
+          if (!kIsWeb) await GoogleSignIn().signOut();
           return false;
         }
 
         final uid = user.uid;
-        final userDoc = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
 
         if (userDoc.exists) {
           final data = userDoc.data()!;
           _userId = uid;
           _userEmail = data['email'] ?? user.email;
-          _userName = data['name'] ?? user.displayName ?? user.email!.split('@')[0];
+          _userName = data['name'] ??
+              user.displayName ??
+              (user.email != null ? user.email!.split('@')[0] : 'User');
           _profileImage = data['profileImage'] ?? user.photoURL;
           _subscriptionStatus = data['subscriptionStatus'] ?? 'free';
-          _subscriptionExpiry = data['subscriptionExpiry'] != null 
-              ? (data['subscriptionExpiry'] as Timestamp).toDate() 
+          _subscriptionExpiry = data['subscriptionExpiry'] != null
+              ? (data['subscriptionExpiry'] as Timestamp).toDate()
               : null;
 
           final roleStr = data['role'] ?? 'none';
-          
           if (roleStr == 'tenant') {
             _userRole = UserRole.tenant;
           } else if (roleStr == 'landlord') {
@@ -324,18 +343,18 @@ class AuthService extends ChangeNotifier {
           _saveFcmToken(uid);
           return true;
         } else {
-          // NEW USER DETECTION
-          final newRoleStr = defaultRole != null ? defaultRole.toString().split('.').last : 'tenant';
-          // Generate session token for single-device enforcement
+          // NEW USER — create Firestore document
+          final newRoleStr = defaultRole != null
+              ? defaultRole.toString().split('.').last
+              : 'tenant';
           final sessionToken = _uuid.v4();
           _localSessionToken = sessionToken;
           final newUserPrefs = await SharedPreferences.getInstance();
           await newUserPrefs.setString('local_session_token', sessionToken);
 
-          // New user, create document
-          // Google accounts are already email-verified by Google — no need to send a link.
           await FirebaseFirestore.instance.collection('users').doc(uid).set({
-            'name': user.displayName ?? user.email!.split('@')[0],
+            'name': user.displayName ??
+                (user.email != null ? user.email!.split('@')[0] : 'User'),
             'email': user.email,
             'role': newRoleStr,
             'createdAt': DateTime.now(),
@@ -349,12 +368,13 @@ class AuthService extends ChangeNotifier {
 
           _userId = uid;
           _userEmail = user.email;
-          _userName = user.displayName ?? user.email!.split('@')[0];
+          _userName = user.displayName ??
+              (user.email != null ? user.email!.split('@')[0] : 'User');
           _profileImage = user.photoURL;
           _userRole = defaultRole ?? UserRole.tenant;
           _subscriptionStatus = 'free';
           _isLoggedIn = true;
-          _isNewUser = true; // IMPORTANT FOR REDIRECTION
+          _isNewUser = true;
           _hasSeenWelcome = false;
           notifyListeners();
           _startUserListener(uid);
@@ -365,11 +385,20 @@ class AuthService extends ChangeNotifier {
       _lastError = 'Sign-in failed. Please try again.';
       return false;
     } catch (e) {
-      _lastError = e.toString();
-      if (_lastError!.contains('EXCEPTION_ACCESS_DENIED')) {
-        _lastError = 'App is not configured correctly. Please ensure SHA-1 keys are added to Firebase.';
-      } else if (_lastError!.contains('idpiframe_initialization_failed')) {
-        _lastError = 'Initialization failed. This usually happens if cookies are blocked.';
+      final errorStr = e.toString();
+      _lastError = errorStr;
+      if (errorStr.contains('EXCEPTION_ACCESS_DENIED')) {
+        _lastError =
+            'App is not configured correctly. Please ensure SHA-1 keys are added to Firebase.';
+      } else if (errorStr.contains('idpiframe_initialization_failed')) {
+        _lastError =
+            'Initialization failed. This usually happens if cookies are blocked.';
+      } else if (errorStr.contains('popup_closed_by_user') ||
+          errorStr.contains('popup-closed-by-user')) {
+        _lastError = 'Sign-in popup was closed. Please try again.';
+      } else if (errorStr.contains('popup_blocked')) {
+        _lastError =
+            'Popup was blocked by your browser. Please allow popups for this site.';
       }
       print('Google Sign-In error: $e');
       return false;
@@ -449,7 +478,9 @@ class AuthService extends ChangeNotifier {
 
     // Sign out from Firebase and Google
     await FirebaseAuth.instance.signOut();
-    await GoogleSignIn().signOut();
+    if (!kIsWeb) {
+      await GoogleSignIn().signOut();
+    }
 
     // We intentionally DO NOT clear the SharedPreferences for remember_me 
     // here so that if the user chose to be remembered, their email/password
@@ -562,6 +593,7 @@ class AuthService extends ChangeNotifier {
   }
 
   Future<void> _saveFcmToken(String uid) async {
+    if (kIsWeb) return;
     try {
       final messaging = FirebaseMessaging.instance;
       await messaging.requestPermission(

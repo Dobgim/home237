@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -41,13 +42,15 @@ void main() async {
   // 🔑 Fetch secrets (Groq API key etc.) from Firebase Remote Config
   await remoteConfigService.initialize();
 
-  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  if (!kIsWeb) {
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
-    alert: true,
-    badge: true,
-    sound: true,
-  );
+    await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+      alert: true,
+      badge: true,
+      sound: true,
+    );
+  }
 
   runApp(
     MultiProvider(
@@ -171,14 +174,16 @@ class _InactivityWrapperState extends State<InactivityWrapper> {
     // If session was already restored before this widget mounted, start now
     if (authService.isLoggedIn) inactivityService.start();
 
-    // Listen for foreground notifications
-    _messagingSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint("Foreground message received: ${message.messageId}");
-      final notification = message.notification;
-      if (notification != null) {
-        _showForegroundNotification(notification.title ?? "New Message", notification.body ?? "");
-      }
-    });
+    if (!kIsWeb) {
+      // Listen for foreground notifications
+      _messagingSubscription = FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint("Foreground message received: ${message.messageId}");
+        final notification = message.notification;
+        if (notification != null) {
+          _showForegroundNotification(notification.title ?? "New Message", notification.body ?? "");
+        }
+      });
+    }
   }
 
   void _onAuthChanged() {
