@@ -1,0 +1,29 @@
+Hey brothers! 👋 
+
+I finally got the beta version of the Home237 app ready, and I need your help to test it before we launch it to the public! I need you guys to try and break it so I can fix any issues. 
+
+Here’s what I need you to do:
+
+**1. Testing the Tenant side (Looking for a house)**
+*   Open the app and check out the new logo and welcome screens.
+*   Let the app detect your location so it can show you houses specifically in your city!
+*   Sign up for an account, and make sure you select **"Tenant"**.
+*   Check your email to verify your account, then sign in.
+*   Play around with the main feed! Try the filters at the top (Apartment, Studio, etc.) and see if the map works.
+*   Tap on a house you like, hit the ❤️ to save it, and try sending the landlord a chat message (say "Hi, is this available?").
+*   Finally, try to send a "Request a Tour" for that house.
+
+**2. Testing the Landlord side (Renting out a house)**
+*   Sign out of your Tenant account.
+*   Create a brand new account, but this time select **"Landlord"**.
+*   When you log in, hit the big **"+"** button at the bottom to upload a fake house. Add some photos from your phone, set a price, and submit it. *(Note: I have to manually approve it as an Admin before it goes live!)*
+*   Check your Messages tab to see if you received the chat you sent yourself a minute ago. Try replying to it!
+*   Go to your Requests tab to see the house tour you requested. Try accepting or rejecting it.
+*   Go to your Profile and try uploading a picture for your ID Verification so I can give you the verified blue tick!
+
+Whenever you find a bug, an error pops up on the screen, or something just feels confusing, please send me a WhatsApp message like this:
+*   "I was trying to upload a house..."
+*   "But the screen turned white / the app crashed..."
+*   (Send a screenshot if you can!)
+
+Thanks for helping me test this, let's make the 237 real estate market better! 🇨🇲🔥

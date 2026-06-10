@@ -1,0 +1,13 @@
+flutter_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/new_home237_logo.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/images/new_home237_logo.png"
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false

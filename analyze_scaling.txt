@@ -1,0 +1,1 @@
+﻿  error - The method 'markWelcomeSeen' isn't defined for the type 'AuthService' - lib\tenant_dashboard.dart:116:28 - undefined_method
