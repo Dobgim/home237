@@ -1,0 +1,9 @@
+{
+  "outputDirectory": "build/web",
+  "buildCommand": "echo 'Using pre-built Flutter web output'",
+  "installCommand": "echo 'No install needed'",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

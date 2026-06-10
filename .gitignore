@@ -30,7 +30,10 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
+# Exclude build output except build/web (served by Vercel)
 /build/
+!/build/web
+!/build/web/**
 /coverage/
 
 # Symbolication related
@@ -44,5 +47,5 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 dart-sdk/ 
-android/gradle/ 
-build/ 
+android/gradle/
+
