@@ -10,10 +10,8 @@ import 'location_service.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:provider/provider.dart';
-import 'locale_notifier.dart';
 import 'app_localizations.dart';
-import 'widgets/language_toggle.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -461,30 +459,42 @@ class _HomePageState extends State<HomePage> {
       padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
       child: Row(
         children: [
+          // Logo mark
           Container(
-            padding: const EdgeInsets.all(7),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
               color: const Color(0xFF3B82F6).withOpacity(0.12),
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.home_outlined, color: Color(0xFF3B82F6), size: 22),
+            child: const Icon(Icons.home_rounded, color: Color(0xFF3B82F6), size: 22),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
+          // App name — clear, prominent heading
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(t.get('app_name'),
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B))),
-              if (totalCount > 0)
-                Text('$totalCount ${t.get('listings_available')}',
-                    style: const TextStyle(fontSize: 11, color: Color(0xFF3B82F6),
-                        fontWeight: FontWeight.w500)),
+              Text(
+                t.get('app_name'),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  letterSpacing: -0.3,
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                ),
+              ),
+              Text(
+                'Cameroon Property Rentals',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white38 : const Color(0xFF94A3B8),
+                  letterSpacing: 0.2,
+                ),
+              ),
             ],
           ),
-          // Language Toggle
-          _buildLanguageToggle(isDark),
-          const SizedBox(width: 12),
+          const Spacer(),
+          // Login / Avatar
           ListenableBuilder(
             listenable: authService,
             builder: (context, _) {
@@ -493,13 +503,12 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () => Navigator.push(context,
                       MaterialPageRoute(builder: (_) => const SignInScreen())),
                   style: TextButton.styleFrom(
-                    backgroundColor: isDark ? Colors.transparent : Colors.white,
-                    foregroundColor: isDark ? Colors.white : const Color(0xFF3B82F6),
-                    side: BorderSide(color: const Color(0xFF3B82F6).withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    backgroundColor: const Color(0xFF3B82F6),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                   ),
-                  child: Text(t.get('login'), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                  child: Text(t.get('login'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                 );
               }
               return CircleAvatar(
@@ -598,66 +607,126 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildHeroBanner(bool isDark, int total, int cities) {
-    final t = AppLocalizations.of(context);
-    final title = t.get('hero_title');
-    final cityText = _userCity != null 
-        ? t.get('hero_in_city_beyond').replaceAll('{city}', _userCity!) 
-        : t.get('hero_across_cameroon');
-
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 14, 20, 24),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         gradient: const LinearGradient(
-          begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6), Color(0xFF06B6D4)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB), Color(0xFF0891B2)],
         ),
-        boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF3B82F6).withOpacity(0.35),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(22),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 22, 24, 22),
+          padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('$title\n$cityText',
-                  style: const TextStyle(color: Colors.white, fontSize: 19,
-                      fontWeight: FontWeight.bold, height: 1.35)),
-              const SizedBox(height: 16),
-              Row(children: [
-                _statChip(Icons.home_rounded, '$total', t.get('properties')),
-                const SizedBox(width: 10),
-                _statChip(Icons.location_city_rounded, '$cities', t.get('cities')),
-                const SizedBox(width: 10),
-                _statChip(Icons.verified_rounded, t.get('verified'), ''),
-              ]),
+              // Eyebrow label
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.18),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: const [
+                    Icon(Icons.verified_rounded, size: 12, color: Colors.white),
+                    SizedBox(width: 5),
+                    Text(
+                      'Verified Listings · Cameroon',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              const SizedBox(height: 14),
+
+              // Main headline — Display text
+              Text(
+                _userCity != null
+                    ? 'Find Your Home\nin $_userCity & Beyond'
+                    : 'Find Your Home\nin Cameroon',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 26,
+                  fontWeight: FontWeight.w800,
+                  height: 1.2,
+                  letterSpacing: -0.5,
+                ),
+              ),
+
+              const SizedBox(height: 10),
+
+              // Subtitle — Body text
+              const Text(
+                'Browse verified rentals — apartments, houses,\nstudios & more across top Cameroonian cities.',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 13,
+                  height: 1.5,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+
+              const SizedBox(height: 20),
+
+              // CTA Button — only clickable element
+              GestureDetector(
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ExploreScreen()),
+                ),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.15),
+                        blurRadius: 8,
+                        offset: const Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: const [
+                      Text(
+                        'Explore Properties',
+                        style: TextStyle(
+                          color: Color(0xFF1D4ED8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(width: 6),
+                      Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF1D4ED8)),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _statChip(IconData icon, String value, String label) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(children: [
-        Icon(icon, size: 14, color: Colors.white),
-        const SizedBox(width: 5),
-        RichText(
-          text: TextSpan(children: [
-            TextSpan(text: value,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 12)),
-            TextSpan(text: ' $label',
-                style: const TextStyle(color: Colors.white70, fontSize: 11)),
-          ]),
-        ),
-      ]),
     );
   }
 
@@ -673,29 +742,43 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Section heading with badge
               Row(children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(colors: [Color(0xFFFF6B35), Color(0xFFFF3D00)]),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(9),
                   ),
-                  child: Row(children: [
-                    const Icon(Icons.local_fire_department_rounded, size: 14, color: Colors.white),
-                    const SizedBox(width: 4),
-                    Text(t.get('featured'),
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                  child: const Row(children: [
+                    Icon(Icons.local_fire_department_rounded, size: 14, color: Colors.white),
+                    SizedBox(width: 4),
+                    Text(
+                      'Featured',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 13,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
                   ]),
                 ),
               ]),
+              // Browse all — tappable
               GestureDetector(
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => const ExploreScreen())),
                 child: Row(children: [
-                   Text(t.get('browse_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
-                   const SizedBox(width: 2),
-                   const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF3B82F6)),
-                 ]),
+                  Text(t.get('browse_all'),
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF3B82F6),
+                        fontWeight: FontWeight.w600,
+                      )),
+                  const SizedBox(width: 2),
+                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF3B82F6)),
+                ]),
               ),
             ],
           ),
@@ -739,20 +822,31 @@ class _HomePageState extends State<HomePage> {
               Expanded(
                 child: Row(children: [
                   if (iconOrString is IconData) ...[
-                    Icon(iconOrString, size: 20, color: isNearYou ? const Color(0xFF3B82F6) : (isDark ? Colors.white70 : const Color(0xFF64748B))),
+                    Icon(
+                      iconOrString,
+                      size: 19,
+                      color: isNearYou
+                          ? const Color(0xFF3B82F6)
+                          : (isDark ? Colors.white54 : const Color(0xFF94A3B8)),
+                    ),
                     const SizedBox(width: 8),
                   ] else if (iconOrString is String && iconOrString.isNotEmpty) ...[
-                    Text(iconOrString, style: const TextStyle(fontSize: 20)),
+                    Text(iconOrString, style: const TextStyle(fontSize: 18)),
                     const SizedBox(width: 8),
                   ],
                   Flexible(
-                    child: Text(city,
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold,
-                            color: isNearYou
-                                ? const Color(0xFF3B82F6)
-                                : (isDark ? Colors.white : const Color(0xFF1E293B))),
-                        overflow: TextOverflow.ellipsis),
+                    child: Text(
+                      city,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.2,
+                        color: isNearYou
+                            ? const Color(0xFF3B82F6)
+                            : (isDark ? Colors.white : const Color(0xFF0F172A)),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                   // Count badge
                   if (docs.isNotEmpty) ...[
@@ -765,24 +859,36 @@ class _HomePageState extends State<HomePage> {
                             : (isDark ? Colors.white12 : const Color(0xFFF1F5F9)),
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: Text('${docs.length}',
-                          style: TextStyle(
-                              fontSize: 11, fontWeight: FontWeight.bold,
-                              color: isNearYou
-                                  ? const Color(0xFF3B82F6)
-                                  : (isDark ? Colors.white60 : const Color(0xFF64748B)))),
+                      child: Text(
+                        '${docs.length}',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: isNearYou
+                              ? const Color(0xFF3B82F6)
+                              : (isDark ? Colors.white60 : const Color(0xFF64748B)),
+                        ),
+                      ),
                     ),
                   ],
                 ]),
               ),
+              // See all — tappable link
               GestureDetector(
                 onTap: () => Navigator.push(context,
                     MaterialPageRoute(builder: (_) => ExploreScreen(initialRegion: rawCity))),
                 child: Row(children: [
-                   Text(t.get('see_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
-                   const SizedBox(width: 2),
-                   const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF3B82F6)),
-                 ]),
+                  Text(
+                    t.get('see_all'),
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF3B82F6),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 2),
+                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF3B82F6)),
+                ]),
               ),
             ],
           ),
@@ -935,42 +1041,69 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 10),
 
-            // ── Type badge ──
+            // ── Type badge (caption) ──
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: const Color(0xFF3B82F6).withOpacity(0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
-              child: Text(type,
-                  style: const TextStyle(
-                      fontSize: 11, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+              child: Text(
+                type,
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF3B82F6),
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.2,
+                ),
+              ),
             ),
 
             const SizedBox(height: 6),
 
-            // ── Location + Rating ──
+            // ── Location (SubHeading) + Rating (Caption) ──
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
-                  child: Text(area.isNotEmpty ? '$area, $town' : town,
-                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white : const Color(0xFF1E293B)),
-                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                  child: Text(
+                    area.isNotEmpty ? '$area, $town' : town,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.1,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
                 Row(children: [
                   const Icon(Icons.star_rounded, size: 13, color: Color(0xFFFBBF24)),
                   const SizedBox(width: 2),
-                  Text(ratingStr, style: TextStyle(fontSize: 12, color: isDark ? Colors.white70 : Colors.black87)),
+                  Text(
+                    ratingStr,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                    ),
+                  ),
                 ]),
               ],
             ),
 
             const SizedBox(height: 2),
 
-            Text('$beds beds · $type',
-                style: TextStyle(fontSize: 13, color: isDark ? Colors.white60 : Colors.grey[600])),
+            // Sub-detail — body text
+            Text(
+              '$beds beds · $type',
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w400,
+                color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
+              ),
+            ),
 
             const SizedBox(height: 5),
 
@@ -995,7 +1128,4 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildLanguageToggle(bool isDark) {
-    return const LanguageToggle();
-  }
 }
