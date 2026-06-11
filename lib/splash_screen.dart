@@ -12,6 +12,7 @@ import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
 import 'theme_notifier.dart';
 import 'onboarding_screen.dart';
+import 'role_selection_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -95,11 +96,6 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _checkAuthAndNavigate() async {
-    // Wait for splash animation
-    await Future.delayed(const Duration(milliseconds: 2500));
-
-    if (!mounted) return;
-
     if (kIsWeb) {
       try {
         await authService.handleRedirectResult();
@@ -107,6 +103,11 @@ class _SplashScreenState extends State<SplashScreen>
         debugPrint('Error checking Google redirect result: $e');
       }
     }
+
+    // Wait for splash animation
+    await Future.delayed(const Duration(milliseconds: 2500));
+
+    if (!mounted) return;
 
     // ── NEW: Check if first launch ─────────────────────────────────────────
     final prefs = await SharedPreferences.getInstance();
@@ -194,6 +195,8 @@ class _SplashScreenState extends State<SplashScreen>
             destination = const LandlordDashboard();
           } else if (userRole == UserRole.admin) {
             destination = const AdminDashboard();
+          } else if (userRole == UserRole.none) {
+            destination = const RoleSelectionScreen();
           } else {
             destination = const HomePage();
           }

@@ -47,10 +47,26 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserCity();
-    if (kIsWeb) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (kIsWeb) {
         _checkAndShowMobileAppDialog();
-      });
+      }
+      _checkAndShowAuthErrors();
+    });
+  }
+
+  void _checkAndShowAuthErrors() {
+    if (authService.lastError != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(authService.lastError!),
+          backgroundColor: Colors.red.shade700,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          margin: const EdgeInsets.all(16),
+        ),
+      );
+      authService.clearLastError();
     }
   }
 

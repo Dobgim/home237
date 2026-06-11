@@ -364,6 +364,7 @@ class AuthService extends ChangeNotifier {
 
           _isLoggedIn = true;
           _isNewUser = false;
+          _isEmailVerified = true;
           _hasSeenWelcome = data['hasSeenWelcome'] ?? true;
           notifyListeners();
           await _writeSessionToken(uid);
@@ -403,6 +404,7 @@ class AuthService extends ChangeNotifier {
           _subscriptionStatus = 'free';
           _isLoggedIn = true;
           _isNewUser = true;
+          _isEmailVerified = true;
           _hasSeenWelcome = false;
           notifyListeners();
           _startUserListener(uid);
@@ -479,6 +481,7 @@ class AuthService extends ChangeNotifier {
 
           _isLoggedIn = true;
           _isNewUser = false;
+          _isEmailVerified = true;
           _hasSeenWelcome = data['hasSeenWelcome'] ?? true;
           notifyListeners();
           await _writeSessionToken(uid);
@@ -528,6 +531,7 @@ class AuthService extends ChangeNotifier {
           _subscriptionStatus = 'free';
           _isLoggedIn = true;
           _isNewUser = true;
+          _isEmailVerified = true;
           _hasSeenWelcome = false;
           notifyListeners();
           _startUserListener(uid);
@@ -584,6 +588,13 @@ class AuthService extends ChangeNotifier {
   Future<void> refreshUserStatus() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null) {
+      final isGoogleUser = user.providerData.any((p) => p.providerId == 'google.com');
+      if (isGoogleUser) {
+        _isEmailVerified = true;
+        notifyListeners();
+        print('🛡️ Auth: User status refreshed (Google Provider). Verified: $_isEmailVerified');
+        return;
+      }
       try {
         await user.reload();
         // Force refresh the ID token to get updated claims (including email_verified)
@@ -787,6 +798,11 @@ class AuthService extends ChangeNotifier {
     _isEmailVerified = emailVerified ?? (FirebaseAuth.instance.currentUser?.emailVerified ?? false);
     notifyListeners();
     _saveFcmToken(userId);
+  }
+
+  void clearLastError() {
+    _lastError = null;
+    notifyListeners();
   }
 }
 
