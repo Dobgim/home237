@@ -193,15 +193,16 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
     setState(() => _isLoading = false);
     if (success && mounted) {
       _routeUser();
-    } else if (mounted) {
+    } else if (mounted && authService.lastError != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(authService.lastError ?? 'Google sign-in failed or was canceled.'),
+        content: Text(authService.lastError!),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         margin: const EdgeInsets.all(16)));
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

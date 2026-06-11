@@ -268,13 +268,41 @@ class AuthService extends ChangeNotifier {
 
       if (kIsWeb) {
         // ── WEB ──────────────────────────────────────────────────────────────
-        // Use Firebase's native popup — no google_sign_in package needed on web.
-        // Works with every account already created in the app (same Firebase project).
         final GoogleAuthProvider googleProvider = GoogleAuthProvider()
           ..addScope('email')
-          ..addScope('profile');
-        userCredential =
-            await FirebaseAuth.instance.signInWithPopup(googleProvider);
+          ..addScope('profile')
+          ..setCustomParameters({'prompt': 'select_account'});
+
+        final isMobileWeb = defaultTargetPlatform == TargetPlatform.android ||
+                            defaultTargetPlatform == TargetPlatform.iOS;
+
+        if (isMobileWeb) {
+          if (defaultRole != null) {
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('pending_google_sign_up_role', defaultRole.toString().split('.').last);
+          }
+          await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+          return false;
+        } else {
+          try {
+            userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
+          } catch (e) {
+            final errorStr = e.toString().toLowerCase();
+            if (errorStr.contains('popup-blocked') ||
+                errorStr.contains('popup_blocked') ||
+                errorStr.contains('popup-closed-by-user') ||
+                errorStr.contains('popup_closed_by_user') ||
+                errorStr.contains('cancelled')) {
+              if (defaultRole != null) {
+                final prefs = await SharedPreferences.getInstance();
+                await prefs.setString('pending_google_sign_up_role', defaultRole.toString().split('.').last);
+              }
+              await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+              return false;
+            }
+            rethrow;
+          }
+        }
       } else {
         // ── MOBILE ───────────────────────────────────────────────────────────
         // Force account selection by signing out first.
@@ -404,6 +432,128 @@ class AuthService extends ChangeNotifier {
       return false;
     }
   }
+
+  Future<void> handleRedirectResult() async {
+    if (!kIsWeb) return;
+    try {
+      final UserCredential userCredential =
+          await FirebaseAuth.instance.getRedirectResult();
+      final User? user = userCredential.user;
+
+      if (user != null) {
+        if (await _isEmailBanned(user.email ?? '')) {
+          _lastError = 'This account has been permanently suspended.';
+          await FirebaseAuth.instance.signOut();
+          return;
+        }
+
+        final uid = user.uid;
+        final userDoc = await FirebaseFirestore.instance
+            .collection('users')
+            .doc(uid)
+            .get();
+
+        if (userDoc.exists) {
+          final data = userDoc.data()!;
+          _userId = uid;
+          _userEmail = data['email'] ?? user.email;
+          _userName = data['name'] ??
+              user.displayName ??
+              (user.email != null ? user.email!.split('@')[0] : 'User');
+          _profileImage = data['profileImage'] ?? user.photoURL;
+          _subscriptionStatus = data['subscriptionStatus'] ?? 'free';
+          _subscriptionExpiry = data['subscriptionExpiry'] != null
+              ? (data['subscriptionExpiry'] as Timestamp).toDate()
+              : null;
+
+          final roleStr = data['role'] ?? 'none';
+          if (roleStr == 'tenant') {
+            _userRole = UserRole.tenant;
+          } else if (roleStr == 'landlord') {
+            _userRole = UserRole.landlord;
+          } else if (roleStr == 'admin') {
+            _userRole = UserRole.admin;
+          } else {
+            _userRole = UserRole.none;
+          }
+
+          _isLoggedIn = true;
+          _isNewUser = false;
+          _hasSeenWelcome = data['hasSeenWelcome'] ?? true;
+          notifyListeners();
+          await _writeSessionToken(uid);
+          _startUserListener(uid);
+          _saveFcmToken(uid);
+        } else {
+          // NEW USER
+          final prefs = await SharedPreferences.getInstance();
+          final pendingRoleStr = prefs.getString('pending_google_sign_up_role');
+          await prefs.remove('pending_google_sign_up_role');
+
+          final newRoleStr = pendingRoleStr ?? 'tenant';
+          final sessionToken = _uuid.v4();
+          _localSessionToken = sessionToken;
+          await prefs.setString('local_session_token', sessionToken);
+
+          await FirebaseFirestore.instance.collection('users').doc(uid).set({
+            'name': user.displayName ??
+                (user.email != null ? user.email!.split('@')[0] : 'User'),
+            'email': user.email,
+            'role': newRoleStr,
+            'createdAt': DateTime.now(),
+            'emailVerified': true,
+            'hasSeenWelcome': false,
+            'subscriptionStatus': 'free',
+            'profileImage': user.photoURL,
+            'activeSessionToken': sessionToken,
+            'lastLoginAt': FieldValue.serverTimestamp(),
+          });
+
+          _userId = uid;
+          _userEmail = user.email;
+          _userName = user.displayName ??
+              (user.email != null ? user.email!.split('@')[0] : 'User');
+          _profileImage = user.photoURL;
+
+          if (newRoleStr == 'tenant') {
+            _userRole = UserRole.tenant;
+          } else if (newRoleStr == 'landlord') {
+            _userRole = UserRole.landlord;
+          } else if (newRoleStr == 'admin') {
+            _userRole = UserRole.admin;
+          } else {
+            _userRole = UserRole.tenant;
+          }
+
+          _subscriptionStatus = 'free';
+          _isLoggedIn = true;
+          _isNewUser = true;
+          _hasSeenWelcome = false;
+          notifyListeners();
+          _startUserListener(uid);
+          _saveFcmToken(uid);
+        }
+      }
+    } catch (e) {
+      final errorStr = e.toString();
+      _lastError = errorStr;
+      if (errorStr.contains('EXCEPTION_ACCESS_DENIED')) {
+        _lastError =
+            'App is not configured correctly. Please ensure SHA-1 keys are added to Firebase.';
+      } else if (errorStr.contains('idpiframe_initialization_failed')) {
+        _lastError =
+            'Initialization failed. This usually happens if cookies are blocked.';
+      } else if (errorStr.contains('popup_closed_by_user') ||
+          errorStr.contains('popup-closed-by-user')) {
+        _lastError = 'Sign-in popup was closed. Please try again.';
+      } else if (errorStr.contains('popup_blocked')) {
+        _lastError =
+            'Popup was blocked by your browser. Please allow popups for this site.';
+      }
+      print('Google Redirect Sign-In error: $e');
+    }
+  }
+
 
   void setUserRole(UserRole role) async {
     _userRole = role;

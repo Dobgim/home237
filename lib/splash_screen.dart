@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart'; // kIsWeb
 import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -11,7 +12,6 @@ import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
 import 'theme_notifier.dart';
 import 'onboarding_screen.dart';
-import 'email_verification_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -99,6 +99,14 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(milliseconds: 2500));
 
     if (!mounted) return;
+
+    if (kIsWeb) {
+      try {
+        await authService.handleRedirectResult();
+      } catch (e) {
+        debugPrint('Error checking Google redirect result: $e');
+      }
+    }
 
     // ── NEW: Check if first launch ─────────────────────────────────────────
     final prefs = await SharedPreferences.getInstance();

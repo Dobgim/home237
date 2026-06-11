@@ -115,9 +115,9 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
       TextInput.finishAutofillContext();
       context.read<ThemeNotifier>().updateThemeForRole();
       _routeToDashboard();
-    } else if (mounted) {
+    } else if (mounted && authService.lastError != null) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-        content: Text(authService.lastError ?? 'Google sign-up failed. Please try again.'),
+        content: Text(authService.lastError!),
         backgroundColor: Colors.red.shade700,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -125,6 +125,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
       ));
     }
   }
+
 
   void _showHumanVerificationDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
