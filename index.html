@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Home237 — find and list verified rental homes across Cameroon. Browse apartments, studios and houses in Douala, Yaoundé, Buea & more. Pay safely with Mobile Money." />
+  <meta name="theme-color" content="#0A1628" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Home237 — Cameroon Property Rentals" />
+  <meta property="og:description" content="Find and list verified rental homes across Cameroon. Safe viewings, Mobile Money payments, digital leases." />
+  <meta property="og:type" content="website" />
+
+  <title>Home237 — Find & List Homes in Cameroon</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ───────────────────────── NAV ───────────────────────── -->
+  <header class="nav" id="nav">
+    <div class="container nav__inner">
+      <a href="#top" class="brand" aria-label="Home237 home">
+        <span class="brand__mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 11.5 12 4l9 7.5" />
+            <path d="M5 10v10h14V10" />
+          </svg>
+        </span>
+        <span class="brand__name">Home<span class="brand__237">237</span></span>
+      </a>
+
+      <nav class="nav__links" id="navLinks" aria-label="Primary">
+        <a href="#how">How it works</a>
+        <a href="#features">Features</a>
+        <a href="#roles">Get started</a>
+        <a href="#cities">Cities</a>
+        <a href="#app" class="nav__cta">Get the App</a>
+      </nav>
+
+      <button class="nav__burger" id="navBurger" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+
+    <!-- ───────────────────────── HERO ───────────────────────── -->
+    <section class="hero">
+      <div class="hero__orbs" aria-hidden="true">
+        <span class="orb orb--1"></span>
+        <span class="orb orb--2"></span>
+        <span class="orb orb--3"></span>
+      </div>
+
+      <div class="container hero__inner">
+        <div class="hero__copy reveal">
+          <span class="pill">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="currentColor"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Zm-1 14-4-4 1.4-1.4L11 13.2l4.6-4.6L17 10l-6 6Z"/></svg>
+            Verified Listings · Cameroon
+          </span>
+
+          <h1 class="hero__title">
+            Find your next home<br />
+            in <span class="grad-text">Cameroon</span>.
+          </h1>
+
+          <p class="hero__sub">
+            Browse verified apartments, studios and houses across Douala, Yaoundé,
+            Buea and more. Book safe viewings, sign digital leases and pay with
+            Mobile Money — all in one place.
+          </p>
+
+          <div class="hero__actions">
+            <a href="#roles" class="btn btn--primary">Get started — it's free</a>
+            <a href="#app" class="btn btn--ghost">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M7 4h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm5 15a1 1 0 1 0 0-2 1 1 0 0 0 0 2Z"/></svg>
+              Mobile app coming soon
+            </a>
+          </div>
+
+          <div class="hero__stats">
+            <div><strong data-count="6">6</strong><span>Cities</span></div>
+            <div><strong>100%</strong><span>Verified listings</span></div>
+            <div><strong>0</strong><span>FCFA to browse</span></div>
+          </div>
+        </div>
+
+        <!-- Phone mockup -->
+        <div class="hero__device reveal" aria-hidden="true">
+          <div class="phone">
+            <div class="phone__notch"></div>
+            <div class="phone__screen">
+              <div class="app-bar">
+                <span class="app-bar__logo">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+                </span>
+                <div class="app-bar__text"><b>Home237</b><small>Cameroon Property Rentals</small></div>
+              </div>
+              <div class="app-search">🔍 Search homes…</div>
+              <div class="app-chips"><span class="on">All</span><span>Apartment</span><span>Studio</span><span>House</span></div>
+              <div class="app-card">
+                <div class="app-card__img"><span class="tag">Top Pick</span></div>
+                <div class="app-card__meta"><b>Molyko, Buea</b><span>50,000 FCFA / mo</span></div>
+              </div>
+              <div class="app-card">
+                <div class="app-card__img app-card__img--2"></div>
+                <div class="app-card__meta"><b>Bonamoussadi, Douala</b><span>120,000 FCFA / mo</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────── ROLE SELECTION ───────────────────── -->
+    <section class="roles" id="roles">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Get started</span>
+          <h2>How do you want to use Home237?</h2>
+          <p>Pick your path — we'll tailor your experience. You can always switch later.</p>
+        </div>
+
+        <div class="role-grid">
+          <!-- Tenant -->
+          <button class="role-card" data-role="tenant" aria-pressed="false">
+            <span class="role-card__glow"></span>
+            <span class="role-card__icon role-card__icon--tenant">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+            </span>
+            <h3>I'm looking for a home</h3>
+            <p>Discover verified rentals and move in with confidence.</p>
+            <ul class="role-card__list">
+              <li>Browse verified listings &amp; 360° tours</li>
+              <li>Book viewings with secure QR check-in</li>
+              <li>Pay rent with MTN MoMo &amp; Orange Money</li>
+              <li>Chat directly with landlords</li>
+            </ul>
+            <span class="role-card__cta">Continue as Tenant
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </button>
+
+          <!-- Landlord -->
+          <button class="role-card role-card--landlord" data-role="landlord" aria-pressed="false">
+            <span class="role-card__glow"></span>
+            <span class="role-card__icon role-card__icon--landlord">
+              <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9h.01M9 12h.01M9 15h.01"/></svg>
+            </span>
+            <h3>I have a property to rent</h3>
+            <p>List your property and reach thousands of verified tenants.</p>
+            <ul class="role-card__list">
+              <li>List your first property for free</li>
+              <li>Boost &amp; feature listings to rent faster</li>
+              <li>Verified-landlord badge builds trust</li>
+              <li>Get paid securely via Mobile Money</li>
+            </ul>
+            <span class="role-card__cta">Continue as Landlord
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+          </button>
+        </div>
+        <p class="roles__note" id="rolesNote" hidden></p>
+      </div>
+    </section>
+
+    <!-- ───────────────────── APP COMING SOON ───────────────────── -->
+    <section class="app" id="app">
+      <div class="container app__inner">
+        <div class="app__copy reveal">
+          <span class="eyebrow eyebrow--light">📱 Launching soon</span>
+          <h2>The Home237 mobile app is<br /> almost here.</h2>
+          <p>
+            Faster, smoother and data-friendly — with instant push notifications
+            the moment a home that fits you is listed. Be the first to know when
+            it drops on the Play Store.
+          </p>
+
+          <form class="notify" id="notifyForm" novalidate>
+            <input type="email" id="notifyEmail" placeholder="Enter your email" aria-label="Email address" required />
+            <button type="submit" class="btn btn--primary">Notify me</button>
+          </form>
+          <p class="notify__msg" id="notifyMsg" role="status"></p>
+
+          <div class="stores">
+            <span class="store-badge">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M3 3.5 13.5 12 3 20.5c-.3-.2-.5-.6-.5-1V4.5c0-.4.2-.8.5-1Zm12 9.8 2.6 2.6-9.1 5.2 6.5-7.8Zm0-2.6L8.5 2.9l9.1 5.2L15 10.7Zm1.5 1.3 3.4-1.9c.8-.4.8-1.6 0-2l-3.4-2L18.9 12l-2.4 2.4Z"/></svg>
+              <span><small>Coming soon on</small><b>Google Play</b></span>
+            </span>
+            <span class="store-badge store-badge--soon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17.05 12.04c-.03-2.6 2.13-3.85 2.22-3.91-1.21-1.77-3.09-2.01-3.76-2.04-1.6-.16-3.12.94-3.93.94-.81 0-2.06-.92-3.39-.89-1.74.03-3.35 1.01-4.25 2.57-1.81 3.14-.46 7.79 1.3 10.34.86 1.25 1.89 2.65 3.23 2.6 1.3-.05 1.79-.84 3.36-.84 1.57 0 2.01.84 3.39.81 1.4-.03 2.28-1.27 3.13-2.53.99-1.45 1.4-2.86 1.42-2.93-.03-.01-2.72-1.04-2.75-4.13ZM14.6 5.13c.71-.86 1.19-2.06 1.06-3.25-1.02.04-2.26.68-2.99 1.54-.66.76-1.23 1.98-1.08 3.15 1.14.09 2.3-.58 3.01-1.44Z"/></svg>
+              <span><small>Coming soon on</small><b>App Store</b></span>
+            </span>
+          </div>
+        </div>
+
+        <div class="app__device reveal" aria-hidden="true">
+          <div class="phone phone--glow">
+            <div class="phone__notch"></div>
+            <div class="phone__screen phone__screen--splash">
+              <span class="splash-mark">
+                <svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+              </span>
+              <b class="splash-name">Home237</b>
+              <small class="splash-tag">Find and list homes with ease</small>
+              <span class="splash-loader"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── FEATURES ───────────────────────── -->
+    <section class="features" id="features">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Why Home237</span>
+          <h2>Everything you need to rent with confidence</h2>
+          <p>Built for the way Cameroon rents — trusted, mobile-first and secure.</p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+            </span>
+            <h3>Verified listings</h3>
+            <p>Every property is reviewed and approved by our team before it goes live — no scams, no ghost listings.</p>
+          </article>
+
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM21 21h-3M21 17v4"/></svg>
+            </span>
+            <h3>Smart Escrow viewings</h3>
+            <p>Pay viewing fees safely. Funds are released only when you scan the agent's QR code at the property.</p>
+          </article>
+
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 12h.01M18 12h.01"/></svg>
+            </span>
+            <h3>Mobile Money payments</h3>
+            <p>Pay rent and fees with MTN MoMo or Orange Money. Fast, familiar and secure — no bank card needed.</p>
+          </article>
+
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M5 3h9l5 5v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/><path d="M9 13h6M9 17h4"/></svg>
+            </span>
+            <h3>Digital leases</h3>
+            <p>Sign a legally-worded tenancy agreement online. Both parties get a copy by email instantly.</p>
+          </article>
+
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 8V4H8"/><rect x="4" y="8" width="16" height="12" rx="2"/><path d="M2 14h2M20 14h2M15 13v2M9 13v2"/></svg>
+            </span>
+            <h3>AI rental assistant</h3>
+            <p>Our bilingual "Virtual Démarcheur" answers questions and finds you homes in English or French, 24/7.</p>
+          </article>
+
+          <article class="feature reveal">
+            <span class="feature__icon">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 2 2.4 7.4H22l-6 4.6 2.3 7.4L12 17l-6.3 4.4L8 14 2 9.4h7.6L12 2Z"/></svg>
+            </span>
+            <h3>Boost &amp; go Premium</h3>
+            <p>Landlords can feature listings and unlock Premium to rent faster and reach more verified tenants.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── HOW IT WORKS ───────────────────────── -->
+    <section class="how" id="how">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">How it works</span>
+          <h2>Rent a home in three simple steps</h2>
+        </div>
+
+        <div class="steps">
+          <div class="step reveal">
+            <span class="step__num">1</span>
+            <h3>Search &amp; discover</h3>
+            <p>Filter verified homes by city, type and budget. Explore photos and 360° interior tours.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step__num">2</span>
+            <h3>Book a safe viewing</h3>
+            <p>Schedule a visit and pay the viewing fee into escrow — released only after you check in.</p>
+          </div>
+          <div class="step reveal">
+            <span class="step__num">3</span>
+            <h3>Sign &amp; move in</h3>
+            <p>Sign your digital lease and pay your first rent with Mobile Money. Welcome home!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── CITIES ───────────────────────── -->
+    <section class="cities" id="cities">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="eyebrow">Coverage</span>
+          <h2>Homes across Cameroon's top cities</h2>
+        </div>
+        <div class="city-grid reveal">
+          <span class="city">Douala</span>
+          <span class="city">Yaoundé</span>
+          <span class="city">Buea</span>
+          <span class="city">Bamenda</span>
+          <span class="city">Bafoussam</span>
+          <span class="city">Limbe</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ───────────────────────── FINAL CTA ───────────────────────── -->
+    <section class="cta-band">
+      <div class="container cta-band__inner reveal">
+        <h2>Ready to find your next home?</h2>
+        <p>Join thousands of Cameroonians renting the smarter, safer way.</p>
+        <a href="#roles" class="btn btn--light">Get started — it's free</a>
+      </div>
+    </section>
+  </main>
+
+  <!-- ───────────────────────── FOOTER ───────────────────────── -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <a href="#top" class="brand brand--light">
+          <span class="brand__mark" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/></svg>
+          </span>
+          <span class="brand__name">Home<span class="brand__237">237</span></span>
+        </a>
+        <p>Find and list verified rental homes across Cameroon.</p>
+      </div>
+
+      <nav class="footer__col" aria-label="Product">
+        <h4>Product</h4>
+        <a href="#features">Features</a>
+        <a href="#how">How it works</a>
+        <a href="#roles">Get started</a>
+        <a href="#app">Mobile app</a>
+      </nav>
+
+      <nav class="footer__col" aria-label="Cities">
+        <h4>Cities</h4>
+        <a href="#cities">Douala</a>
+        <a href="#cities">Yaoundé</a>
+        <a href="#cities">Buea</a>
+        <a href="#cities">Bamenda</a>
+      </nav>
+
+      <nav class="footer__col" aria-label="Company">
+        <h4>Company</h4>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Service</a>
+      </nav>
+    </div>
+    <div class="container footer__bottom">
+      <span>© <span id="year">2026</span> Home237. Yaoundé &amp; Douala, Cameroon.</span>
+      <span>Made with ♥ for Cameroon</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
