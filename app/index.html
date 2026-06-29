@@ -14,6 +14,11 @@
   -->
   <base href="./">
 
+  <!-- Start downloading the app bundle immediately, in parallel with the
+       bootstrap, so first load reaches the sign-in screen faster. -->
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="modulepreload" href="flutter_bootstrap.js">
+
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
