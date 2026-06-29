@@ -14,6 +14,12 @@
   ],
   "headers": [
     {
+      "source": "/app",
+      "headers": [
+        { "key": "Cross-Origin-Opener-Policy", "value": "same-origin-allow-popups" }
+      ]
+    },
+    {
       "source": "/app/canvaskit/(.*)",
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
