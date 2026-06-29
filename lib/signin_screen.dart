@@ -20,7 +20,10 @@ import 'pending_property_service.dart';
 import 'property_details_screen.dart';
 
 class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+  /// Optional role chosen on the marketing site (?role=tenant|landlord).
+  /// Used to prime a new account if the visitor signs up.
+  final UserRole? preselectedRole;
+  const SignInScreen({super.key, this.preselectedRole});
   @override
   State<SignInScreen> createState() => _SignInScreenState();
 }
@@ -188,7 +191,8 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
   }
 
   Future<void> _handleGoogleSignIn() async {
-    final success = await authService.signInWithGoogle();
+    final success =
+        await authService.signInWithGoogle(defaultRole: widget.preselectedRole);
     if (mounted) {
       if (success) {
         _routeUser();
@@ -281,7 +285,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                   color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                               GestureDetector(
                                 onTap: () => Navigator.pushReplacement(context,
-                                  MaterialPageRoute(builder: (_) => const SignUpScreen())),
+                                  MaterialPageRoute(builder: (_) => SignUpScreen(preselectedRole: widget.preselectedRole))),
                                 child: Text(t.get('sign_up'),
                                   style: const TextStyle(fontSize: 14, color: Color(0xFF3B82F6), fontWeight: FontWeight.w700))),
                             ]),
@@ -360,7 +364,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                 : SizedBox(
                     width: 20, height: 20,
                     child: Image.asset('assets/images/google_logo.png', height: 20, width: 20,
-                      errorBuilder: (_, __, ___) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
+                      errorBuilder: (_, _, _) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
                   ),
             const SizedBox(width: 10),
             Text(t.get('continue_with_google'),

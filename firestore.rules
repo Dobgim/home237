@@ -140,14 +140,35 @@ service cloud.firestore {
       }
     }
 
-    // Admin Settings (Payout/Fapshi keys)
+    // Admin Settings — allow unauthenticated read for 'fapshi' & 'groq' configs 
+    // to prevent payment/chat initialization failures. Other settings require auth.
     match /admin_settings/{settingId} {
-      allow read, write: if isAdmin();
+      allow read: if settingId == 'fapshi' || settingId == 'groq' || request.auth != null;
+      allow write: if isAdmin();
     }
 
     // Sessions (device enforcement)
     match /sessions/{userId} {
       allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Leases — accessible to the tenant, the landlord, or an admin.
+    match /leases/{leaseId} {
+      allow read, write: if request.auth != null && (
+        resource == null ||
+        resource.data.tenantId == request.auth.uid ||
+        resource.data.landlordId == request.auth.uid ||
+        isAdmin()
+      );
+    }
+
+    // Rent transactions — accessible to the paying tenant or an admin.
+    match /rent_transactions/{transId} {
+      allow read, write: if request.auth != null && (
+        resource == null ||
+        resource.data.tenantId == request.auth.uid ||
+        isAdmin()
+      );
     }
   }
 }

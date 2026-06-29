@@ -9,6 +9,7 @@ import 'admin_reports_screen.dart';
 import 'admin_support_chats_screen.dart';
 import 'settings_screen.dart';
 import 'auth_service.dart';
+import 'email_service.dart';
 import 'widgets/language_toggle.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -238,56 +239,80 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
                                 ),
                               );
                             }
-                          } catch (e) {
-                            final errorStr = e.toString().toLowerCase();
-                            if (errorStr.contains('not-found') || errorStr.contains('not_found')) {
-                              try {
-                                final usersSnap = await FirebaseFirestore.instance.collection('users').get();
-                                final firestore = FirebaseFirestore.instance;
-                                int count = 0;
-                                WriteBatch batch = firestore.batch();
+                           } catch (e) {
+                             final errorStr = e.toString().toLowerCase();
+                             if (true) { // Trigger fallback for any function failure (e.g. Spark plan / not deployed)
+                               try {
+                                 final usersSnap = await FirebaseFirestore.instance.collection('users').get();
+                                 final firestore = FirebaseFirestore.instance;
+                                 int count = 0;
+                                 WriteBatch batch = firestore.batch();
 
-                                for (var doc in usersSnap.docs) {
-                                  final userId = doc.id;
-                                  final notificationRef = firestore
-                                      .collection('notifications')
-                                      .doc(userId)
-                                      .collection('items')
-                                      .doc();
+                                 for (var doc in usersSnap.docs) {
+                                   final data = doc.data();
+                                   final userId = doc.id;
+                                   final email = data['email']?.toString();
 
-                                  batch.set(notificationRef, {
-                                    'title': title,
-                                    'message': message,
-                                    'type': 'announcement',
-                                    'read': false,
-                                    'timestamp': FieldValue.serverTimestamp(),
-                                  });
-                                  count++;
+                                   if (email != null && email.isNotEmpty) {
+                                     final emailHtml = '''
+                                       <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+                                         <div style="background: #3B82F6; padding: 24px; text-align: center;">
+                                           <h1 style="color: white; font-size: 24px; margin: 0;">🏠 Home237</h1>
+                                         </div>
+                                         <div style="background: #f9fafb; padding: 32px;">
+                                           <h2 style="color: #1e293b; margin-top: 0; margin-bottom: 16px; font-size: 20px;">$title</h2>
+                                           <p style="color: #475569; font-size: 15px; line-height: 1.6;">Hello ${data['name'] ?? 'User'},</p>
+                                           <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0; color: #334155; line-height: 1.6; font-size: 14px; white-space: pre-wrap;">$message</div>
+                                           <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">If you have any questions, feel free to reply to this email or contact support inside the app.</p>
+                                         </div>
+                                         <div style="background: #f3f4f6; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                                           <p style="color: #9ca3af; font-size: 12px; margin: 0;">© 2026 Home237. All rights reserved.</p>
+                                         </div>
+                                       </div>
+                                     ''';
+                                     // Call non-blocking sendHtmlEmail on the client side
+                                     EmailService.sendHtmlEmail(email, title, emailHtml);
+                                   }
 
-                                  if (count % 400 == 0) {
-                                    await batch.commit();
-                                    batch = firestore.batch();
-                                  }
-                                }
+                                   final notificationRef = firestore
+                                       .collection('notifications')
+                                       .doc(userId)
+                                       .collection('items')
+                                       .doc();
 
-                                if (count % 400 != 0) {
-                                  await batch.commit();
-                                }
+                                   batch.set(notificationRef, {
+                                     'title': title,
+                                     'message': message,
+                                     'type': 'announcement',
+                                     'read': false,
+                                     'timestamp': FieldValue.serverTimestamp(),
+                                   });
+                                   count++;
 
-                                if (context.mounted) {
-                                  Navigator.pop(ctx);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Broadcast sent via in-app notifications to $count users (Fallback Mode)!'),
-                                      backgroundColor: const Color(0xFF10B981),
-                                    ),
-                                  );
-                                }
-                                return;
-                              } catch (fallbackError) {
-                                debugPrint('Fallback broadcast failed: $fallbackError');
-                              }
-                            }
+                                   if (count % 400 == 0) {
+                                     await batch.commit();
+                                     batch = firestore.batch();
+                                   }
+                                 }
+
+                                 if (count % 400 != 0) {
+                                   await batch.commit();
+                                 }
+
+                                 if (context.mounted) {
+                                   Navigator.pop(ctx);
+                                   ScaffoldMessenger.of(context).showSnackBar(
+                                     SnackBar(
+                                       content: Text('Broadcast sent via in-app & emails to $count users!'),
+                                       backgroundColor: const Color(0xFF10B981),
+                                     ),
+                                   );
+                                 }
+                                 return;
+                               } catch (fallbackError) {
+                                 debugPrint('Fallback broadcast failed: $fallbackError');
+                               }
+                             }
 
                             setStateDialog(() => isSubmitting = false);
                             if (context.mounted) {

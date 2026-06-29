@@ -515,16 +515,19 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [BoxShadow(color: const Color(0xFF8B5CF6).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 3))],
                   ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(Icons.add, color: Colors.white, size: 18),
-                      const SizedBox(width: 8),
-                      Text(
-                        _chosenLanguage == 'french' ? 'Nouvelle conversation' : 'New Conversation',
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
-                      ),
-                    ],
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Icon(Icons.add, color: Colors.white, size: 18),
+                        const SizedBox(width: 8),
+                        Text(
+                          _chosenLanguage == 'french' ? 'Nouvelle conversation' : 'New Conversation',
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 14),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -858,7 +861,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
   Widget _dot(int i) => TweenAnimationBuilder(
         tween: Tween<double>(begin: 0, end: 1),
         duration: const Duration(milliseconds: 600),
-        builder: (_, value, __) => Opacity(
+        builder: (_, value, _) => Opacity(
           opacity: (value + (i * 0.3)) % 1.0,
           child: Container(width: 6, height: 6, decoration: const BoxDecoration(color: Color(0xFF8B5CF6), shape: BoxShape.circle)),
         ),

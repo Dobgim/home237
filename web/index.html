@@ -14,6 +14,11 @@
   -->
   <base href="$FLUTTER_BASE_HREF">
 
+  <!-- Start downloading the app bundle immediately, in parallel with the
+       bootstrap, so first load reaches the sign-in screen faster. -->
+  <link rel="preload" href="main.dart.js" as="script">
+  <link rel="modulepreload" href="flutter_bootstrap.js">
+
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="A new Flutter project.">
@@ -90,6 +95,20 @@
       position: absolute;
       bottom: 0;
       right: 0;
+    }
+
+    /* Minimal neutral loader shown only while main.dart.js downloads. */
+    #splash .h237-spinner {
+      width: 38px;
+      height: 38px;
+      border: 3px solid rgba(59, 130, 246, 0.22);
+      border-top-color: #3B82F6;
+      border-radius: 50%;
+      animation: h237spin 0.8s linear infinite;
+    }
+
+    @keyframes h237spin {
+      to { transform: rotate(360deg); }
     }
   </style>
   <script id="splash-screen-script">
@@ -169,11 +188,10 @@
     </div>
   </div>
 
-  <picture id="splash">
-      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
-      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
-      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
-  </picture>
+  <!-- Neutral loader (no branded splash) so role -> auth feels immediate. -->
+  <div id="splash" class="center">
+      <div class="h237-spinner" aria-hidden="true"></div>
+  </div>
   
   <script src="flutter_bootstrap.js" async=""></script>
 </body></html>

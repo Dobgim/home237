@@ -13,6 +13,7 @@ import 'admin_dashboard.dart';
 import 'theme_notifier.dart';
 import 'onboarding_screen.dart';
 import 'role_selection_screen.dart';
+import 'signin_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -104,126 +105,136 @@ class _SplashScreenState extends State<SplashScreen>
       }
     }
 
-    // Wait for splash animation
-    await Future.delayed(const Duration(milliseconds: 2500));
+    // Minimum splash display time. On web we skip the long branded splash so
+    // visitors arriving from the marketing site land on sign-in immediately;
+    // on mobile it runs concurrently with the auth/data work below.
+    final splashTimer = Future.delayed(
+        kIsWeb ? Duration.zero : const Duration(milliseconds: 3500));
 
-    if (!mounted) return;
+    // Role passed from the marketing site's picker (?role=tenant|landlord).
+    final String? webRole =
+        kIsWeb ? Uri.base.queryParameters['role'] : null;
 
-    // ── NEW: Check if first launch ─────────────────────────────────────────
-    final prefs = await SharedPreferences.getInstance();
-    final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+    // Resolve where to navigate while the splash animation plays.
+    Widget destination = const HomePage();
 
-    if (!hasSeenOnboarding) {
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const OnboardingScreen()),
-      );
-      return;
-    }
-    // ──────────────────────────────────────────────────────────────────────
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+      final currentUser = FirebaseAuth.instance.currentUser;
 
-    // Check if user is already signed in with Firebase
-    final currentUser = FirebaseAuth.instance.currentUser;
+      // A signed-in user (including one returning from a Google redirect) must
+      // always land on their dashboard — never the onboarding/role screen.
+      if (currentUser == null && webRole == null && !hasSeenOnboarding) {
+        destination = const OnboardingScreen();
+      } else {
+        if (currentUser != null) {
+          // Reload user to get latest verification status.
+          await authService.refreshUserStatus();
+          final updatedUser = FirebaseAuth.instance.currentUser;
 
-    if (currentUser != null) {
-      // ── NEW: Reload user to get latest verification status ────────────────
-      await authService.refreshUserStatus();
-      
-      final updatedUser = FirebaseAuth.instance.currentUser;
-      
-      // STRICT CHECK: If email not verified, force them to start over
-      if (updatedUser != null && !authService.isEmailVerified) {
-        try {
-          // If they restart the app unverified, sign them out and show HomePage
-          await authService.signOut(forceNavigateHome: false);
-          if (!mounted) return;
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const HomePage()),
-          );
-          return;
-        } catch (e) {
-          print('Error handling unverified user on splash: $e');
-        }
-      }
-
-      // User is signed in and verified, fetch their data from Firestore
-      try {
-        final userDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(updatedUser?.uid ?? currentUser.uid)
-            .get();
-
-        if (userDoc.exists) {
-          final data = userDoc.data()!;
-
-          // Get user role
-          final roleStr = data['role'] ?? 'none';
-          UserRole userRole = UserRole.none;
-
-          if (roleStr == 'tenant') {
-            userRole = UserRole.tenant;
-          } else if (roleStr == 'landlord') {
-            userRole = UserRole.landlord;
-          } else if (roleStr == 'admin') {
-            userRole = UserRole.admin;
-          } else {
-            userRole = UserRole.none;
-          }
-
-          // Restore user session in auth service
-          authService.restoreSession(
-            userId: currentUser.uid,
-            userEmail: data['email'] ?? currentUser.email ?? '',
-            userName: data['name'] ?? currentUser.email?.split('@')[0] ?? 'User',
-            userRole: userRole,
-          );
-
-          // ✅ UPDATE THEME FOR THIS USER'S ROLE
-          if (mounted) {
-            context.read<ThemeNotifier>().updateThemeForRole();
-          }
-
-          // Navigate based on role
-          if (!mounted) return;
-
-          Widget destination;
-          if (userRole == UserRole.tenant) {
-            destination = const TenantDashboard();
-          } else if (userRole == UserRole.landlord) {
-            destination = const LandlordDashboard();
-          } else if (userRole == UserRole.admin) {
-            destination = const AdminDashboard();
-          } else if (userRole == UserRole.none) {
-            destination = const RoleSelectionScreen();
-          } else {
+          if (updatedUser != null && !authService.isEmailVerified) {
+            // Unverified — sign them out and show HomePage.
+            await authService.signOut(forceNavigateHome: false);
             destination = const HomePage();
+          } else {
+            // Signed in and verified — fetch their data from Firestore.
+            final userDoc = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(updatedUser?.uid ?? currentUser.uid)
+                .get();
+
+            if (!userDoc.exists) {
+              // User document deleted from Firestore — sign out.
+              debugPrint('🚨 Splash: User document not found. Signing out.');
+              await authService.signOut(forceNavigateHome: false);
+              destination = const HomePage();
+            } else {
+              final data = userDoc.data()!;
+
+              if (data['suspended'] == true) {
+                debugPrint('🚨 Splash: User is suspended. Signing out.');
+                await authService.signOut(forceNavigateHome: false);
+                destination = const HomePage();
+              } else {
+                final roleStr = data['role'] ?? 'none';
+                UserRole userRole = UserRole.none;
+                if (roleStr == 'tenant') {
+                  userRole = UserRole.tenant;
+                } else if (roleStr == 'landlord') {
+                  userRole = UserRole.landlord;
+                } else if (roleStr == 'admin') {
+                  userRole = UserRole.admin;
+                }
+
+                authService.restoreSession(
+                  userId: currentUser.uid,
+                  userEmail: data['email'] ?? currentUser.email ?? '',
+                  userName: data['name'] ??
+                      currentUser.email?.split('@')[0] ??
+                      'User',
+                  userRole: userRole,
+                );
+
+                if (mounted) {
+                  context.read<ThemeNotifier>().updateThemeForRole();
+                }
+
+                if (userRole == UserRole.tenant) {
+                  destination = const TenantDashboard();
+                } else if (userRole == UserRole.landlord) {
+                  destination = const LandlordDashboard();
+                } else if (userRole == UserRole.admin) {
+                  destination = const AdminDashboard();
+                } else {
+                  destination = const RoleSelectionScreen();
+                }
+              }
+            }
           }
-
-          print('🔍 DEBUG: Splash - UserRole: $userRole, Navigating to: ${destination.runtimeType}');
-
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => destination),
-          );
-          return;
+        } else if (webRole != null) {
+          // Logged-out visitor from the marketing site → sign in / sign up,
+          // with the chosen role primed for a new account.
+          destination = SignInScreen(preselectedRole: _roleFromString(webRole));
         }
-      } catch (e) {
-        print('Error fetching user data: $e');
       }
+    } catch (e) {
+      debugPrint('Error resolving startup destination: $e');
+      destination = const HomePage();
     }
 
-    // No user signed in or error occurred, go to home page
+    // Ensure the splash stayed visible for the full minimum duration.
+    await splashTimer;
     if (!mounted) return;
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
+      MaterialPageRoute(builder: (context) => destination),
     );
+  }
+
+  UserRole? _roleFromString(String? r) {
+    if (r == 'tenant') return UserRole.tenant;
+    if (r == 'landlord') return UserRole.landlord;
+    return null;
   }
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      // No branded splash on web — just a brief neutral loading frame while
+      // auth resolves, then straight to the homepage / sign-in.
+      return Scaffold(
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: const Center(
+          child: SizedBox(
+            width: 34,
+            height: 34,
+            child: CircularProgressIndicator(
+                strokeWidth: 2.6, color: Color(0xFF3B82F6)),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       body: Container(
         width: double.infinity,

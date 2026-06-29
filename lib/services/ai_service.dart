@@ -5,8 +5,44 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'remote_config_service.dart';
 
 class AiService {
-  // Key is fetched at runtime from Firebase Remote Config — never stored in code.
-  String get _apiKey => remoteConfigService.groqApiKey;
+  String? _cachedApiKey;
+
+  Future<String> _getApiKey() async {
+    if (_cachedApiKey != null && _cachedApiKey!.isNotEmpty) {
+      return _cachedApiKey!;
+    }
+    
+    // 1. Try Firestore first (allows easy dynamic setup)
+    try {
+      final doc = await FirebaseFirestore.instance
+          .collection('admin_settings')
+          .doc('groq')
+          .get();
+      if (doc.exists && doc.data() != null) {
+        final key = doc.data()?['apiKey'] as String?;
+        if (key != null && key.trim().isNotEmpty) {
+          _cachedApiKey = key.trim();
+          debugPrint('🔑 Loaded Groq API Key from Firestore admin_settings/groq');
+          return _cachedApiKey!;
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error loading Groq key from Firestore: $e');
+    }
+
+    // 2. Try Remote Config fallback
+    try {
+      final rcKey = remoteConfigService.groqApiKey;
+      if (rcKey.isNotEmpty) {
+        _cachedApiKey = rcKey;
+        return rcKey;
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error loading Remote Config key: $e');
+    }
+
+    return '';
+  }
 
   // Groq's lightning fast Llama 3 model
   static const String _model = 'llama-3.1-8b-instant';
@@ -14,25 +50,22 @@ class AiService {
   static const String _systemPrompt =
       'You are the "Home237 Virtual Demarcheur", a highly intelligent, polite, '
       'and professional real estate assistant for Cameroon. '
+      'You speak both English and French fluently — always reply in the same language the user writes in. '
+      'Keep your answers concise and format them beautifully with emojis where appropriate. '
       'You have expert knowledge of ALL neighborhoods in Cameroon. For example: '
       'Douala (Akwa, Bonanjo, Bonapriso, Bonamoussadi, Makepe, Deido, Logpom, Ndogbong, Kotto, etc.), '
       'Yaoundé (Bastos, Biyem-Assi, Nlonkak, Essos, Mvan, Obili, Ngoa-Ekelle, Odza, etc.), '
       'Buea (Molyko, Bomaka, Muea, Bokwango, Clerks Quarters, Ndongo, Great Soppo, etc.), '
       'Bamenda (Nkwen, Up-Station, Bambili, Mankon, Ntarinkon, Commercial Avenue), '
       'and Limbe (Mile 4, Half Mile, Down Beach, Bota, Isokolo). '
-      'IMPORTANT RULE: If a user asks for houses in a specific city (like Buea), YOU MUST '
-      'reply by explicitly listing the specific neighborhoods in that city where they can find '
-      'houses on the app (e.g. "We have properties in Molyko, Bomaka, Muea..."). '
-      'IMPORTANT AVAILABLE HOUSES / MAISONS LIBRES RULE: If the user asks if there are available houses, '
-      '"maisons libres", vacant houses, or free houses in the app, you MUST first call the get_real_time_properties '
-      'tool to verify if there are indeed houses available in the database. If properties are returned, you MUST NOT list '
-      'them or show details immediately. Instead, you MUST politely inform the user that available houses exist, and '
-      'explicitly ask them if they would love to see them (e.g., "Yes! We have available houses on Home237. Would you love '
-      'to see them?" or "Oui ! Nous avons des maisons libres sur Home237. Aimeriez-vous les voir ?"). '
-      'If they reply positively (e.g., "yes", "oui", "I would love to", "je veux bien", "show me", "montre-moi"), you MUST '
-      'call the search_properties tool to instantly open the search results for them. '
-      'You speak both English and French fluently — always reply in the same language the user writes in. '
-      'Keep your answers concise and format them beautifully with emojis where appropriate. '
+      'IMPORTANT RULE FOR SPECIFIC AREA REQUESTS: If a user says they want a house in a particular area/neighborhood (e.g. Ndogbong, Bastos, Molyko, etc.), '
+      'you MUST call the get_real_time_properties tool to fetch current listings. If the tool returns no properties matching that area, '
+      'you MUST tell the user: "There is no house listed in this area right now" (or "Il n\'y a pas de maison disponible dans ce quartier pour le moment" in French). '
+      'IMPORTANT RULE FOR GENERAL AVAILABILITY QUERY: If the user asks "are the houses available in your app now?", '
+      '"maisons libres", vacant houses, or similar general availability queries, you MUST call the get_real_time_properties tool. '
+      'If yes (properties exist), you MUST answer yes and immediately tell the user the region and location of those houses at once in your response '
+      '(e.g., "Yes! We have available houses located in Douala - Makepe, Buea - Molyko, etc."). '
+      'IMPORTANT CHAT ACTIONS: If they reply positively to seeing them (e.g. "yes", "oui", "show me", "montre-moi"), you MUST call the search_properties tool to open the search results. '
       'When asked about viewing fees (frais de visite) or scams, strongly explain that Home237 uses '
       'a "Smart Escrow" system powered by Fapshi where the fee is held securely and only released '
       'when the tenant physically scans the agent\'s QR code at the property. '
@@ -60,6 +93,19 @@ class AiService {
   }
 
   Future<String> _processGroqRequest() async {
+    final apiKey = await _getApiKey();
+    if (apiKey.isEmpty) {
+      if (_history.isNotEmpty && _history.last['role'] == 'user') {
+        _history.removeLast();
+      }
+      return 'Hello! I am your Home237 AI Virtual Assistant. 🤖\n\n'
+             '⚠️ **API Key is not configured.**\n'
+             'To enable chat support, the Admin must configure the Groq API key in Firestore:\n'
+             '1. Go to your Firebase Console → Firestore Database.\n'
+             '2. Under `admin_settings` collection, create a document named `groq`.\n'
+             '3. Add a field named `apiKey` with your Groq API key (starts with `gsk_`).\n\n'
+             'You can get a free, high-speed API key at [console.groq.com](https://console.groq.com).';
+    }
 
     try {
       final url = 'https://api.groq.com/openai/v1/chat/completions';
@@ -67,7 +113,7 @@ class AiService {
         Uri.parse(url),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_apiKey',
+          'Authorization': 'Bearer $apiKey',
         },
         body: jsonEncode({
           'model': _model,
@@ -178,6 +224,8 @@ class AiService {
                       'bedrooms': data['beds'] ?? '0',
                       'type': data['type'] ?? 'Unknown',
                       'status': status,
+                      'city': data['city'] ?? '',
+                      'neighborhood': data['neighborhood'] ?? '',
                     });
                   }
                 }

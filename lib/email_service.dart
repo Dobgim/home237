@@ -41,4 +41,22 @@ class EmailService {
       return false;
     }
   }
+
+  static Future<bool> sendHtmlEmail(String toEmail, String subject, String htmlContent) async {
+    final smtpServer = gmail(_username, _password);
+
+    final message = Message()
+      ..from = const Address(_username, 'Home237 Support')
+      ..recipients.add(toEmail)
+      ..subject = subject
+      ..html = htmlContent;
+
+    try {
+      await send(message, smtpServer);
+      return true;
+    } catch (e) {
+      print('SMTP HTML Email Error: $e');
+      return false;
+    }
+  }
 }

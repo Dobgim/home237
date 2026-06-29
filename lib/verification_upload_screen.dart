@@ -23,7 +23,7 @@ class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
   XFile? _secondaryDocument; // Proof of address or Ownership
   XFile? _additionalDocument;
   bool _isUploading = false;
-  double _uploadProgress = 0.0;
+  final double _uploadProgress = 0.0;
 
   // Removed local _requestPermission as it is now in PermissionService
 
@@ -201,7 +201,7 @@ class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
         'secondaryDocumentUrl': secondaryUrl,
         'additionalDocumentUrl': additionalUrl,
         'documents': [
-          if (idUrl != null) 'ID Document',
+          'ID Document',
           if (secondaryUrl != null) 
             widget.userRole == UserRole.landlord ? 'Ownership Document' : 'Proof of Address',
           if (additionalUrl != null) 'Additional Document',

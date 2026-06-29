@@ -17,6 +17,7 @@ import 'widgets/language_toggle.dart';
 import 'app_localizations.dart';
 import 'ai_agent_screen.dart';
 import 'tour_pass_display_screen.dart';
+import 'rent_tracker_screen.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -333,6 +334,10 @@ class _TenantDashboardState extends State<TenantDashboard> {
               // 2b. Active Passes
               SliverToBoxAdapter(child: _buildActivePassesSection(isDark, auth)),
 
+              // 2c. Rent & Trust Quick Row
+              if (auth.userId != null)
+                SliverToBoxAdapter(child: _buildRentAndTrustRow(isDark, auth)),
+
               // 3. Search Bar
               SliverToBoxAdapter(child: _buildSearchSection(isDark)),
 
@@ -414,7 +419,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                         Text(
                           _prefActive
                               ? 'No listings match your preferences'
-                              : 'No ${_activeFilter} listings found',
+                              : 'No $_activeFilter listings found',
                           style: TextStyle(
                             fontSize: 16, fontWeight: FontWeight.w600,
                             color: isDark ? Colors.white60 : Colors.grey[600]),
@@ -469,7 +474,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
     if (_prefLocation != null) parts.add(_prefLocation!);
     if (_prefMaxBudget > 0) {
       final min = _prefMinBudget > 0 ? '${_formatBudget(_prefMinBudget)} – ' : '';
-      parts.add('${min}${_formatBudget(_prefMaxBudget)} FCFA');
+      parts.add('$min${_formatBudget(_prefMaxBudget)} FCFA');
     }
     final label = parts.join(' · ');
 
@@ -778,7 +783,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _filterOptions.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final opt = _filterOptions[i];
           final isActive = _activeFilter == opt['label'];
@@ -1052,7 +1057,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: imageUrl != null && imageUrl.startsWith('http')
-                          ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.home, size: 40, color: Colors.grey))
+                          ? Image.network(imageUrl, fit: BoxFit.cover, errorBuilder: (_, _, _) => const Icon(Icons.home, size: 40, color: Colors.grey))
                           : const Icon(Icons.home, size: 40, color: Colors.grey),
                     ),
                   ),
@@ -1446,5 +1451,128 @@ class _TenantDashboardState extends State<TenantDashboard> {
         );
       }
     }
+  }
+
+  Widget _buildRentAndTrustRow(bool isDark, AuthService auth) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
+      child: Row(
+        children: [
+          // Rent Tracker Card
+          Expanded(
+            child: GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const RentTrackerScreen()),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                  border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF0EA5E9).withOpacity(0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.receipt_long, color: Color(0xFF0EA5E9), size: 20),
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Rent Tracker',
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Manage payments',
+                            style: TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Trust Rating Card
+          Expanded(
+            child: StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance.collection('users').doc(auth.userId).snapshots(),
+              builder: (context, snapshot) {
+                double score = 5.0;
+                if (snapshot.hasData && snapshot.data!.exists) {
+                  final data = snapshot.data!.data() as Map<String, dynamic>?;
+                  score = (data?['reputationScore'] ?? data?['trustRating'] ?? 5.0) as double;
+                }
+                return Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
+                        blurRadius: 10,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                    border: Border.all(color: isDark ? Colors.white10 : const Color(0xFFE2E8F0)),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF10B981).withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.shield_outlined, color: Color(0xFF10B981), size: 20),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Trust Score',
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${score.toStringAsFixed(1)} / 5.0 Rating',
+                              style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

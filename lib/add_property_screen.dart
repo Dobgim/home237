@@ -4,8 +4,10 @@ import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:http/http.dart' as http;
+import 'package:geocoding/geocoding.dart' as geo;
 import 'auth_service.dart';
 import 'map_component.dart';
 import 'package:latlong2/latlong.dart';
@@ -80,10 +82,11 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   ];
 
   List<XFile> _selectedImages = [];
-  List<String> _existingImages = []; // Track existing images when editing
+  final List<String> _existingImages = []; // Track existing images when editing
   bool _isSubmitting = false;
   LatLng? _selectedLocation;
   bool _isGeocodingArea = false;
+  Timer? _geocodeDebounce;
 
   // 360° tour video
   XFile? _tourVideo;
@@ -157,17 +160,47 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     if (userId == null) return;
 
     try {
-      final snapshot = await FirebaseFirestore.instance
+      final db = FirebaseFirestore.instance;
+
+      // Landlord's existing listings…
+      final snapshot = await db
           .collection('properties')
           .where('landlordId', isEqualTo: userId)
           .get();
 
-      final currentCount = snapshot.docs.length;
-      final limit = authService.isPremium ? 3 : 1;
+      // …and their current subscription plan (read fresh from Firestore).
+      final userDoc = await db.collection('users').doc(userId).get();
+      final data = userDoc.data() ?? {};
+      final isPremium = (data['subscriptionStatus'] ?? 'free') == 'premium';
+      final isAnnual = (data['subscriptionPlan'] ?? '').toString() == 'annual';
 
-      if (currentCount >= limit) {
-        if (!mounted) return;
-        _showLimitDialog(limit);
+      if (!isPremium) {
+        // Free plan: 1 property total.
+        if (snapshot.docs.length >= 1 && mounted) {
+          _showLimitDialog(isPremium: false, isAnnual: false);
+        }
+        return;
+      }
+
+      if (isAnnual) {
+        // Annual plan: 3 NEW properties per calendar month (resets monthly).
+        final now = DateTime.now();
+        final monthStart = DateTime(now.year, now.month, 1);
+        int postedThisMonth = 0;
+        for (final doc in snapshot.docs) {
+          final created = doc.data()['createdAt'];
+          if (created is Timestamp && !created.toDate().isBefore(monthStart)) {
+            postedThisMonth++;
+          }
+        }
+        if (postedThisMonth >= 3 && mounted) {
+          _showLimitDialog(isPremium: true, isAnnual: true);
+        }
+      } else {
+        // Monthly plan: 3 properties total.
+        if (snapshot.docs.length >= 3 && mounted) {
+          _showLimitDialog(isPremium: true, isAnnual: false);
+        }
       }
     } catch (e) {
       if (kDebugMode) {
@@ -176,18 +209,30 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     }
   }
 
-  void _showLimitDialog(int limit) {
-    final isPremium = authService.isPremium;
+  void _showLimitDialog({required bool isPremium, required bool isAnnual}) {
+    final String title =
+        isAnnual ? 'Monthly Limit Reached' : 'Listing Limit Reached';
+    final String message;
+    if (!isPremium) {
+      message =
+          'On the Free plan you can only post 1 property. Upgrade to Premium to '
+          'post up to 3 — or choose the Annual plan to post 3 new properties every month!';
+    } else if (isAnnual) {
+      message =
+          'You\'ve reached your limit of 3 new properties for this month. '
+          'Your allowance resets automatically at the start of next month.';
+    } else {
+      message =
+          'On the Monthly Premium plan you can post up to 3 properties. '
+          'Switch to the Annual plan to post 3 new properties every month!';
+    }
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        title: const Text('Listing Limit Reached'),
-        content: Text(
-          isPremium
-              ? 'On the Premium plan, you can only post up to 3 properties. Upgrade or contact support if you need more listings!'
-              : 'On the Free plan, you can only post up to 1 property. Upgrade to Premium to post up to 3 properties and reach more tenants!',
-        ),
+        title: Text(title),
+        content: Text(message),
         actions: [
           TextButton(
             onPressed: () {
@@ -196,6 +241,8 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
             },
             child: const Text('Maybe Later'),
           ),
+          // Free users can upgrade straight away. (Annual users just wait for the
+          // monthly reset; monthly users are informed about the Annual upgrade.)
           if (!isPremium)
             ElevatedButton(
               onPressed: () {
@@ -398,7 +445,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
         'sqft': _sqftController.text.trim(),
         'amenities': _selectedAmenities,
         'images': [..._existingImages, ...imageUrls],
-        if (tourVideoUrl != null) 'tourVideoUrl': tourVideoUrl,
+        'tourVideoUrl': ?tourVideoUrl,
         'updatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -414,6 +461,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
           'landlordId': authService.userId ?? '',
           'landlordName': authService.userName ?? 'Landlord',
           'status': 'pending', // Requires admin approval
+          'isLandlordPremium': authService.isPremium, // Stamped at creation; updated on subscription change
           'views': 0,
           'favorites': 0,
           'createdAt': FieldValue.serverTimestamp(),
@@ -442,53 +490,99 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     }
   }
 
-  /// Geocodes [area + town] using Nominatim (OpenStreetMap, no API key)
-  /// then flies the map to the result and places a pin.
-  Future<void> _geocodeAndFly() async {
+  /// Builds the most specific geocoding query from the area + town fields,
+  /// e.g. "Molyko, Buea, Cameroon". Returns null if there's nothing to search.
+  String? _buildLocationQuery() {
     final area = _areaController.text.trim();
-    if (area.isEmpty && _selectedRegion == null) {
-      _showSnackBar('Enter an area or select a town first', isError: true);
-      return;
+    final parts = <String>[];
+    if (area.isNotEmpty) parts.add(area);
+    if (_selectedRegion != null) parts.add(_selectedRegion!);
+    if (parts.isEmpty) return null;
+    parts.add('Cameroon');
+    return parts.join(', ');
+  }
+
+  /// Resolves [query] to coordinates. Tries the on-device geocoder first
+  /// (Google on Android, Apple on iOS — the best coverage for places that show
+  /// on Google Maps), then falls back to OpenStreetMap's Nominatim (which also
+  /// covers web, where the native geocoder isn't available).
+  Future<LatLng?> _geocodeQuery(String query) async {
+    // 1. Native platform geocoder (Google/Apple). Not available on web.
+    if (!kIsWeb) {
+      try {
+        final locations = await geo.locationFromAddress(query);
+        if (locations.isNotEmpty) {
+          return LatLng(locations.first.latitude, locations.first.longitude);
+        }
+      } catch (_) {
+        // Fall through to Nominatim.
+      }
     }
 
-    setState(() => _isGeocodingArea = true);
-
+    // 2. Nominatim fallback, biased to Cameroon (countrycodes=cm) for accuracy.
     try {
-      // Build the most specific query: "Molyko, Buea, Cameroon"
-      final parts = <String>[];
-      if (area.isNotEmpty) parts.add(area);
-      if (_selectedRegion != null) parts.add(_selectedRegion!);
-      parts.add('Cameroon');
-      final query = Uri.encodeComponent(parts.join(', '));
-
       final uri = Uri.parse(
-        'https://nominatim.openstreetmap.org/search?q=$query&format=json&limit=1',
+        'https://nominatim.openstreetmap.org/search'
+        '?q=${Uri.encodeComponent(query)}&format=json&limit=1&countrycodes=cm',
       );
-
       final response = await http.get(
         uri,
         headers: {'User-Agent': 'Home237App/1.0'},
       );
-
       if (response.statusCode == 200) {
         final results = jsonDecode(response.body) as List<dynamic>;
         if (results.isNotEmpty) {
-          final lat = double.parse(results[0]['lat'] as String);
-          final lng = double.parse(results[0]['lon'] as String);
-          final found = LatLng(lat, lng);
-
-          // Fly to the geocoded location and update the pin
-          _mapKey.currentState?.flyTo(found, zoom: 16);
-          setState(() => _selectedLocation = found);
-          _showSnackBar('Located: ${results[0]['display_name'].toString().split(',').take(2).join(',')}');
-        } else {
-          _showSnackBar('Could not find "$area". Try a more specific name.', isError: true);
+          return LatLng(
+            double.parse(results[0]['lat'] as String),
+            double.parse(results[0]['lon'] as String),
+          );
         }
-      } else {
-        _showSnackBar('Geocoding failed. Check your internet.', isError: true);
+      }
+    } catch (_) {
+      // Ignore — caller treats a null result as "not found".
+    }
+    return null;
+  }
+
+  /// Auto-geocodes (debounced) as the landlord types the area, so the map
+  /// "directly picks up" the location without needing to tap Locate.
+  void _onAreaChanged(String _) {
+    _geocodeDebounce?.cancel();
+    _geocodeDebounce = Timer(const Duration(milliseconds: 900), () {
+      if (_areaController.text.trim().length >= 3) {
+        _geocodeAndFly(silent: true);
+      }
+    });
+  }
+
+  /// Geocodes the area + town and flies the map to it, dropping a pin.
+  /// When [silent] is true (auto-trigger while typing) it stays quiet on
+  /// failure; the manual Locate button surfaces errors.
+  Future<void> _geocodeAndFly({bool silent = false}) async {
+    final query = _buildLocationQuery();
+    if (query == null) {
+      if (!silent) {
+        _showSnackBar('Enter an area or select a town first', isError: true);
+      }
+      return;
+    }
+
+    setState(() => _isGeocodingArea = true);
+    try {
+      final found = await _geocodeQuery(query);
+      if (found != null) {
+        // Fly to the geocoded location and update the pin.
+        _mapKey.currentState?.flyTo(found, zoom: 16);
+        setState(() => _selectedLocation = found);
+        if (!silent) _showSnackBar('📍 Location pinned on the map');
+      } else if (!silent) {
+        _showSnackBar(
+          'Could not find that location. Try a more specific name, or tap the map.',
+          isError: true,
+        );
       }
     } catch (e) {
-      _showSnackBar('Error: ${e.toString()}', isError: true);
+      if (!silent) _showSnackBar('Error: ${e.toString()}', isError: true);
     } finally {
       if (mounted) setState(() => _isGeocodingArea = false);
     }
@@ -556,7 +650,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
             
             // Town Selection
             DropdownButtonFormField<String>(
-              value: _selectedRegion,
+              initialValue: _selectedRegion,
               decoration: InputDecoration(
                 labelText: 'Town',
                 hintText: 'Select Town',
@@ -576,9 +670,13 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               }).toList(),
               onChanged: (value) {
                 setState(() => _selectedRegion = value);
-                // 🗺️ Fly map to the selected city immediately
+                // 🗺️ Fly to the city centre instantly for feedback…
                 if (value != null && _cityCentres.containsKey(value)) {
                   _mapKey.currentState?.flyTo(_cityCentres[value]!, zoom: 14);
+                }
+                // …then refine to the exact area if one is already typed.
+                if (_areaController.text.trim().length >= 3) {
+                  _geocodeAndFly(silent: true);
                 }
               },
               validator: (v) => v == null ? 'Please select a town' : null,
@@ -599,6 +697,9 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                     hint: 'e.g., Molyko, Bastos, Akwa',
                     validator: (v) => v!.isEmpty ? 'Please specify the area' : null,
                     isDark: isDark,
+                    onChanged: _onAreaChanged,
+                    onFieldSubmitted: (_) => _geocodeAndFly(),
+                    textInputAction: TextInputAction.search,
                   ),
                 ),
                 const SizedBox(width: 10),
@@ -858,7 +959,8 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
             ),
             const SizedBox(height: 4),
             Text(
-              'Tap the map to drop a pin, or use the Locate button above.',
+              'The map pins your location automatically as you type the area. '
+              'You can also tap the map to fine-tune the exact spot.',
               style: TextStyle(
                 fontSize: 11,
                 color: isDark ? Colors.grey[500] : Colors.grey[500],
@@ -1216,6 +1318,9 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     int maxLines = 1,
     TextInputType? keyboardType,
     String? Function(String?)? validator,
+    void Function(String)? onChanged,
+    void Function(String)? onFieldSubmitted,
+    TextInputAction? textInputAction,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1233,6 +1338,9 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          textInputAction: textInputAction,
+          onChanged: onChanged,
+          onFieldSubmitted: onFieldSubmitted,
           style: TextStyle(color: isDark ? Colors.white : Colors.black87),
           decoration: InputDecoration(
             hintText: hint,
@@ -1253,6 +1361,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
 
   @override
   void dispose() {
+    _geocodeDebounce?.cancel();
     _titleController.dispose();
     _descriptionController.dispose();
     _priceController.dispose();

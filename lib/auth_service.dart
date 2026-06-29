@@ -77,11 +77,18 @@ class AuthService extends ChangeNotifier {
       if (!snapshot.exists && _isLoggedIn) {
         debugPrint('🚨 User document deleted — forcing sign-out.');
         signOut(forceNavigateHome: true);
-      } else if (snapshot.exists && _isLoggedIn && _localSessionToken != null) {
-        final remoteToken = snapshot.data()?['activeSessionToken'] as String?;
-        if (remoteToken != null && remoteToken != _localSessionToken) {
-          debugPrint('🚨 Session conflict — another device signed in.');
-          _handleSessionConflict();
+      } else if (snapshot.exists && _isLoggedIn) {
+        if (snapshot.data()?['suspended'] == true) {
+          debugPrint('🚨 User document suspended — forcing sign-out.');
+          signOut(forceNavigateHome: true);
+          return;
+        }
+        if (_localSessionToken != null) {
+          final remoteToken = snapshot.data()?['activeSessionToken'] as String?;
+          if (remoteToken != null && remoteToken != _localSessionToken) {
+            debugPrint('🚨 Session conflict — another device signed in.');
+            _handleSessionConflict();
+          }
         }
       }
     });
@@ -284,20 +291,26 @@ class AuthService extends ChangeNotifier {
           await FirebaseAuth.instance.signInWithRedirect(googleProvider);
           return false;
         } else {
+          // Desktop web: use the popup. It works across origins (it posts the
+          // credential back to this window), unlike signInWithRedirect, whose
+          // result can't be delivered back to a custom domain like home237.com
+          // because browsers block the cross-site storage it relies on. So we
+          // do NOT silently fall back to redirect here — that strands the user
+          // "signed in but never routed". Instead we guide them to allow popups.
           try {
             userCredential = await FirebaseAuth.instance.signInWithPopup(googleProvider);
           } catch (e) {
             final errorStr = e.toString().toLowerCase();
-            if (errorStr.contains('popup-blocked') ||
-                errorStr.contains('popup_blocked') ||
-                errorStr.contains('popup-closed-by-user') ||
+            if (errorStr.contains('popup-closed-by-user') ||
                 errorStr.contains('popup_closed_by_user') ||
                 errorStr.contains('cancelled')) {
-              if (defaultRole != null) {
-                final prefs = await SharedPreferences.getInstance();
-                await prefs.setString('pending_google_sign_up_role', defaultRole.toString().split('.').last);
-              }
-              await FirebaseAuth.instance.signInWithRedirect(googleProvider);
+              _lastError = 'Sign-in was cancelled. Please try again.';
+              return false;
+            }
+            if (errorStr.contains('popup-blocked') ||
+                errorStr.contains('popup_blocked')) {
+              _lastError =
+                  'Your browser blocked the sign-in window. Please allow pop-ups for this site, then tap "Continue with Google" again.';
               return false;
             }
             rethrow;
@@ -657,6 +670,133 @@ class AuthService extends ChangeNotifier {
     }
   }
 
+  Future<void> wipeUserData(String uid) async {
+    final db = FirebaseFirestore.instance;
+    final List<DocumentReference> refsToDelete = [];
+
+    // Collects refs from [query] but never throws: if one collection fails
+    // (e.g. a missing security rule, or it's empty/blocked) we log and move on,
+    // so a single failure can't abort the whole deletion the way it used to.
+    Future<void> collect(
+        String label, Future<QuerySnapshot> Function() query) async {
+      try {
+        final snap = await query();
+        refsToDelete.addAll(snap.docs.map((d) => d.reference));
+      } catch (e) {
+        debugPrint('⚠️ wipeUserData: skipped "$label" ($e)');
+      }
+    }
+
+    // 1. User document (direct ref — always attempt)
+    refsToDelete.add(db.collection('users').doc(uid));
+
+    // 2. Properties (landlord listings)
+    await collect('properties',
+        () => db.collection('properties').where('landlordId', isEqualTo: uid).get());
+
+    // 3. Verifications
+    await collect('verifications',
+        () => db.collection('verifications').where('userId', isEqualTo: uid).get());
+
+    // 4. Favorites properties & document
+    await collect('favorites/properties',
+        () => db.collection('favorites').doc(uid).collection('properties').get());
+    refsToDelete.add(db.collection('favorites').doc(uid));
+
+    // 5. Notifications items & document
+    await collect('notifications/items',
+        () => db.collection('notifications').doc(uid).collection('items').get());
+    refsToDelete.add(db.collection('notifications').doc(uid));
+
+    // 6. Tour requests (as tenant or landlord)
+    await collect('tour_requests(tenant)',
+        () => db.collection('tour_requests').where('tenantId', isEqualTo: uid).get());
+    await collect('tour_requests(landlord)',
+        () => db.collection('tour_requests').where('landlordId', isEqualTo: uid).get());
+
+    // 7. Leases (as tenant or landlord) & their rent transactions
+    final List<String> leaseIds = [];
+    try {
+      final tenantLeases =
+          await db.collection('leases').where('tenantId', isEqualTo: uid).get();
+      final landlordLeases =
+          await db.collection('leases').where('landlordId', isEqualTo: uid).get();
+      for (final lease in [...tenantLeases.docs, ...landlordLeases.docs]) {
+        leaseIds.add(lease.id);
+        refsToDelete.add(lease.reference);
+      }
+    } catch (e) {
+      debugPrint('⚠️ wipeUserData: skipped "leases" ($e)');
+    }
+    for (final leaseId in leaseIds) {
+      await collect('rent_transactions(lease)',
+          () => db.collection('rent_transactions').where('leaseId', isEqualTo: leaseId).get());
+    }
+    await collect('rent_transactions(tenant)',
+        () => db.collection('rent_transactions').where('tenantId', isEqualTo: uid).get());
+
+    // 8. Conversations where user is participant & their messages
+    try {
+      final conversations = await db
+          .collection('conversations')
+          .where('participants', arrayContains: uid)
+          .get();
+      for (final convDoc in conversations.docs) {
+        await collect('conversation messages',
+            () => convDoc.reference.collection('messages').get());
+        refsToDelete.add(convDoc.reference);
+      }
+    } catch (e) {
+      debugPrint('⚠️ wipeUserData: skipped "conversations" ($e)');
+    }
+
+    // 9. Support chats (support_chats/{uid}) & their messages
+    await collect('support_chats/messages',
+        () => db.collection('support_chats').doc(uid).collection('messages').get());
+    refsToDelete.add(db.collection('support_chats').doc(uid));
+
+    // 10. AI Chat sessions & their messages
+    try {
+      final aiChatSessions =
+          await db.collection('ai_chats').where('userId', isEqualTo: uid).get();
+      for (final sessionDoc in aiChatSessions.docs) {
+        await collect('ai_chat messages',
+            () => sessionDoc.reference.collection('messages').get());
+        refsToDelete.add(sessionDoc.reference);
+      }
+    } catch (e) {
+      debugPrint('⚠️ wipeUserData: skipped "ai_chats" ($e)');
+    }
+
+    // 11. Reports (where they are landlord or reporter)
+    await collect('reports(landlord)',
+        () => db.collection('reports').where('landlordId', isEqualTo: uid).get());
+    await collect('reports(reporter)',
+        () => db.collection('reports').where('reportedBy', isEqualTo: uid).get());
+
+    // 12. Sessions doc
+    refsToDelete.add(db.collection('sessions').doc(uid));
+
+    // Batch delete in resilient chunks of ≤400 (under Firestore's 500 limit),
+    // de-duplicated by path. A failing chunk is logged but doesn't abort the rest.
+    final seen = <String>{};
+    final unique = refsToDelete.where((r) => seen.add(r.path)).toList();
+    const chunkSize = 400;
+    for (var i = 0; i < unique.length; i += chunkSize) {
+      final chunk = unique.sublist(i, (i + chunkSize).clamp(0, unique.length));
+      try {
+        final batch = db.batch();
+        for (var ref in chunk) {
+          batch.delete(ref);
+        }
+        await batch.commit();
+      } catch (e) {
+        debugPrint('⚠️ wipeUserData: batch chunk failed ($e)');
+      }
+    }
+    debugPrint('✅ wipeUserData complete for $uid (${unique.length} docs)');
+  }
+
   Future<void> deleteAccount() async {
     final user = FirebaseAuth.instance.currentUser;
     if (user == null || user.email == null) throw Exception('No user signed in');
@@ -667,78 +807,8 @@ class AuthService extends ChangeNotifier {
       // 1. Delete Auth Account first to catch requires-recent-login early
       await user.delete();
 
-      // 2. Data Cleanup in Firestore
-      final batch = FirebaseFirestore.instance.batch();
-
-      // Delete User document
-      batch.delete(FirebaseFirestore.instance.collection('users').doc(uid));
-
-      // Delete User's Properties
-      final properties = await FirebaseFirestore.instance
-          .collection('properties')
-          .where('landlordId', isEqualTo: uid)
-          .get();
-      for (var doc in properties.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete User's Support Chat
-      final supportChatRef = FirebaseFirestore.instance.collection('support_chats').doc(uid);
-      final supportMessages = await supportChatRef.collection('messages').get();
-      for (var doc in supportMessages.docs) {
-        batch.delete(doc.reference);
-      }
-      batch.delete(supportChatRef);
-
-      // Delete User's Tour Requests (as tenant or landlord)
-      final tenantTours = await FirebaseFirestore.instance
-          .collection('tour_requests')
-          .where('tenantId', isEqualTo: uid)
-          .get();
-      for (var doc in tenantTours.docs) {
-        batch.delete(doc.reference);
-      }
-      final landlordTours = await FirebaseFirestore.instance
-          .collection('tour_requests')
-          .where('landlordId', isEqualTo: uid)
-          .get();
-      for (var doc in landlordTours.docs) {
-        batch.delete(doc.reference);
-      }
-
-      // Delete User's AI Chat Sessions (multi-session, each with a messages sub-collection)
-      final aiChatSessions = await FirebaseFirestore.instance
-          .collection('ai_chats')
-          .where('userId', isEqualTo: uid)
-          .get();
-      for (final sessionDoc in aiChatSessions.docs) {
-        final sessionMessages = await sessionDoc.reference.collection('messages').get();
-        for (final msgDoc in sessionMessages.docs) {
-          batch.delete(msgDoc.reference);
-        }
-        batch.delete(sessionDoc.reference);
-      }
-
-      // Commit the batch
-      await batch.commit();
-
-      // Delete Favorites (different structure)
-      final favoritesRef = FirebaseFirestore.instance.collection('favorites').doc(uid);
-      await favoritesRef.collection('properties').get().then((snapshot) {
-        for (var doc in snapshot.docs) {
-          doc.reference.delete();
-        }
-      });
-      await favoritesRef.delete();
-
-      // Delete Notifications
-      final notificationsRef = FirebaseFirestore.instance.collection('notifications').doc(uid);
-      await notificationsRef.collection('items').get().then((snapshot) {
-        for (var doc in snapshot.docs) {
-          doc.reference.delete();
-        }
-      });
-      await notificationsRef.delete();
+      // 2. Wipe Firestore data using centralized method
+      await wipeUserData(uid);
 
       // 3. Clear Local State
       await signOut();
@@ -798,6 +868,7 @@ class AuthService extends ChangeNotifier {
     _isEmailVerified = emailVerified ?? (FirebaseAuth.instance.currentUser?.emailVerified ?? false);
     notifyListeners();
     _saveFcmToken(userId);
+    _startUserListener(userId);
   }
 
   void clearLastError() {

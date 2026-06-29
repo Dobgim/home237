@@ -11,7 +11,7 @@ async function setFapshiCredentials() {
   try {
     await db.collection("admin_settings").doc("fapshi").set({
       apiUser: "ba01f9ab-b79c-4a6c-b256-787fcb716705",
-      apiKey: "FAK_87900457310b82601c123b0909a182c3",
+      apiKey: "FAK_79dfd800458465aed79e04c976569c77",
       mode: "live",
     }, { merge: true });
 

@@ -555,6 +555,7 @@ exports.broadcastNotification = onCall(async (request) => {
     const db = admin.firestore();
     const usersSnap = await db.collection("users").get();
     const notificationPromises = [];
+    const transporter = createTransporter();
 
     for (const doc of usersSnap.docs) {
       const userData = doc.data();
@@ -570,6 +571,41 @@ exports.broadcastNotification = onCall(async (request) => {
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
       notificationPromises.push(inAppPromise);
+
+      // 2. Send email notification via GMAIL SMTP if user has an email
+      const email = userData.email;
+      if (email) {
+        const mailOptions = {
+          from: `"Home237 Announcement" <${process.env.GMAIL_USER}>`,
+          to: email,
+          subject: title,
+          text: `Hello ${userData.name || "User"},\n\nWe have an important announcement for you:\n\n${message}\n\n— The Home237 Team`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+              <div style="background: #3B82F6; padding: 24px; text-align: center;">
+                <h1 style="color: white; font-size: 24px; margin: 0;">🏠 Home237</h1>
+              </div>
+              <div style="background: #f9fafb; padding: 32px;">
+                <h2 style="color: #1e293b; margin-top: 0; margin-bottom: 16px; font-size: 20px;">${title}</h2>
+                <p style="color: #475569; font-size: 15px; line-height: 1.6;">Hello ${userData.name || "User"},</p>
+                <div style="background: white; border-radius: 8px; padding: 20px; border: 1px solid #e2e8f0; margin: 20px 0; color: #334155; line-height: 1.6; font-size: 14px; white-space: pre-wrap;">${message}</div>
+                <p style="color: #64748b; font-size: 13px; margin-bottom: 0;">If you have any questions, feel free to reply to this email or contact support inside the app.</p>
+              </div>
+              <div style="background: #f3f4f6; padding: 16px; text-align: center; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">© 2026 Home237. All rights reserved.</p>
+              </div>
+            </div>
+          `,
+        };
+        const emailPromise = transporter.sendMail(mailOptions)
+          .then(() => {
+            logger.info(`Successfully sent broadcast email to ${email}`);
+          })
+          .catch((error) => {
+            logger.error(`Error sending broadcast email to ${email}:`, error);
+          });
+        notificationPromises.push(emailPromise);
+      }
 
       // 2. If user has an FCM token, send a push notification
       if (fcmToken) {
@@ -617,4 +653,269 @@ exports.broadcastNotification = onCall(async (request) => {
     logger.error("Error broadcasting announcement:", error);
     throw new Error("Failed to broadcast announcement");
   }
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FAPSHI SECURE PAYMENT FUNCTIONS
+//
+// How credentials are kept secure:
+//   • Credentials (apiUser, apiKey) are stored in Firestore: admin_settings/fapshi
+//   • The Flutter app CANNOT read admin_settings (Firestore rules: admin only)
+//   • These Cloud Functions read credentials using the Firebase Admin SDK,
+//     which bypasses Firestore rules entirely — only the server has access.
+//   • The app only calls these Cloud Functions and receives a transId back.
+//   • Your Fapshi API keys are NEVER sent to the client.
+//
+// To update credentials:
+//   Go to Firestore → admin_settings → fapshi → set { apiUser, apiKey, mode }
+//   mode: "live" (default) or "sandbox"
+// ─────────────────────────────────────────────────────────────────────────────
+
+const FAPSHI_LIVE_URL    = "https://live.fapshi.com";
+const FAPSHI_SANDBOX_URL = "https://sandbox.fapshi.com";
+
+// Module-level credential cache to avoid hitting Firestore on every call
+let _fapshiCache = null;
+let _fapshiCacheTime = 0;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+
+/** Loads Fapshi credentials from Firestore admin_settings/fapshi (Admin SDK). */
+async function loadFapshiCredentials() {
+  const now = Date.now();
+  if (_fapshiCache && (now - _fapshiCacheTime) < CACHE_TTL_MS) {
+    return _fapshiCache;
+  }
+
+  const doc = await admin.firestore()
+    .collection("admin_settings")
+    .doc("fapshi")
+    .get();
+
+  if (!doc.exists) {
+    throw new Error(
+      "Fapshi credentials not found. Please set apiUser and apiKey in " +
+      "Firestore → admin_settings → fapshi."
+    );
+  }
+
+  const data = doc.data();
+  const tryField = (keys) => {
+    for (const k of keys) {
+      if (data[k] && String(data[k]).trim()) return String(data[k]).trim();
+    }
+    return "";
+  };
+
+  const apiUser = tryField(["apiUser", "api_user", "apiuser", "ApiUser"]);
+  const apiKey  = tryField(["apiKey",  "api_key",  "apikey",  "ApiKey"]);
+  const mode    = tryField(["mode", "Mode"]) || "live";
+
+  if (!apiUser || !apiKey) {
+    throw new Error(
+      "Fapshi apiUser or apiKey is empty in admin_settings/fapshi. " +
+      "Please update the document with your Live credentials from the Fapshi dashboard."
+    );
+  }
+
+  const baseUrl = mode === "sandbox" ? FAPSHI_SANDBOX_URL : FAPSHI_LIVE_URL;
+  _fapshiCache = { apiUser, apiKey, baseUrl, mode };
+  _fapshiCacheTime = now;
+
+  logger.info(`FapshiCredentials: loaded mode=${mode} baseUrl=${baseUrl} apiUser=${apiUser.slice(0, 8)}...`);
+  return _fapshiCache;
+}
+
+/** Normalise a Cameroonian phone number to the 9-digit local format Fapshi expects. */
+function normalizeCmrPhone(raw) {
+  let phone = raw.replace(/[\s\-\+]/g, "");
+  if (phone.startsWith("237") && phone.length > 9) phone = phone.slice(3);
+  if (phone.startsWith("0")   && phone.length > 9) phone = phone.slice(1);
+  return phone;
+}
+
+/**
+ * Initiates a Fapshi Direct-Pay (MoMo push prompt) from the server.
+ * Called by the Flutter app instead of hitting Fapshi directly.
+ *
+ * Request data:
+ *   amount     {number}  — XAF amount (min 100)
+ *   phone      {string}  — payer's phone (e.g. "237671234567")
+ *   medium     {string}  — "mobile money" | "orange money"
+ *   message    {string?} — description shown to payer
+ *   userId     {string?} — internal user UID for reconciliation
+ *   externalId {string?} — your order/transaction ID
+ *
+ * Returns: { transId: string }
+ */
+exports.initiateFapshiPayment = onCall(async (request) => {
+  if (!request.auth) {
+    throw new Error("Unauthenticated: You must be signed in to make a payment.");
+  }
+
+  const { amount, phone, medium, message, userId, externalId } = request.data;
+
+  if (!amount || !phone || !medium) {
+    throw new Error("Missing required fields: amount, phone, medium.");
+  }
+  if (amount < 100) {
+    throw new Error("Minimum payment amount is 100 XAF.");
+  }
+
+  const { apiUser, apiKey, baseUrl } = await loadFapshiCredentials();
+  const cleanPhone = normalizeCmrPhone(String(phone));
+
+  const body = { amount, phone: cleanPhone, medium };
+  if (message)    body.message    = message;
+  if (userId)     body.userId     = userId;
+  if (externalId) body.externalId = externalId;
+
+  logger.info(`initiateFapshiPayment: uid=${request.auth.uid} amount=${amount} phone=${cleanPhone} medium=${medium} url=${baseUrl}`);
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/direct-pay`, {
+      method:  "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apiuser": apiUser,
+        "apikey":  apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (netErr) {
+    logger.error("initiateFapshiPayment: network error", netErr);
+    throw new Error("Cannot reach Fapshi servers. Please check your internet connection.");
+  }
+
+  const data = await res.json().catch(() => ({}));
+
+  if (res.status === 200 || res.status === 201) {
+    logger.info(`initiateFapshiPayment: success transId=${data.transId}`);
+    return { transId: data.transId };
+  }
+
+  let msg = data.message || "Unknown Fapshi error";
+  if (res.status === 401 || res.status === 403) {
+    msg += " — Your apiUser or apiKey in Firestore (admin_settings/fapshi) " +
+           "does not match the Live credentials on your Fapshi dashboard. " +
+           "Also disable IP whitelisting on the Fapshi dashboard.";
+    // Bust the cache so next call re-loads fresh credentials
+    _fapshiCache = null;
+  }
+  logger.error(`initiateFapshiPayment: Fapshi error ${res.status}: ${msg}`);
+  throw new Error(msg);
+});
+
+/**
+ * Checks the status of a Fapshi transaction.
+ *
+ * Request data:
+ *   transId {string} — the transaction ID returned by initiateFapshiPayment
+ *
+ * Returns: { status: "created" | "pending" | "successful" | "failed" | "expired" }
+ */
+exports.checkFapshiPaymentStatus = onCall(async (request) => {
+  if (!request.auth) {
+    throw new Error("Unauthenticated.");
+  }
+
+  const { transId } = request.data;
+  if (!transId) throw new Error("Missing transId.");
+
+  const { apiUser, apiKey, baseUrl } = await loadFapshiCredentials();
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/payment-status/${transId}`, {
+      method:  "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "apiuser": apiUser,
+        "apikey":  apiKey,
+      },
+    });
+  } catch (netErr) {
+    logger.error("checkFapshiPaymentStatus: network error", netErr);
+    throw new Error("Cannot reach Fapshi servers.");
+  }
+
+  const raw = await res.json().catch(() => ({}));
+
+  if (res.status !== 200) {
+    logger.warn(`checkFapshiPaymentStatus: error ${res.status}`, raw);
+    return { status: "failed" };
+  }
+
+  const item = Array.isArray(raw) ? raw[0] : raw;
+  const statusRaw = (item.status || "").toUpperCase();
+
+  const STATUS_MAP = {
+    SUCCESSFUL: "successful",
+    FAILED:     "failed",
+    EXPIRED:    "expired",
+    PENDING:    "pending",
+    CREATED:    "created",
+  };
+  const status = STATUS_MAP[statusRaw] || "created";
+  logger.info(`checkFapshiPaymentStatus: transId=${transId} status=${status}`);
+  return { status };
+});
+
+/**
+ * Sends a Fapshi Payout (disbursement) to a mobile money number.
+ * Only callable by authenticated users.
+ *
+ * Request data:
+ *   amount {number} — XAF amount
+ *   phone  {string} — recipient phone number
+ *   medium {string} — "mobile money" | "orange money"
+ *
+ * Returns: { success: true }
+ */
+exports.sendFapshiPayout = onCall(async (request) => {
+  if (!request.auth) {
+    throw new Error("Unauthenticated.");
+  }
+
+  const { amount, phone, medium } = request.data;
+  if (!amount || !phone || !medium) {
+    throw new Error("Missing required fields: amount, phone, medium.");
+  }
+
+  const { apiUser, apiKey, baseUrl } = await loadFapshiCredentials();
+  const cleanPhone = normalizeCmrPhone(String(phone));
+  const body = { amount, phone: cleanPhone, medium };
+
+  logger.info(`sendFapshiPayout: uid=${request.auth.uid} amount=${amount} phone=${cleanPhone} medium=${medium}`);
+
+  let res;
+  try {
+    res = await fetch(`${baseUrl}/payout`, {
+      method:  "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "apiuser": apiUser,
+        "apikey":  apiKey,
+      },
+      body: JSON.stringify(body),
+    });
+  } catch (netErr) {
+    logger.error("sendFapshiPayout: network error", netErr);
+    throw new Error("Cannot reach Fapshi servers.");
+  }
+
+  const data = await res.json().catch(() => ({}));
+
+  if (res.status === 200 || res.status === 201) {
+    logger.info("sendFapshiPayout: payout success");
+    return { success: true };
+  }
+
+  let msg = data.message || "Payout failed.";
+  if (res.status === 401 || res.status === 403) {
+    msg += " — Check apiUser/apiKey in admin_settings/fapshi and disable IP whitelisting on Fapshi dashboard.";
+    _fapshiCache = null;
+  }
+  logger.error(`sendFapshiPayout: Fapshi error ${res.status}: ${msg}`);
+  throw new Error(msg);
 });

@@ -1035,7 +1035,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             context,
                             PageRouteBuilder(
                               opaque: false,
-                              pageBuilder: (context, _, __) =>
+                              pageBuilder: (context, _, _) =>
                                   _FullscreenImageViewer(
                                 imageUrls: images,
                                 initialIndex: index,
@@ -1058,8 +1058,9 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                   fit: BoxFit.cover,
                                   loadingBuilder:
                                       (context, child, loadingProgress) {
-                                    if (loadingProgress == null)
+                                    if (loadingProgress == null) {
                                       return child;
+                                    }
                                     return Center(
                                       child: CircularProgressIndicator(
                                         value: loadingProgress
@@ -1617,7 +1618,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                 interactionOptions: const InteractionOptions(
                                   flags: InteractiveFlag.all,
                                 ),
-                                onTap: (_, __) async {
+                                onTap: (_, _) async {
                                   final uri = Uri.parse(
                                       'https://www.google.com/maps/search/?api=1&query=${propertyLocation.latitude},${propertyLocation.longitude}');
                                   try {

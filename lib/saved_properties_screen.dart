@@ -191,7 +191,7 @@ class SavedPropertiesScreen extends StatelessWidget {
                                 width: 120,
                                 height: 120,
                                 fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => Container(
+                                errorBuilder: (_, _, _) => Container(
                                   width: 120,
                                   height: 120,
                                   color: Colors.grey[300],

@@ -388,11 +388,72 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: () async {
+                        final TextEditingController reasonController = TextEditingController();
+                        final bool? confirmReject = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                            title: const Row(
+                              children: [
+                                Icon(Icons.warning_amber_rounded, color: Colors.red, size: 24),
+                                SizedBox(width: 8),
+                                Text('Rejection Reason', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ],
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Please provide a brief reason for rejecting this verification request:',
+                                  style: TextStyle(fontSize: 13, color: Color(0xFF64748B)),
+                                ),
+                                const SizedBox(height: 12),
+                                TextField(
+                                  controller: reasonController,
+                                  decoration: InputDecoration(
+                                    hintText: 'e.g., ID is blurred or document has expired',
+                                    hintStyle: TextStyle(fontSize: 13, color: Colors.grey[400]),
+                                    border: const OutlineInputBorder(),
+                                    contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                                  ),
+                                  maxLines: 3,
+                                ),
+                              ],
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (reasonController.text.trim().isNotEmpty) {
+                                    Navigator.pop(ctx, true);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                                ),
+                                child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.bold)),
+                              ),
+                            ],
+                          ),
+                        );
+
+                        if (confirmReject != true) return;
+                        final reason = reasonController.text.trim();
                         final userId = data['userId'];
+
                         await FirebaseFirestore.instance
                             .collection('verifications')
                             .doc(verificationId)
-                            .update({'status': 'rejected'});
+                            .update({
+                          'status': 'rejected',
+                          'rejectionReason': reason,
+                        });
 
                         if (userId != null) {
                           await FirebaseFirestore.instance
@@ -401,7 +462,7 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                               .collection('items')
                               .add({
                             'title': 'Verification Rejected',
-                            'message': 'Your documents have been rejected. Please re-upload valid documents.',
+                            'message': 'Your verification request was rejected. Reason: $reason. Please re-upload valid documents.',
                             'type': 'system',
                             'timestamp': FieldValue.serverTimestamp(),
                             'read': false,

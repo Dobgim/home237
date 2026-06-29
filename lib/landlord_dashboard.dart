@@ -14,6 +14,7 @@ import 'verification_upload_screen.dart';
 import 'premium_subscription_screen.dart';
 import 'widgets/language_toggle.dart';
 import 'app_localizations.dart';
+import 'rent_tracker_screen.dart';
 
 class LandlordDashboard extends StatefulWidget {
   const LandlordDashboard({super.key});
@@ -53,7 +54,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
       int views = 0;
       int active = 0;
       for (var doc in propertiesSnapshot.docs) {
-        final data = doc.data() as Map<String, dynamic>;
+        final data = doc.data();
         views += (data['views'] ?? 0) as int;
         if (data['status'] == 'active') {
           active++;
@@ -64,7 +65,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         setState(() {
           _totalProperties = propertiesSnapshot.docs.length;
           _activeProperties = active;
-          _pendingRequests = toursSnapshot.docs.where((d) => (d.data() as Map<String, dynamic>)['status'] == 'pending').length;
+          _pendingRequests = toursSnapshot.docs.where((d) => (d.data())['status'] == 'pending').length;
           _totalViews = views;
         });
       }
@@ -181,8 +182,8 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         if (verSnap.docs.isNotEmpty) {
           final docs = verSnap.docs.toList();
           docs.sort((a, b) {
-            final aData = a.data() as Map<String, dynamic>;
-            final bData = b.data() as Map<String, dynamic>;
+            final aData = a.data();
+            final bData = b.data();
             final aTime = aData['createdAt'] as Timestamp?;
             final bTime = bData['createdAt'] as Timestamp?;
             if (aTime == null) return 1;
@@ -521,10 +522,11 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                 }
 
                 if (status == 'rejected') {
+                  final String reason = data['rejectionReason'] ?? 'Invalid details';
                   return _buildVerificationCard(
                     isDark,
                     'Verification Rejected',
-                    'Your documents have been rejected. Please re-upload.',
+                    'Rejected: $reason. Please re-upload.',
                     true,
                     status: 'rejected',
                     auth: auth,
@@ -1071,6 +1073,36 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                   Icons.chat,
                   const Color(0xFF8B5CF6),
                       () => setState(() => _selectedNavIndex = 3),
+                  isDark,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _buildActionCard(
+                  'Rent Tracker',
+                  Icons.receipt_long,
+                  const Color(0xFF0EA5E9),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const RentTrackerScreen()),
+                  ),
+                  isDark,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: _buildActionCard(
+                  'Upgrade Plan',
+                  Icons.workspace_premium,
+                  const Color(0xFFEC4899),
+                  () => Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const PremiumSubscriptionScreen()),
+                  ),
                   isDark,
                 ),
               ),

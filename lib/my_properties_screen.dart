@@ -288,7 +288,11 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
           done = true;
           break;
         } else if (status == FapshiStatus.failed || status == FapshiStatus.expired) {
-          throw Exception('Payment failed or expired.');
+          final reason = _fapshi.lastStatusReason;
+          throw Exception(
+              reason != null && reason.isNotEmpty
+                  ? reason
+                  : 'Payment failed or expired.');
         }
       }
 
@@ -575,7 +579,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                           height: 180,
                                           width: double.infinity,
                                           fit: BoxFit.cover,
-                                          errorBuilder: (_, __, ___) => Container(
+                                          errorBuilder: (_, _, _) => Container(
                                             height: 180,
                                             color: Colors.grey[300],
                                             child: const Icon(Icons.image, size: 60),

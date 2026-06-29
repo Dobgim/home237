@@ -154,7 +154,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
           .collection('users')
           .doc(userId)
           .update({'profileImage': downloadUrl})
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 60));
 
       // Update Local State
       authService.updateProfileImage(downloadUrl);
@@ -428,7 +428,7 @@ class _TenantProfileScreenState extends State<TenantProfileScreen> {
 
                     // Property Type
                     DropdownButtonFormField<String>(
-                      value: _selectedPropertyType,
+                      initialValue: _selectedPropertyType,
                       decoration: InputDecoration(
                         labelText: t.get('prop_type'),
                         prefixIcon: const Icon(Icons.home_outlined),

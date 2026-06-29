@@ -4,7 +4,6 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'dart:io';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'auth_service.dart';
 import 'settings_screen.dart';
 import 'home_page.dart';
@@ -145,7 +144,7 @@ class _LandlordProfileScreenState extends State<LandlordProfileScreen> {
           .collection('users')
           .doc(userId)
           .update({'profileImage': downloadUrl})
-          .timeout(const Duration(seconds: 15));
+          .timeout(const Duration(seconds: 60));
 
       // Update Local State
       authService.updateProfileImage(downloadUrl);

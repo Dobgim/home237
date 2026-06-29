@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -16,7 +15,10 @@ import 'theme_notifier.dart';
 import 'widgets/language_toggle.dart';
 
 class SignUpScreen extends StatefulWidget {
-  const SignUpScreen({super.key});
+  /// Optional role chosen on the marketing site (?role=tenant|landlord),
+  /// pre-selects the Tenant/Landlord card.
+  final UserRole? preselectedRole;
+  const SignUpScreen({super.key, this.preselectedRole});
   @override
   State<SignUpScreen> createState() => _SignUpScreenState();
 }
@@ -31,7 +33,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
 
   bool _isLoading = false;
   bool _obscurePass = true;
-  bool _obscureConfirm = true;
+  final bool _obscureConfirm = true;
   UserRole? _selectedRole;
 
   // Password strength
@@ -47,6 +49,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
+    _selectedRole = widget.preselectedRole; // primed from the marketing site, if any
     _aniCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 550));
     _fadeAni = CurvedAnimation(parent: _aniCtrl, curve: Curves.easeOut);
     _slideAni = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
@@ -363,7 +366,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                                   color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
                               GestureDetector(
                                 onTap: () => Navigator.pushReplacement(context,
-                                  MaterialPageRoute(builder: (_) => const SignInScreen())),
+                                  MaterialPageRoute(builder: (_) => SignInScreen(preselectedRole: widget.preselectedRole))),
                                 child: const Text('Sign In',
                                   style: TextStyle(fontSize: 14, color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
                               ),
@@ -445,7 +448,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                 : SizedBox(
                     width: 20, height: 20,
                     child: Image.asset('assets/images/google_logo.png', height: 20, width: 20,
-                      errorBuilder: (_, __, ___) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
+                      errorBuilder: (_, _, _) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
                   ),
             const SizedBox(width: 10),
             const Text('Continue with Google',

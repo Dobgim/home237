@@ -119,7 +119,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.deniedForever ||
-          permission == LocationPermission.denied) return;
+          permission == LocationPermission.denied) {
+        return;
+      }
 
       final position = await Geolocator.getCurrentPosition(
         locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
@@ -430,7 +432,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     // Region filter (case-insensitive)
                     if (_selectedRegion != 'All Regions') {
                       if ((d['town'] ?? '').toString().toLowerCase() !=
-                          _selectedRegion.toLowerCase()) return false;
+                          _selectedRegion.toLowerCase()) {
+                        return false;
+                      }
                     }
                     return true;
                   }).toList();
@@ -480,24 +484,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     properties = categoryProperties;
                   }
 
-                  // Sort: Relevance first, Premium/Boosted second, Newest last (client-side)
+                  // Sort: 1) Search Score  2) Premium landlord in-region  3) Newest
                   properties.sort((a, b) {
-                    // 1. Search Score
-                    final scoreA = searchScores[a.id] ?? 0;
-                    final scoreB = searchScores[b.id] ?? 0;
-                    if (scoreA != scoreB) return scoreB.compareTo(scoreA); // Highest score first
-
-                    // 2. Premium/Boosted
                     final aData = a.data() as Map<String, dynamic>;
                     final bData = b.data() as Map<String, dynamic>;
-                    
-                    final aPremium = aData['isBoosted'] == true || aData['isFastTracked'] == true || aData['subscriptionStatus'] == 'premium';
-                    final bPremium = bData['isBoosted'] == true || bData['isFastTracked'] == true || bData['subscriptionStatus'] == 'premium';
-                    
+
+                    // 1. Search relevance score
+                    final scoreA = searchScores[a.id] ?? 0;
+                    final scoreB = searchScores[b.id] ?? 0;
+                    if (scoreA != scoreB) return scoreB.compareTo(scoreA);
+
+                    // 2. Premium landlord flag (isLandlordPremium stamped at subscribe time)
+                    final aPremium = aData['isLandlordPremium'] == true ||
+                        aData['isBoosted'] == true ||
+                        aData['isFastTracked'] == true;
+                    final bPremium = bData['isLandlordPremium'] == true ||
+                        bData['isBoosted'] == true ||
+                        bData['isFastTracked'] == true;
                     if (aPremium && !bPremium) return -1;
                     if (!aPremium && bPremium) return 1;
-                    
-                    // 3. Newest
+
+                    // 3. Newest last
                     final aTime = aData['createdAt'];
                     final bTime = bData['createdAt'];
                     if (aTime == null && bTime == null) return 0;
@@ -554,7 +561,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
           const SizedBox(height: 8),
           Text(
             _activeSearch.isNotEmpty
-                ? t.get('no_results_for').replaceAll('{query}', _activeSearch) + '\n' + t.get('try_different_keyword')
+                ? '${t.get('no_results_for').replaceAll('{query}', _activeSearch)}\n${t.get('try_different_keyword')}'
                 : t.get('try_different_area'),
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: isDark ? Colors.grey[500] : Colors.grey[500]),
@@ -587,15 +594,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 interactionOptions: const InteractionOptions(
                   flags: InteractiveFlag.all,
                 ),
-                onTap: (_, __) => setMapState(() => selectedDoc = null),
+                onTap: (_, _) => setMapState(() => selectedDoc = null),
                 onPositionChanged: (position, hasGesture) {
-                  if (position.center != null) {
-                    _mapCenter = position.center!;
-                  }
-                  if (position.zoom != null) {
-                    _mapZoom = position.zoom!;
-                  }
-                },
+                  _mapCenter = position.center;
+                                  _mapZoom = position.zoom;
+                                },
               ),
               children: [
                 TileLayer(
@@ -890,6 +893,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
         final ratingStr = ratingCount > 0 ? '${ratingVal.toStringAsFixed(1)} ($ratingCount)' : 'New';
         final isBoosted = property['isBoosted'] == true;
         final isFastTracked = property['isFastTracked'] == true;
+        final isLandlordPremium = property['isLandlordPremium'] == true;
 
         return GestureDetector(
           onTap: () => _navigateToDetails(propertyId, property),
@@ -914,7 +918,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                         child: imageUrl != null && imageUrl.startsWith('http')
                             ? Image.network(imageUrl, fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const Icon(Icons.home, size: 40, color: Colors.grey))
+                                errorBuilder: (_, _, _) => const Icon(Icons.home, size: 40, color: Colors.grey))
                             : const Icon(Icons.home, size: 40, color: Colors.grey),
                       ),
                     ),
@@ -934,6 +938,38 @@ class _ExploreScreenState extends State<ExploreScreen> {
                               const SizedBox(width: 2),
                               Text(t.get('top_pick'),
                                   style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                        ),
+                      ),
+                    if (isLandlordPremium && !isBoosted && !isFastTracked)
+                      Positioned(
+                        top: 8, left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFFFFCC00), Color(0xFFFF9500)],
+                            ),
+                            borderRadius: BorderRadius.circular(6),
+                            boxShadow: [
+                              BoxShadow(
+                                color: const Color(0xFFFFCC00).withAlpha(80),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.workspace_premium, size: 10, color: Colors.white),
+                              SizedBox(width: 2),
+                              Text('FEATURED',
+                                  style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.bold)),
                             ],
                           ),
                         ),
@@ -1114,7 +1150,7 @@ class _PropertyPopupCard extends StatelessWidget {
                     ? Image.network(
                         imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
+                        errorBuilder: (_, _, _) =>
                             Container(color: const Color(0xFFF3F4F6),
                                 child: const Icon(Icons.home, color: Colors.grey)),
                       )

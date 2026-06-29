@@ -53,7 +53,7 @@ class LocationService {
       // Get position
       final Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.low,
-        timeLimit: const Duration(seconds: 10),
+        timeLimit: const Duration(seconds: 20),
       );
 
       // Reverse geocode
@@ -81,7 +81,7 @@ class LocationService {
     if (raw.isEmpty) return null;
     
     // Normalize string by stripping accents (e.g. Yaoundé -> Yaounde)
-    String _stripAccents(String input) {
+    String stripAccents(String input) {
       final Map<String, String> replacements = {
         'é': 'e', 'è': 'e', 'ê': 'e', 'ë': 'e',
         'à': 'a', 'â': 'a', 'ä': 'a',
@@ -97,10 +97,10 @@ class LocationService {
       return result;
     }
 
-    final lowerRaw = _stripAccents(raw);
+    final lowerRaw = stripAccents(raw);
     
     for (final city in supportedCities) {
-      final cityLower = _stripAccents(city);
+      final cityLower = stripAccents(city);
       if (lowerRaw.contains(cityLower) || cityLower.contains(lowerRaw)) {
         return city;
       }

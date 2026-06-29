@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 import 'app_localizations.dart';
-import 'tenant_profile_screen.dart';
-import 'landlord_profile_screen.dart';
+import 'auth_service.dart';
 
 class AdminUsersScreen extends StatefulWidget {
   const AdminUsersScreen({super.key});
@@ -17,7 +16,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   String _selectedFilter = 'All';
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  bool _isSyncing = false;
+  final bool _isSyncing = false;
   bool _isDeleting = false;
 
   Future<void> _refreshData() async {
@@ -561,9 +560,34 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               onTap: () async {
                 Navigator.pop(context);
                 final isSuspended = userData['suspended'] == true;
-                await FirebaseFirestore.instance.collection('users').doc(userId).update({
+                final email = userData['email']?.toString().toLowerCase().trim();
+                
+                final db = FirebaseFirestore.instance;
+                await db.collection('users').doc(userId).update({
                   'suspended': !isSuspended,
                 });
+
+                if (email != null && email.isNotEmpty) {
+                  if (!isSuspended) {
+                    // We are suspending the user now, so add to banned_users
+                    final existing = await db.collection('banned_users').where('email', isEqualTo: email).get();
+                    if (existing.docs.isEmpty) {
+                      await db.collection('banned_users').add({
+                        'email': email,
+                        'bannedAt': FieldValue.serverTimestamp(),
+                        'reason': 'Suspended by Admin',
+                        'originalUserId': userId,
+                      });
+                    }
+                  } else {
+                    // We are unsuspending the user now, so remove from banned_users
+                    final existing = await db.collection('banned_users').where('email', isEqualTo: email).get();
+                    for (var doc in existing.docs) {
+                      await doc.reference.delete();
+                    }
+                  }
+                }
+
                 if (mounted) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text(isSuspended ? 'User unsuspended' : 'User suspended')),
@@ -852,83 +876,41 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       String userId, Map<String, dynamic> userData) async {
     setState(() => _isDeleting = true);
     try {
-      // 1. Attempt Firebase Auth deletion via Cloud Function (Blaze plan)
-      FirebaseFunctions.instance
-          .httpsCallable('deleteUserAccount')
-          .call({'uid': userId})
-          .catchError((_) {});
-
-      final db = FirebaseFirestore.instance;
-
-      // 2. Ban the email so they can't re-register
-      final email = userData['email']?.toString().toLowerCase().trim();
-      if (email != null && email.isNotEmpty) {
-        await db.collection('banned_users').doc().set({
-          'email': email,
-          'bannedAt': FieldValue.serverTimestamp(),
-          'reason': 'Deleted by Admin',
-          'originalUserId': userId,
-        });
+      // 1. Attempt Firebase Auth deletion via Cloud Function (Blaze plan).
+      //    Swallow its error locally so the Firestore wipe below still runs.
+      try {
+        await FirebaseFunctions.instance
+            .httpsCallable('deleteUserAccount')
+            .call({'uid': userId});
+      } catch (e) {
+        debugPrint('Auth deletion failed/ignored: $e');
       }
 
-      // 3. Delete user document (triggers auth listener → forced sign-out)
-      await db.collection('users').doc(userId).delete();
+      // 2. Block the e-mail. The client SDK can't delete another user's Firebase
+      //    Auth credential (needs a Blaze Cloud Function), so we ban the email to
+      //    guarantee the leftover login can't sign back in after the wipe.
+      final email = userData['email']?.toString().toLowerCase().trim();
+      if (email != null && email.isNotEmpty) {
+        try {
+          final existing = await FirebaseFirestore.instance
+              .collection('banned_users')
+              .where('email', isEqualTo: email)
+              .get();
+          if (existing.docs.isEmpty) {
+            await FirebaseFirestore.instance.collection('banned_users').add({
+              'email': email,
+              'bannedAt': FieldValue.serverTimestamp(),
+              'reason': 'Account deleted by Admin',
+              'originalUserId': userId,
+            });
+          }
+        } catch (e) {
+          debugPrint('Could not add deleted email to banned_users: $e');
+        }
+      }
 
-      // 4. Notifications
-      final notifications = await db
-          .collection('notifications').doc(userId)
-          .collection('items').get();
-      await _batchDeleteDocs(notifications.docs.map((d) => d.reference).toList());
-
-      // 5. Verifications
-      final verifications = await db
-          .collection('verifications')
-          .where('userId', isEqualTo: userId).get();
-      await _batchDeleteDocs(verifications.docs.map((d) => d.reference).toList());
-
-      // 6. Properties (landlord listings)
-      final properties = await db
-          .collection('properties')
-          .where('landlordId', isEqualTo: userId).get();
-      await _batchDeleteDocs(properties.docs.map((d) => d.reference).toList());
-
-      // 7. Favourites sub-collection
-      final favProps = await db
-          .collection('favorites').doc(userId)
-          .collection('properties').get();
-      await _batchDeleteDocs(favProps.docs.map((d) => d.reference).toList());
-      await db.collection('favorites').doc(userId).delete();
-
-      // 8. Tour requests (as requester or property owner)
-      final tourAsRequester = await db
-          .collection('tour_requests')
-          .where('userId', isEqualTo: userId).get();
-      await _batchDeleteDocs(tourAsRequester.docs.map((d) => d.reference).toList());
-
-      final tourAsLandlord = await db
-          .collection('tour_requests')
-          .where('landlordId', isEqualTo: userId).get();
-      await _batchDeleteDocs(tourAsLandlord.docs.map((d) => d.reference).toList());
-
-      // 9. Messages / conversations
-      final chatsAsSender = await db
-          .collection('messages')
-          .where('senderId', isEqualTo: userId).get();
-      await _batchDeleteDocs(chatsAsSender.docs.map((d) => d.reference).toList());
-
-      final chatsAsReceiver = await db
-          .collection('messages')
-          .where('receiverId', isEqualTo: userId).get();
-      await _batchDeleteDocs(chatsAsReceiver.docs.map((d) => d.reference).toList());
-
-      // 10. Support chats
-      final supportChats = await db
-          .collection('support_chats')
-          .where('userId', isEqualTo: userId).get();
-      await _batchDeleteDocs(supportChats.docs.map((d) => d.reference).toList());
-
-      // 11. Sessions
-      await db.collection('sessions').doc(userId).delete();
+      // 3. Wipe all Firestore data using the centralized (resilient) method.
+      await authService.wipeUserData(userId);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

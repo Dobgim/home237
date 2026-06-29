@@ -64,6 +64,31 @@ void main() async {
   );
 }
 
+/// Instant page transitions on web (no slide/fade) for snappy navigation.
+class _NoTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoTransitionsBuilder();
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) =>
+      child;
+}
+
+const PageTransitionsTheme _instantPageTransitions = PageTransitionsTheme(
+  builders: {
+    TargetPlatform.android: _NoTransitionsBuilder(),
+    TargetPlatform.iOS: _NoTransitionsBuilder(),
+    TargetPlatform.windows: _NoTransitionsBuilder(),
+    TargetPlatform.macOS: _NoTransitionsBuilder(),
+    TargetPlatform.linux: _NoTransitionsBuilder(),
+    TargetPlatform.fuchsia: _NoTransitionsBuilder(),
+  },
+);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -91,6 +116,7 @@ class MyApp extends StatelessWidget {
       themeMode: themeNotifier.themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
+        pageTransitionsTheme: kIsWeb ? _instantPageTransitions : null,
         primarySwatch: Colors.teal,
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: Colors.white,
@@ -110,15 +136,14 @@ class MyApp extends StatelessWidget {
           primary: Colors.teal,
           secondary: Color(0xFF3B82F6),
           surface: Colors.white,
-          background: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.black87,
-          onBackground: Colors.black87,
         ),
       ),
       darkTheme: ThemeData(
         brightness: Brightness.dark,
+        pageTransitionsTheme: kIsWeb ? _instantPageTransitions : null,
         primarySwatch: Colors.teal,
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: const Color(0xFF1E1E1E),
@@ -138,11 +163,9 @@ class MyApp extends StatelessWidget {
           primary: Colors.teal,
           secondary: Color(0xFF3B82F6),
           surface: Color(0xFF2D2D2D),
-          background: Color(0xFF1E1E1E),
           onPrimary: Colors.white,
           onSecondary: Colors.white,
           onSurface: Colors.white,
-          onBackground: Colors.white,
         ),
       ),
 

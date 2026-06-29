@@ -590,7 +590,7 @@ class _HomePageState extends State<HomePage> {
         physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: _filterOptions.length,
-        separatorBuilder: (_, __) => const SizedBox(width: 8),
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
         itemBuilder: (context, i) {
           final opt = _filterOptions[i];
           final isActive = _activeFilter == opt['label'];
@@ -800,7 +800,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(
-          height: 310,
+          height: 248,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             physics: const BouncingScrollPhysics(),
@@ -854,7 +854,7 @@ class _HomePageState extends State<HomePage> {
                     child: Text(
                       city,
                       style: TextStyle(
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
                         color: isNearYou
@@ -910,7 +910,7 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(
-          height: 300,
+          height: 248,
           child: docs.isEmpty
               ? Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -963,13 +963,8 @@ class _HomePageState extends State<HomePage> {
     final price = data['price'] ?? 'N/A';
     final town = data['town'] ?? 'Cameroon';
     final area = data['area'] ?? '';
-    final type = data['type'] ?? 'Apartment';
-    final beds = data['beds'] ?? '2';
     final isBoosted = data['isBoosted'] == true;
     final isFastTracked = data['isFastTracked'] == true;
-    final ratingCount = data['ratingCount'] ?? 0;
-    final ratingVal = data['rating'] ?? 0.0;
-    final ratingStr = ratingCount > 0 ? '${ratingVal.toStringAsFixed(1)} ($ratingCount)' : 'New';
 
     return GestureDetector(
       onTap: () => Navigator.push(context,
@@ -998,7 +993,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                       child: imageUrl != null && imageUrl.startsWith('http')
                           ? Image.network(imageUrl, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const Icon(Icons.home, size: 40, color: Colors.grey))
+                              errorBuilder: (_, _, _) => const Icon(Icons.home, size: 40, color: Colors.grey))
                           : const Icon(Icons.home, size: 40, color: Colors.grey),
                     ),
                   ),
@@ -1057,72 +1052,22 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 10),
 
-            // ── Type badge (caption) ──
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6),
+            // ── Location (primary) ──
+            Text(
+              area.isNotEmpty ? '$area, $town' : town,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                letterSpacing: -0.1,
+                color: isDark ? Colors.white : const Color(0xFF0F172A),
               ),
-              child: Text(
-                type,
-                style: const TextStyle(
-                  fontSize: 11,
-                  color: Color(0xFF3B82F6),
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.2,
-                ),
-              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
 
             const SizedBox(height: 6),
 
-            // ── Location (SubHeading) + Rating (Caption) ──
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Expanded(
-                  child: Text(
-                    area.isNotEmpty ? '$area, $town' : town,
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.1,
-                      color: isDark ? Colors.white : const Color(0xFF0F172A),
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                Row(children: [
-                  const Icon(Icons.star_rounded, size: 13, color: Color(0xFFFBBF24)),
-                  const SizedBox(width: 2),
-                  Text(
-                    ratingStr,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white60 : const Color(0xFF64748B),
-                    ),
-                  ),
-                ]),
-              ],
-            ),
-
-            const SizedBox(height: 2),
-
-            // Sub-detail — body text
-            Text(
-              '$beds beds · $type',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w400,
-                color: isDark ? Colors.white54 : const Color(0xFF94A3B8),
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
+            // ── Price ──
             RichText(
               text: TextSpan(
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold,

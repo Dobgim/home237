@@ -40,13 +40,17 @@ dependencies:
   google_generative_ai: ^0.4.7
   mobile_scanner: ^6.0.4
   qr_flutter: ^4.1.0
+  # Kept as a regular dependency (not dev) so its native Android plugin class is
+  # on the release classpath. The auto-generated GeneratedPluginRegistrant
+  # references FlutterNativeSplashPlugin; if this is dev-only it is excluded from
+  # release builds and the build fails with "package ... does not exist".
+  flutter_native_splash: ^2.4.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
-  flutter_native_splash: ^2.4.7
 
 flutter:
   assets:
