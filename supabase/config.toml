@@ -1,0 +1,7 @@
+project_id = "sazsantjnginauetpttf"
+
+[functions.fapshi]
+# verify_jwt = true means callers must send a valid Supabase JWT. The Flutter
+# app sends the anon key automatically via functions.invoke(), so this passes
+# while still keeping the endpoint from being trivially open.
+verify_jwt = true

@@ -1,0 +1,16 @@
+{
+    "java.configuration.updateBuildConfiguration": "interactive",
+    "cmake.ignoreCMakeListsMissing": true,
+    "files.watcherExclude": {
+        "**/.git/minus/**": true,
+        "**/node_modules/**": true,
+        "**/.gradle/**": true,
+        "**/.gradle_home/**": true,
+        "**/build/**": true
+    },
+    "search.exclude": {
+        "**/.gradle/**": true,
+        "**/.gradle_home/**": true,
+        "**/build/**": true
+    }
+}
