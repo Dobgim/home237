@@ -67,9 +67,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const go = (role) => {
     localStorage.setItem("home237_role", role);
     if (WEB_APP_URL) {
-      window.location.href = `${WEB_APP_URL}?role=${encodeURIComponent(role)}`;
+      // Agents go to sign-in (role primed); viewers just open the app and browse.
+      if (role === "landlord") {
+        window.location.href = `${WEB_APP_URL}?role=landlord`;
+      } else {
+        window.location.href = WEB_APP_URL;
+      }
     } else if (note) {
-      const label = role === "landlord" ? "Landlord" : "Tenant";
+      const label = role === "landlord" ? "Agent" : "Viewer";
       note.hidden = false;
       note.textContent = `Great choice — you're set up as a ${label}! 🎉 The full experience arrives with our app, launching soon.`;
       document.getElementById("app").scrollIntoView({ behavior: "smooth" });
