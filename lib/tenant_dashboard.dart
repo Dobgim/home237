@@ -282,6 +282,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
               final d = doc.data() as Map<String, dynamic>;
               final status = (d['status'] ?? '').toString();
               if (status != 'approved' && status != 'active') continue;
+              if (isListingHidden(d)) continue;
               allApproved.add(doc);
               final rawTown = (d['town'] ?? '').toString().trim();
               final matchedCity = _cities.firstWhere(

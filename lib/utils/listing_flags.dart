@@ -45,3 +45,13 @@ bool isListingFresh(Map<String, dynamic> data) {
   final days = daysSinceConfirmed(data);
   return days == null || days <= staleAfterDays;
 }
+
+/// Listings unconfirmed for longer than this are hidden from tenants entirely
+/// (the landlord still sees them in My Properties and can re-confirm).
+const int hideAfterDays = 60;
+
+/// True when the listing is too stale to show to tenants at all.
+bool isListingHidden(Map<String, dynamic> data) {
+  final days = daysSinceConfirmed(data);
+  return days != null && days > hideAfterDays;
+}

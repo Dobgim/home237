@@ -18,6 +18,63 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
   String _selectedStatus = 'All';
   final TextEditingController _searchController = TextEditingController();
 
+  @override
+  void initState() {
+    super.initState();
+    _sweepExpiredPromotions();
+  }
+
+  /// Clears lapsed boosts/fast-tracks on this landlord's listings and sends
+  /// a renewal notification. Clearing the flag also serves as the dedupe:
+  /// the sweep never matches the same expired promotion twice.
+  Future<void> _sweepExpiredPromotions() async {
+    final userId = authService.userId;
+    if (userId == null || userId.isEmpty) return;
+    try {
+      final snap = await FirebaseFirestore.instance
+          .collection('properties')
+          .where('landlordId', isEqualTo: userId)
+          .get();
+
+      for (final doc in snap.docs) {
+        final data = doc.data();
+        final title = (data['title'] ?? 'your property').toString();
+
+        final boostLapsed =
+            data['isBoosted'] == true && !isBoostActive(data);
+        final fastTrackLapsed =
+            data['isFastTracked'] == true && !isFastTrackActive(data);
+        if (!boostLapsed && !fastTrackLapsed) continue;
+
+        await doc.reference.update({
+          if (boostLapsed) 'isBoosted': false,
+          if (fastTrackLapsed) 'isFastTracked': false,
+        });
+
+        final label = boostLapsed && fastTrackLapsed
+            ? 'boost and fast-track have'
+            : boostLapsed
+                ? 'boost has'
+                : 'fast-track has';
+        await FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(userId)
+            .collection('items')
+            .add({
+          'title': '⏰ Promotion Expired',
+          'message':
+              'The $label expired on "$title". Renew from My Properties to stay at the top of search results.',
+          'type': 'promotion_expired',
+          'propertyId': doc.id,
+          'read': false,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+    } catch (e) {
+      print('Error sweeping expired promotions: $e');
+    }
+  }
+
   Future<void> _deleteProperty(BuildContext context, String propertyId) async {
     final confirm = await showDialog<bool>(
       context: context,

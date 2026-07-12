@@ -426,6 +426,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                     final status = (d['status'] ?? '').toString();
                     // Only show approved (or active for legacy)
                     if (status != 'approved' && status != 'active') return false;
+                    // Hide listings the landlord hasn't confirmed in 60+ days
+                    if (isListingHidden(d)) return false;
                     // Category filter
                     if (_selectedCategory != 'All') {
                       if ((d['type'] ?? '').toString() != _selectedCategory) return false;
