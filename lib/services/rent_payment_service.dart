@@ -92,7 +92,24 @@ class RentPaymentService {
     }
   }
 
-  /// Transfer funds to landlord's account (automated payout upon verification)
+  /// Default platform commission on rent collected through the app, in
+  /// percent. Overridable via Firestore admin_settings/fees.rentCommissionPercent.
+  static const int defaultCommissionPercent = 5;
+
+  /// Reads the platform commission percent set by the admin (0–20 allowed).
+  Future<int> getCommissionPercent() async {
+    try {
+      final doc = await _db.collection('admin_settings').doc('fees').get();
+      final raw = doc.data()?['rentCommissionPercent'];
+      if (raw is num) return raw.toInt().clamp(0, 20);
+    } catch (_) {}
+    return defaultCommissionPercent;
+  }
+
+  /// Transfer funds to landlord's account (automated payout upon verification).
+  ///
+  /// Deducts the platform commission before the payout and records the
+  /// commission in `platform_earnings` so revenue is auditable.
   Future<bool> payoutToLandlord({
     required int amount,
     required String landlordPhone,
@@ -103,8 +120,12 @@ class RentPaymentService {
           ? FapshiService.mediumMTN
           : FapshiService.mediumOrange;
 
+      final commissionPercent = await getCommissionPercent();
+      final commission = (amount * commissionPercent) ~/ 100;
+      final netAmount = amount - commission;
+
       final success = await _fapshiService.sendPayout(
-        amount: amount,
+        amount: netAmount,
         phone: landlordPhone,
         medium: medium,
       );
@@ -113,7 +134,20 @@ class RentPaymentService {
         await _db.collection('leases').doc(leaseId).update({
           'payoutStatus': 'completed',
           'payoutAt': FieldValue.serverTimestamp(),
+          'payoutGross': amount,
+          'payoutNet': netAmount,
+          'platformCommission': commission,
         });
+        if (commission > 0) {
+          await _db.collection('platform_earnings').add({
+            'type': 'rent_commission',
+            'leaseId': leaseId,
+            'grossAmount': amount,
+            'commissionPercent': commissionPercent,
+            'commission': commission,
+            'createdAt': FieldValue.serverTimestamp(),
+          });
+        }
       }
 
       return success;

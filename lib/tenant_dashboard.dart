@@ -15,6 +15,7 @@ import 'widgets/favourite_button.dart';
 import 'location_service.dart';
 import 'widgets/language_toggle.dart';
 import 'app_localizations.dart';
+import 'utils/listing_flags.dart';
 import 'ai_agent_screen.dart';
 import 'tour_pass_display_screen.dart';
 import 'rent_tracker_screen.dart';
@@ -294,8 +295,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
               list.sort((a, b) {
                 final aD = a.data() as Map<String, dynamic>;
                 final bD = b.data() as Map<String, dynamic>;
-                final aB = aD['isBoosted'] == true;
-                final bB = bD['isBoosted'] == true;
+                final aB = isBoostActive(aD);
+                final bB = isBoostActive(bD);
                 if (aB && !bB) return -1;
                 if (!aB && bB) return 1;
                 final aT = aD['createdAt'];
@@ -310,11 +311,11 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
           // Featured: Boosted first, fill to 5
           final featuredDocs = allApproved
-              .where((d) => (d.data() as Map<String, dynamic>)['isBoosted'] == true)
+              .where((d) => isBoostActive(d.data() as Map<String, dynamic>))
               .toList();
           if (featuredDocs.length < 5) {
             final others = allApproved
-                .where((d) => (d.data() as Map<String, dynamic>)['isBoosted'] != true)
+                .where((d) => !isBoostActive(d.data() as Map<String, dynamic>))
                 .take(5 - featuredDocs.length)
                 .toList();
             featuredDocs.addAll(others);
@@ -1026,8 +1027,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
     final area = data['area'] ?? '';
     final type = data['type'] ?? 'Apartment';
     final beds = data['beds'] ?? '2';
-    final isBoosted = data['isBoosted'] == true;
-    final isFastTracked = data['isFastTracked'] == true;
+    final isBoosted = isBoostActive(data);
+    final isFastTracked = isFastTrackActive(data);
     final ratingCount = data['ratingCount'] ?? 0;
     final ratingVal = data['rating'] ?? 0.0;
     final ratingStr = ratingCount > 0 ? '${ratingVal.toStringAsFixed(1)} ($ratingCount)' : 'New';

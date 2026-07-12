@@ -9,6 +9,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'widgets/favourite_button.dart';
 import 'widgets/language_toggle.dart';
 import 'app_localizations.dart';
+import 'utils/listing_flags.dart';
 import 'package:geolocator/geolocator.dart';
 
 class ExploreScreen extends StatefulWidget {
@@ -496,15 +497,21 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
                     // 2. Premium landlord flag (isLandlordPremium stamped at subscribe time)
                     final aPremium = aData['isLandlordPremium'] == true ||
-                        aData['isBoosted'] == true ||
-                        aData['isFastTracked'] == true;
+                        isBoostActive(aData) ||
+                        isFastTrackActive(aData);
                     final bPremium = bData['isLandlordPremium'] == true ||
-                        bData['isBoosted'] == true ||
-                        bData['isFastTracked'] == true;
+                        isBoostActive(bData) ||
+                        isFastTrackActive(bData);
                     if (aPremium && !bPremium) return -1;
                     if (!aPremium && bPremium) return 1;
 
-                    // 3. Newest last
+                    // 3. Recently confirmed/created listings before stale ones
+                    final aFresh = isListingFresh(aData);
+                    final bFresh = isListingFresh(bData);
+                    if (aFresh && !bFresh) return -1;
+                    if (!aFresh && bFresh) return 1;
+
+                    // 4. Newest last
                     final aTime = aData['createdAt'];
                     final bTime = bData['createdAt'];
                     if (aTime == null && bTime == null) return 0;
@@ -616,8 +623,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       final lng = data['longitude'] as double?;
                       if (lat == null || lng == null) return null;
                       final isSelected = selectedDoc?.id == doc.id;
-                      final isPremium = data['isBoosted'] == true ||
-                          data['isFastTracked'] == true ||
+                      final isPremium = isBoostActive(data) ||
+                          isFastTrackActive(data) ||
                           data['subscriptionStatus'] == 'premium';
                       return Marker(
                         point: LatLng(lat, lng),
@@ -891,9 +898,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
         final ratingCount = property['ratingCount'] ?? 0;
         final ratingVal = property['rating'] ?? 0.0;
         final ratingStr = ratingCount > 0 ? '${ratingVal.toStringAsFixed(1)} ($ratingCount)' : 'New';
-        final isBoosted = property['isBoosted'] == true;
-        final isFastTracked = property['isFastTracked'] == true;
+        final isBoosted = isBoostActive(property);
+        final isFastTracked = isFastTrackActive(property);
         final isLandlordPremium = property['isLandlordPremium'] == true;
+        final landlordVerified = property['landlordVerified'] == true;
 
         return GestureDetector(
           onTap: () => _navigateToDetails(propertyId, property),
@@ -1005,16 +1013,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              // ── Title ──
-              Text(
-                "${property['area'] ?? ''}${property['area'] != null ? ', ' : ''}${property['town'] ?? ''}",
-                style: TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white : const Color(0xFF1E293B),
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              // ── Title (+ verified-owner check) ──
+              Row(
+                children: [
+                  Flexible(
+                    child: Text(
+                      "${property['area'] ?? ''}${property['area'] != null ? ', ' : ''}${property['town'] ?? ''}",
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  if (landlordVerified) ...[
+                    const SizedBox(width: 4),
+                    const Icon(Icons.verified,
+                        size: 14, color: Color(0xFF10B981)),
+                  ],
+                ],
               ),
               const SizedBox(height: 2),
               // ── Subtitle (Category · Rating) ──
@@ -1124,10 +1143,10 @@ class _PropertyPopupCard extends StatelessWidget {
     final data = doc.data() as Map<String, dynamic>;
     final images = data['images'] as List<dynamic>? ?? [];
     final imageUrl = images.isNotEmpty ? images[0] as String? : null;
-    final isPremium = data['isBoosted'] == true ||
-        data['isFastTracked'] == true ||
+    final isPremium = isBoostActive(data) ||
+        isFastTrackActive(data) ||
         data['subscriptionStatus'] == 'premium';
-    final isFastTracked = data['isFastTracked'] == true;
+    final isFastTracked = isFastTrackActive(data);
 
     return Material(
       elevation: 8,

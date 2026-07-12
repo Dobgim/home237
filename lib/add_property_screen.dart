@@ -456,15 +456,32 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
             .update(propertyMap);
         _showSnackBar('Property updated successfully!');
       } else {
+        // Stamp the owner's current verification status onto the listing so
+        // browse cards can show a trust badge without reading a user doc per card.
+        // Propagation on admin approve/reject keeps existing listings in sync.
+        bool landlordVerified = false;
+        try {
+          final ownerId = authService.userId;
+          if (ownerId != null) {
+            final ownerDoc = await FirebaseFirestore.instance
+                .collection('users')
+                .doc(ownerId)
+                .get();
+            landlordVerified = ownerDoc.data()?['isVerified'] == true;
+          }
+        } catch (_) {}
+
         // Add new fields for new property
         propertyMap.addAll({
           'landlordId': authService.userId ?? '',
           'landlordName': authService.userName ?? 'Landlord',
+          'landlordVerified': landlordVerified, // Denormalized; synced on approve/reject
           'status': 'pending', // Requires admin approval
           'isLandlordPremium': authService.isPremium, // Stamped at creation; updated on subscription change
           'views': 0,
           'favorites': 0,
           'createdAt': FieldValue.serverTimestamp(),
+          'lastConfirmedAt': FieldValue.serverTimestamp(),
         });
         await FirebaseFirestore.instance.collection('properties').add(propertyMap);
         _showSnackBar('Property submitted for admin approval!');

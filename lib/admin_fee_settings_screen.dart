@@ -12,6 +12,7 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
   final _phoneController = TextEditingController();
   final _apiUserController = TextEditingController();
   final _apiKeyController = TextEditingController();
+  final _commissionController = TextEditingController();
   String _selectedMode = 'live'; // 'live' or 'sandbox'
   bool _isLoading = false;
   bool _obscureApiKey = true;
@@ -49,6 +50,16 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
           _selectedMode = data['mode'] ?? 'live';
         }
       }
+
+      // Load platform fees
+      final feesDoc = await FirebaseFirestore.instance
+          .collection('admin_settings')
+          .doc('fees')
+          .get();
+
+      final commission = feesDoc.data()?['rentCommissionPercent'];
+      _commissionController.text =
+          commission is num ? commission.toInt().toString() : '5';
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -72,6 +83,16 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
       return;
     }
 
+    final commission =
+        int.tryParse(_commissionController.text.trim()) ?? 5;
+    if (commission < 0 || commission > 20) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Commission must be between 0 and 20 percent')),
+      );
+      return;
+    }
+
     setState(() => _isLoading = true);
     try {
       // Save payout number
@@ -91,6 +112,15 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
         'apiUser': apiUser,
         'apiKey': apiKey,
         'mode': _selectedMode,
+        'updatedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+
+      // Save platform fees
+      await FirebaseFirestore.instance
+          .collection('admin_settings')
+          .doc('fees')
+          .set({
+        'rentCommissionPercent': commission,
         'updatedAt': FieldValue.serverTimestamp(),
       }, SetOptions(merge: true));
 
@@ -119,6 +149,7 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
     _phoneController.dispose();
     _apiUserController.dispose();
     _apiKeyController.dispose();
+    _commissionController.dispose();
     super.dispose();
   }
 
@@ -193,6 +224,34 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
                       ),
                     ),
                     
+                    const SizedBox(height: 24),
+
+                    // Platform Commission Section
+                    Text(
+                      'Rent Commission (%)',
+                      style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: isDark ? Colors.white70 : Colors.black87),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Percentage Home237 keeps from each rent payment before the landlord payout (0–20).',
+                      style: TextStyle(fontSize: 12, color: isDark ? Colors.white30 : Colors.grey[500]),
+                    ),
+                    const SizedBox(height: 10),
+                    TextField(
+                      controller: _commissionController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: 'e.g. 5',
+                        prefixIcon: const Icon(Icons.percent_rounded),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF2D2D2D) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+
                     const SizedBox(height: 24),
                     const Divider(),
                     const SizedBox(height: 24),

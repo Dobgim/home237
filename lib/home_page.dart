@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'app_localizations.dart';
+import 'utils/listing_flags.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -47,12 +48,200 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadUserCity();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (kIsWeb) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _checkAndShowAuthErrors();
+      // Ask first-time guests whether they are an agent or just browsing.
+      final shownAgentPrompt = await _maybeShowAgentPrompt();
+      // Only nudge the mobile-app download if we didn't just interrupt them.
+      if (kIsWeb && !shownAgentPrompt) {
         _checkAndShowMobileAppDialog();
       }
-      _checkAndShowAuthErrors();
     });
+  }
+
+  /// Shows the agent/viewer chooser to first-time guests. Returns true if shown.
+  Future<bool> _maybeShowAgentPrompt() async {
+    if (authService.isLoggedIn) return false; // signed-in agents/admins skip it
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      if (prefs.getBool('hasAnsweredAgentPrompt') ?? false) return false;
+      if (!mounted) return false;
+      _showAgentPrompt(prefs);
+      return true;
+    } catch (e) {
+      debugPrint('Agent prompt error: $e');
+      return false;
+    }
+  }
+
+  void _showAgentPrompt(SharedPreferences prefs) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        final isDark = Theme.of(ctx).brightness == Brightness.dark;
+        final subColor =
+            isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+        return Dialog(
+          backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF3B82F6).withOpacity(0.12),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(Icons.apartment_rounded,
+                        color: Color(0xFF3B82F6), size: 28),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Center(
+                  child: Text('Are you an agent?',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                ),
+                const SizedBox(height: 8),
+                Center(
+                  child: Text(
+                    'Agents list and manage properties. Choose “No” to browse homes and chat with agents freely.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, height: 1.5, color: subColor),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () {
+                          prefs.setBool('hasAnsweredAgentPrompt', true);
+                          Navigator.pop(ctx);
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          side: BorderSide(
+                              color: isDark
+                                  ? const Color(0xFF334155)
+                                  : const Color(0xFFCBD5E1)),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: Text('No',
+                            style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF1E293B))),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          prefs.setBool('hasAnsweredAgentPrompt', true);
+                          Navigator.pop(ctx);
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const SignInScreen(
+                                  preselectedRole: UserRole.landlord),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF3B82F6),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12)),
+                        ),
+                        child: const Text('Yes',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  // ignore: unused_element
+  Widget _promptOption({
+    required bool isDark,
+    required IconData icon,
+    required Color accent,
+    required String title,
+    required String subtitle,
+    required VoidCallback onTap,
+  }) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color:
+                    isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: accent.withOpacity(0.12),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: accent, size: 22),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 2),
+                    Text(subtitle,
+                        style: TextStyle(
+                            fontSize: 12,
+                            color: isDark
+                                ? const Color(0xFF94A3B8)
+                                : const Color(0xFF64748B))),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right_rounded,
+                  color:
+                      isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   void _checkAndShowAuthErrors() {
@@ -339,8 +528,8 @@ class _HomePageState extends State<HomePage> {
                   list.sort((a, b) {
                     final aD = a.data() as Map<String, dynamic>;
                     final bD = b.data() as Map<String, dynamic>;
-                    final aB = aD['isBoosted'] == true;
-                    final bB = bD['isBoosted'] == true;
+                    final aB = isBoostActive(aD);
+                    final bB = isBoostActive(bD);
                     if (aB && !bB) return -1;
                     if (!aB && bB) return 1;
                     final aT = aD['createdAt'];
@@ -355,11 +544,11 @@ class _HomePageState extends State<HomePage> {
 
               // Featured = boosted + top-5 newest across all cities
               final featuredDocs = allApproved
-                  .where((d) => (d.data() as Map<String, dynamic>)['isBoosted'] == true)
+                  .where((d) => isBoostActive(d.data() as Map<String, dynamic>))
                   .toList();
               if (featuredDocs.length < 5) {
                 final others = allApproved
-                    .where((d) => (d.data() as Map<String, dynamic>)['isBoosted'] != true)
+                    .where((d) => !isBoostActive(d.data() as Map<String, dynamic>))
                     .take(5 - featuredDocs.length)
                     .toList();
                 featuredDocs.addAll(others);
@@ -963,8 +1152,9 @@ class _HomePageState extends State<HomePage> {
     final price = data['price'] ?? 'N/A';
     final town = data['town'] ?? 'Cameroon';
     final area = data['area'] ?? '';
-    final isBoosted = data['isBoosted'] == true;
-    final isFastTracked = data['isFastTracked'] == true;
+    final isBoosted = isBoostActive(data);
+    final isFastTracked = isFastTrackActive(data);
+    final landlordVerified = data['landlordVerified'] == true;
 
     return GestureDetector(
       onTap: () => Navigator.push(context,
@@ -1052,17 +1242,28 @@ class _HomePageState extends State<HomePage> {
 
             const SizedBox(height: 10),
 
-            // ── Location (primary) ──
-            Text(
-              area.isNotEmpty ? '$area, $town' : town,
-              style: TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.w600,
-                letterSpacing: -0.1,
-                color: isDark ? Colors.white : const Color(0xFF0F172A),
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
+            // ── Location (primary) + verified-owner check ──
+            Row(
+              children: [
+                Flexible(
+                  child: Text(
+                    area.isNotEmpty ? '$area, $town' : town,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.1,
+                      color: isDark ? Colors.white : const Color(0xFF0F172A),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (landlordVerified) ...[
+                  const SizedBox(width: 4),
+                  const Icon(Icons.verified,
+                      size: 15, color: Color(0xFF10B981)),
+                ],
+              ],
             ),
 
             const SizedBox(height: 6),

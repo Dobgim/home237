@@ -4,6 +4,7 @@ import 'auth_service.dart';
 import 'add_property_screen.dart';
 import 'property_details_screen.dart';
 import 'services/fapshi_service.dart';
+import 'utils/listing_flags.dart';
 
 class MyPropertiesScreen extends StatefulWidget {
   const MyPropertiesScreen({super.key});
@@ -467,8 +468,8 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                     final aData = a.data() as Map<String, dynamic>;
                     final bData = b.data() as Map<String, dynamic>;
                     
-                    final aBoosted = aData['isBoosted'] == true;
-                    final bBoosted = bData['isBoosted'] == true;
+                    final aBoosted = isBoostActive(aData);
+                    final bBoosted = isBoostActive(bData);
                     
                     if (aBoosted && !bBoosted) return -1;
                     if (!aBoosted && bBoosted) return 1;
@@ -622,7 +623,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                             ),
                                           ),
                                         ),
-                                         if (property['isBoosted'] == true) ...[
+                                         if (isBoostActive(property)) ...[
                                            const SizedBox(width: 8),
                                            Container(
                                              padding: const EdgeInsets.symmetric(
@@ -650,7 +651,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                              ),
                                            ),
                                          ],
-                                         if (property['isFastTracked'] == true) ...[
+                                         if (isFastTrackActive(property)) ...[
                                            const SizedBox(width: 8),
                                            Container(
                                              padding: const EdgeInsets.symmetric(
@@ -915,7 +916,35 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                   }
                 },
               ),
-              if (property['isBoosted'] != true)
+              ListTile(
+                leading: Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.verified_outlined, color: Colors.blue, size: 20),
+                ),
+                title: const Text('Confirm Still Available', style: TextStyle(fontWeight: FontWeight.w600)),
+                subtitle: const Text('Listings not confirmed for 30 days rank lower in search'),
+                onTap: () async {
+                  Navigator.pop(sheetCtx);
+                  try {
+                    await FirebaseFirestore.instance
+                        .collection('properties')
+                        .doc(propertyId)
+                        .update({'lastConfirmedAt': FieldValue.serverTimestamp()});
+                    if (context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Availability confirmed — your listing stays high in search results.')),
+                      );
+                    }
+                  } catch (e) {
+                    print('Error confirming availability: $e');
+                  }
+                },
+              ),
+              if (!isBoostActive(property))
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
@@ -932,7 +961,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                     _boostProperty(context, propertyId);
                   },
                 ),
-              if (property['isFastTracked'] != true)
+              if (!isFastTrackActive(property))
                 ListTile(
                   leading: Container(
                     padding: const EdgeInsets.all(8),
