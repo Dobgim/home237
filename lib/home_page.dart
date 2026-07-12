@@ -82,99 +82,86 @@ class _HomePageState extends State<HomePage> {
         final isDark = Theme.of(ctx).brightness == Brightness.dark;
         final subColor =
             isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+
+        void answer([Widget Function()? destination]) {
+          prefs.setBool('hasAnsweredAgentPrompt', true);
+          Navigator.pop(ctx);
+          if (destination != null) {
+            Navigator.push(
+                context, MaterialPageRoute(builder: (_) => destination()));
+          }
+        }
+
         return Dialog(
           backgroundColor: isDark ? const Color(0xFF1E293B) : Colors.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 24),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 56,
-                    height: 56,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: const Icon(Icons.apartment_rounded,
-                        color: Color(0xFF3B82F6), size: 28),
-                  ),
-                ),
-                const SizedBox(height: 18),
-                const Center(
-                  child: Text('Are you an agent?',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                ),
-                const SizedBox(height: 8),
-                Center(
-                  child: Text(
-                    'Agents list and manage properties. Choose “No” to browse homes and chat with agents freely.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 14, height: 1.5, color: subColor),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () {
-                          prefs.setBool('hasAnsweredAgentPrompt', true);
-                          Navigator.pop(ctx);
-                        },
-                        style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          side: BorderSide(
-                              color: isDark
-                                  ? const Color(0xFF334155)
-                                  : const Color(0xFFCBD5E1)),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('No',
-                            style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                                color: isDark
-                                    ? Colors.white
-                                    : const Color(0xFF1E293B))),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 56,
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF3B82F6).withOpacity(0.12),
+                        borderRadius: BorderRadius.circular(16),
                       ),
+                      child: const Icon(Icons.waving_hand_rounded,
+                          color: Color(0xFF3B82F6), size: 28),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          prefs.setBool('hasAnsweredAgentPrompt', true);
-                          Navigator.pop(ctx);
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) => const SignInScreen(
-                                  preselectedRole: UserRole.landlord),
-                            ),
-                          );
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
-                          foregroundColor: Colors.white,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: const Text('Yes',
-                            style: TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.bold)),
-                      ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Center(
+                    child: Text('Welcome to Home237',
+                        style:
+                            TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                  ),
+                  const SizedBox(height: 8),
+                  Center(
+                    child: Text(
+                      'Tell us what brings you here so we can set things up for you.',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 14, height: 1.5, color: subColor),
                     ),
-                  ],
-                ),
-              ],
+                  ),
+                  const SizedBox(height: 24),
+                  _promptOption(
+                    isDark: isDark,
+                    icon: Icons.badge_rounded,
+                    accent: const Color(0xFF8B5CF6),
+                    title: 'I\'m a property agent',
+                    subtitle: 'List and manage properties, reach serious clients',
+                    onTap: () => answer(() =>
+                        const SignInScreen(preselectedRole: UserRole.landlord)),
+                  ),
+                  const SizedBox(height: 12),
+                  _promptOption(
+                    isDark: isDark,
+                    icon: Icons.house_rounded,
+                    accent: const Color(0xFF10B981),
+                    title: 'I\'m looking for a home',
+                    subtitle:
+                        'Sign up free to save favourites, chat with agents and book visits',
+                    onTap: () => answer(() =>
+                        const SignInScreen(preselectedRole: UserRole.tenant)),
+                  ),
+                  const SizedBox(height: 12),
+                  _promptOption(
+                    isDark: isDark,
+                    icon: Icons.visibility_rounded,
+                    accent: const Color(0xFF3B82F6),
+                    title: 'Just browsing',
+                    subtitle: 'Explore listings as a guest — sign up anytime',
+                    onTap: () => answer(),
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -182,7 +169,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // ignore: unused_element
   Widget _promptOption({
     required bool isDark,
     required IconData icon,
@@ -814,7 +800,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildHeroBanner(bool isDark, int total, int cities) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(20, 14, 20, 24),
+      margin: const EdgeInsets.fromLTRB(20, 10, 20, 18),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(22),
         gradient: const LinearGradient(
@@ -833,65 +819,38 @@ class _HomePageState extends State<HomePage> {
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 26, 24, 22),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Eyebrow label
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.verified_rounded, size: 12, color: Colors.white),
-                    SizedBox(width: 5),
-                    Text(
-                      'Verified Listings · Cameroon',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 14),
-
               // Main headline — Display text
               Text(
                 _userCity != null
-                    ? 'Find Your Home\nin $_userCity & Beyond'
-                    : 'Find Your Home\nin Cameroon',
+                    ? 'Find Your Home in $_userCity & Beyond'
+                    : 'Find Your Home in Cameroon',
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 26,
+                  fontSize: 22,
                   fontWeight: FontWeight.w800,
                   height: 1.2,
                   letterSpacing: -0.5,
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 8),
 
               // Subtitle — Body text
               const Text(
-                'Browse verified rentals — apartments, houses,\nstudios & more across top Cameroonian cities.',
+                'Verified rentals from trusted agents across Cameroon.',
                 style: TextStyle(
                   color: Colors.white70,
                   fontSize: 13,
-                  height: 1.5,
+                  height: 1.4,
                   fontWeight: FontWeight.w400,
                 ),
               ),
 
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
 
               // CTA Button — only clickable element
               GestureDetector(
