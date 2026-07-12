@@ -3,6 +3,14 @@
   "buildCommand": "echo 'Using pre-built Flutter web output'",
   "installCommand": "echo 'No install needed'",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "www.home237.com" }],
+      "destination": "https://home237.com/$1",
+      "permanent": true
+    }
+  ],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]

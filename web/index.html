@@ -1,4 +1,11 @@
 <!DOCTYPE html><html><head>
+  <!-- Google Sign-In only works on the canonical origin (authDomain is
+       home237.com), so bounce www.* to the apex before anything loads. -->
+  <script>
+    if (location.hostname === 'www.home237.com') {
+      location.replace('https://home237.com' + location.pathname + location.search + location.hash);
+    }
+  </script>
   <!--
     If you are serving your web app in a path other than the root, change the
     href value below to reflect the base path you are serving from.
@@ -166,7 +173,7 @@
       " onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'">×</button>
     </div>
     <div style="display: flex; gap: 10px; width: 100%;">
-      <a href="app-release.apk" style="
+      <a href="/app/app-release.apk" download="Home237.apk" style="
         flex: 1;
         display: flex;
         align-items: center;
