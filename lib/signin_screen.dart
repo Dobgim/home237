@@ -8,13 +8,12 @@ import 'app_localizations.dart';
 import 'auth_service.dart';
 import 'signup_screen.dart';
 import 'email_verification_screen.dart';
-import 'role_selection_screen.dart';
 import 'forgot_password_screen.dart';
 import 'widgets/language_toggle.dart';
 import 'home_page.dart';
-import 'tenant_dashboard.dart';
 import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
+import 'tenant_dashboard.dart';
 import 'theme_notifier.dart';
 import 'pending_property_service.dart';
 import 'property_details_screen.dart';
@@ -169,16 +168,14 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
     TextInput.finishAutofillContext();
     context.read<ThemeNotifier>().updateThemeForRole();
     Widget dest;
-    if (authService.isNewUser) {
-      dest = const RoleSelectionScreen();
-    } else if (authService.userRole == UserRole.tenant) {
-      dest = TenantDashboard();
-    } else if (authService.userRole == UserRole.landlord) {
-      dest = LandlordDashboard();
+    if (authService.userRole == UserRole.landlord) {
+      dest = LandlordDashboard(); // agent dashboard
     } else if (authService.userRole == UserRole.admin) {
       dest = AdminDashboard();
+    } else if (authService.userRole == UserRole.tenant) {
+      dest = const TenantDashboard(); // home-seeker dashboard
     } else {
-      dest = HomePage();
+      dest = HomePage(); // guests browse
     }
     final pending = PendingPropertyService.instance.consume();
     if (pending != null) {
@@ -363,8 +360,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                     child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF4285F4)))
                 : SizedBox(
                     width: 20, height: 20,
-                    child: Image.asset('assets/images/google_logo.png', height: 20, width: 20,
-                      errorBuilder: (_, _, _) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
+                    child: CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter()),
                   ),
             const SizedBox(width: 10),
             Text(t.get('continue_with_google'),

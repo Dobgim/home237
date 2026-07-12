@@ -8,9 +8,9 @@ import 'auth_service.dart';
 import 'signin_screen.dart';
 import 'email_verification_screen.dart';
 import 'home_page.dart';
-import 'tenant_dashboard.dart';
 import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
+import 'tenant_dashboard.dart';
 import 'theme_notifier.dart';
 import 'widgets/language_toggle.dart';
 
@@ -49,7 +49,9 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    _selectedRole = widget.preselectedRole; // primed from the marketing site, if any
+    // Sign-up now registers agents only (viewers browse without an account),
+    // so default to the agent role; no on-screen role picker is needed.
+    _selectedRole = widget.preselectedRole ?? UserRole.landlord;
     _aniCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 550));
     _fadeAni = CurvedAnimation(parent: _aniCtrl, curve: Curves.easeOut);
     _slideAni = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)
@@ -83,14 +85,14 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
 
   void _routeToDashboard() {
     Widget dest;
-    if (authService.userRole == UserRole.tenant) {
-      dest = TenantDashboard();
-    } else if (authService.userRole == UserRole.landlord) {
-      dest = LandlordDashboard();
+    if (authService.userRole == UserRole.landlord) {
+      dest = LandlordDashboard(); // agent dashboard
     } else if (authService.userRole == UserRole.admin) {
       dest = AdminDashboard();
+    } else if (authService.userRole == UserRole.tenant) {
+      dest = const TenantDashboard(); // home-seeker dashboard
     } else {
-      dest = HomePage();
+      dest = HomePage(); // guests browse
     }
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => dest), (r) => false);
   }
@@ -447,8 +449,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                     child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF4285F4)))
                 : SizedBox(
                     width: 20, height: 20,
-                    child: Image.asset('assets/images/google_logo.png', height: 20, width: 20,
-                      errorBuilder: (_, _, _) => CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter())),
+                    child: CustomPaint(size: const Size(20, 20), painter: _GoogleLogoPainter()),
                   ),
             const SizedBox(width: 10),
             const Text('Continue with Google',
@@ -471,17 +472,45 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
     ]);
   }
 
-  // ── Role Selection ───────────────────────────────────────────────────────────
+  // ── Agent registration banner (sign-up is for agents only) ──────────────────
+  // Viewers browse and chat without an account, so there is no role picker here.
   Widget _roleSection(dynamic t, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B82F6).withOpacity(isDark ? 0.14 : 0.07),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.35)),
+      ),
+      child: Row(children: [
+        Container(
+          padding: const EdgeInsets.all(9),
+          decoration: BoxDecoration(
+            color: const Color(0xFF3B82F6),
+            borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 20)),
+        const SizedBox(width: 12),
+        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Text('Agent registration',
+            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+              color: isDark ? Colors.white : const Color(0xFF1E293B))),
+          const SizedBox(height: 2),
+          Text('Create an account to list and manage your properties.',
+            style: TextStyle(fontSize: 11,
+              color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
+        ])),
+      ]),
+    );
+  }
+
+  // ignore: unused_element
+  Widget _legacyRoleSectionUnused(dynamic t, bool isDark) {
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       Text('I am a…',
         style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600,
           color: isDark ? Colors.white70 : const Color(0xFF374151))),
       const SizedBox(height: 10),
       Row(children: [
-        Expanded(child: _roleCard(role: UserRole.tenant, icon: Icons.home_outlined,
-          title: t.get('tenant'), subtitle: 'Looking to rent', isDark: isDark)),
-        const SizedBox(width: 12),
         Expanded(child: _roleCard(role: UserRole.landlord, icon: Icons.vpn_key_outlined,
           title: t.get('landlord'), subtitle: 'Listing properties', isDark: isDark)),
       ]),

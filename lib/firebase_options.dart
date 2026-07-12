@@ -59,7 +59,10 @@ class DefaultFirebaseOptions {
     appId: '1:254664754146:web:1eca99980d063175196fbb',
     messagingSenderId: '254664754146',
     projectId: 'home237-92c18',
-    authDomain: 'home237-92c18.firebaseapp.com',
+    // Serve Firebase's auth handler from our own domain (proxied in vercel.json)
+    // so Google sign-in works on the custom domain, including mobile-web redirect
+    // flows that browsers block when the auth handler is on firebaseapp.com.
+    authDomain: 'home237.com',
     storageBucket: 'home237-92c18.firebasestorage.app',
     measurementId: 'G-VGTE9D5GPE',
   );

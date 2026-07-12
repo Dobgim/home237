@@ -53,7 +53,7 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
   void _downloadSimulatedPDF(Map<String, dynamic> leaseData) {
     // Generate text lease format and simulate save
     final text = _leaseService.generateLeaseText(
-      landlordName: leaseData['landlordName'] ?? 'Landlord',
+      landlordName: leaseData['landlordName'] ?? 'Agent',
       tenantName: leaseData['tenantName'] ?? 'Tenant',
       propertyTitle: leaseData['propertyTitle'] ?? 'Property',
       propertyLocation: '${leaseData['propertyNeighborhood'] ?? "Molyko"}, ${leaseData['propertyCity'] ?? "Buea"}',
@@ -201,7 +201,7 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
 
                         // Contract Info Box
                         _buildSectionHeader('1. CONTRACTING PARTIES'),
-                        _buildInfoRow('Landlord:', leaseData['landlordName'] ?? 'N/A'),
+                        _buildInfoRow('Agent:', leaseData['landlordName'] ?? 'N/A'),
                         _buildInfoRow('Tenant:', leaseData['tenantName'] ?? 'N/A'),
                         const SizedBox(height: 16),
 
@@ -221,8 +221,8 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
                         const Text(
                           'A. Rent is payable monthly in advance on or before the due date.\n'
                           'B. The tenant shall keep the property clean, sanitary and in good condition.\n'
-                          'C. The landlord warrants that structural elements (roofing, main plumbing, exterior walls) will remain in functional repair.\n'
-                          'D. Release of the initial escrow rent payment is authorized immediately upon landlord-tenant physical QR check-in.',
+                          'C. The agent warrants that structural elements (roofing, main plumbing, exterior walls) will remain in functional repair.\n'
+                          'D. Release of the initial escrow rent payment is authorized immediately upon agent-tenant physical QR check-in.',
                           style: TextStyle(fontSize: 13, height: 1.5, color: Color(0xFF64748B)),
                         ),
                         const SizedBox(height: 32),
@@ -252,10 +252,10 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
                                   Icon(Icons.draw, color: status == 'active' ? Colors.blue : Colors.grey),
                                   const SizedBox(height: 6),
                                   Text(
-                                    leaseData['landlordName'] ?? 'Landlord',
+                                    leaseData['landlordName'] ?? 'Agent',
                                     style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
                                   ),
-                                  const Text('Landlord Signature', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
+                                  const Text('Agent Signature', style: TextStyle(fontSize: 10, color: Color(0xFF64748B))),
                                   const SizedBox(height: 4),
                                   Text(
                                     status == 'active' ? '[Digitally Verified]' : '[Pending Verification]',

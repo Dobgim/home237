@@ -194,7 +194,7 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
                           ),
                           const SizedBox(height: 8),
                           const Text(
-                            'Set the Mobile Money number where landlord subscriptions, posting fees, and administrative payouts are managed.',
+                            'Set the Mobile Money number where agent subscriptions, posting fees, and administrative payouts are managed.',
                             textAlign: TextAlign.center,
                             style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
                           ),
@@ -233,7 +233,7 @@ class _AdminFeeSettingsScreenState extends State<AdminFeeSettingsScreen> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Percentage Home237 keeps from each rent payment before the landlord payout (0–20).',
+                      'Percentage Home237 keeps from each rent payment before the agent payout (0–20).',
                       style: TextStyle(fontSize: 12, color: isDark ? Colors.white30 : Colors.grey[500]),
                     ),
                     const SizedBox(height: 10),

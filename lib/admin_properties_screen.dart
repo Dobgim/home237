@@ -445,7 +445,7 @@ class _AdminPropertiesScreenState extends State<AdminPropertiesScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text(
-                            'Property approved! The landlord has been notified.'),
+                            'Property approved! The agent has been notified.'),
                         backgroundColor: Color(0xFF10B981),
                       ),
                     );

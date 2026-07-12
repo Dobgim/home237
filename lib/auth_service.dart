@@ -29,8 +29,10 @@ class AuthService extends ChangeNotifier {
   String? _lastError;
   String? _localSessionToken;
   bool _isHandlingConflict = false;
+  bool _isGuest = false; // anonymous viewer (browsing/chatting without an account)
   static const _uuid = Uuid();
   bool get isEmailVerified => _isEmailVerified;
+  bool get isGuest => _isGuest;
   
   bool get isLoggedIn => _isLoggedIn;
   String? get userId => _userId;
@@ -48,6 +50,32 @@ class AuthService extends ChangeNotifier {
 
   bool checkAuth() {
     return _isLoggedIn;
+  }
+
+  /// Silently signs a viewer in anonymously so they can chat with an agent
+  /// without creating an account. Deliberately does NOT start the user-document
+  /// listener or session-token logic (guests have no /users doc, which would
+  /// otherwise force an immediate sign-out).
+  Future<bool> ensureGuestChatIdentity({String name = 'Viewer'}) async {
+    if (_isLoggedIn) return true; // already has an identity (real or guest)
+    try {
+      final cred = await FirebaseAuth.instance.signInAnonymously();
+      final user = cred.user;
+      if (user == null) return false;
+      _userId = user.uid;
+      _userName = name;
+      _userEmail = null;
+      _userRole = UserRole.tenant; // viewer
+      _isGuest = true;
+      _isLoggedIn = true;
+      _isEmailVerified = true; // not applicable to anonymous guests
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _lastError = 'Could not start the chat. Please try again.';
+      debugPrint('Anonymous guest sign-in failed: $e');
+      return false;
+    }
   }
 
   /// Checks if the email is in the global banned_users list
@@ -648,6 +676,7 @@ class AuthService extends ChangeNotifier {
     _userName = null;
     _userRole = UserRole.none;
     _isNewUser = false;
+    _isGuest = false;
     _profileImage = null;
 
     // Sign out from Firebase and Google

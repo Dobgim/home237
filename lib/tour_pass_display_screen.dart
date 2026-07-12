@@ -97,7 +97,7 @@ class TourPassDisplayScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            'Present this QR code to the landlord when you arrive for your property tour.',
+                            'Present this QR code to the agent when you arrive for your property tour.',
                             textAlign: TextAlign.center,
                             style: TextStyle(
                               fontSize: 14, 
@@ -184,7 +184,7 @@ class TourPassDisplayScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              'Waiting for landlord to scan...',
+                              'Waiting for agent to scan...',
                               style: TextStyle(
                                 fontWeight: FontWeight.w500,
                                 color: isDark ? Colors.white70 : Colors.grey[600],

@@ -530,7 +530,7 @@ class _PremiumSubscriptionScreenState
             ),
             const SizedBox(height: 10),
             Text(
-              'Paid via $provider. You are now a Premium Landlord for $durationText!',
+              'Paid via $provider. You are now a Premium Agent for $durationText!',
               textAlign: TextAlign.center,
               style: TextStyle(color: Colors.grey[600], height: 1.5),
             ),

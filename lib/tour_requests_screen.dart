@@ -702,14 +702,14 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
                                           MaterialPageRoute(
                                             builder: (context) => ChatScreen(
                                               recipientId: authService.userRole == UserRole.tenant ? request['landlordId'] : request['tenantId'],
-                                              recipientName: authService.userRole == UserRole.tenant ? 'Landlord' : request['tenantName'] ?? 'Tenant',
+                                              recipientName: authService.userRole == UserRole.tenant ? 'Agent' : request['tenantName'] ?? 'Tenant',
                                               propertyTitle: request['propertyTitle'],
                                             ),
                                           ),
                                         );
                                       },
                                       icon: const Icon(Icons.chat_bubble_outline, size: 18),
-                                      label: Text(authService.userRole == UserRole.tenant ? 'Message Landlord' : 'Message Tenant', style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      label: Text(authService.userRole == UserRole.tenant ? 'Message Agent' : 'Message Tenant', style: const TextStyle(fontWeight: FontWeight.bold)),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: const Color(0xFF3B82F6),
                                         foregroundColor: Colors.white,

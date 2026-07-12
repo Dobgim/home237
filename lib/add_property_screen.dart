@@ -474,7 +474,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
         // Add new fields for new property
         propertyMap.addAll({
           'landlordId': authService.userId ?? '',
-          'landlordName': authService.userName ?? 'Landlord',
+          'landlordName': authService.userName ?? 'Agent',
           'landlordVerified': landlordVerified, // Denormalized; synced on approve/reject
           'status': 'pending', // Requires admin approval
           'isLandlordPremium': authService.isPremium, // Stamped at creation; updated on subscription change

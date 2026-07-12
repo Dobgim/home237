@@ -175,7 +175,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                           children: [
                             _buildFilterChip('All'),
                             const SizedBox(width: 8),
-                            _buildFilterChip('Landlords'),
+                            _buildFilterChip('Agents'),
                             const SizedBox(width: 8),
                             _buildFilterChip('Tenants'),
                             const SizedBox(width: 8),
@@ -207,7 +207,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                       users = users.where((doc) {
                         final data = doc.data() as Map<String, dynamic>;
                         final role = data['role'] ?? '';
-                        if (_selectedFilter == 'Landlords') return role == 'landlord';
+                        if (_selectedFilter == 'Agents') return role == 'landlord';
                         if (_selectedFilter == 'Tenants') return role == 'tenant';
                         if (_selectedFilter == 'Suspended') return data['suspended'] == true;
                         return true;

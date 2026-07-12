@@ -11,6 +11,26 @@ class AdminVerificationsScreen extends StatefulWidget {
 class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
   String _selectedTab = 'Pending';
 
+  /// Propagates a landlord's verification status to the denormalized
+  /// `landlordVerified` flag on every listing they own, so browse cards
+  /// stay in sync without reading a user doc per card.
+  Future<void> _syncLandlordVerifiedFlag(String userId, bool verified) async {
+    try {
+      final props = await FirebaseFirestore.instance
+          .collection('properties')
+          .where('landlordId', isEqualTo: userId)
+          .get();
+      if (props.docs.isEmpty) return;
+      final batch = FirebaseFirestore.instance.batch();
+      for (final doc in props.docs) {
+        batch.update(doc.reference, {'landlordVerified': verified});
+      }
+      await batch.commit();
+    } catch (e) {
+      debugPrint('Failed to sync landlordVerified flag: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -452,10 +472,23 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                             .doc(verificationId)
                             .update({
                           'status': 'rejected',
+                          'idVerified': false,
                           'rejectionReason': reason,
                         });
 
                         if (userId != null) {
+                          // Revoke any prior verification so the badge can't linger
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userId)
+                              .update({
+                            'isVerified': false,
+                            'idVerified': false,
+                          });
+
+                          // Sync the denormalized badge onto all their listings
+                          await _syncLandlordVerifiedFlag(userId, false);
+
                           await FirebaseFirestore.instance
                               .collection('notifications')
                               .doc(userId)
@@ -486,13 +519,25 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                         await FirebaseFirestore.instance
                             .collection('verifications')
                             .doc(verificationId)
-                            .update({'status': 'approved'});
-                        
+                            .update({
+                          'status': 'approved',
+                          'idVerified': true,
+                        });
+
                         if (userId != null) {
                           await FirebaseFirestore.instance
                               .collection('users')
                               .doc(userId)
-                              .update({'idVerified': true});
+                              .update({
+                            // Canonical flag the app UI reads everywhere
+                            'isVerified': true,
+                            // Kept for backward compatibility with older reads
+                            'idVerified': true,
+                            'verifiedAt': FieldValue.serverTimestamp(),
+                          });
+
+                          // Sync the denormalized badge onto all their listings
+                          await _syncLandlordVerifiedFlag(userId, true);
 
                           // Create notification for approval
                           await FirebaseFirestore.instance

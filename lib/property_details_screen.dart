@@ -48,6 +48,11 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   final TextEditingController _reviewController = TextEditingController();
   bool _isSubmittingReview = false;
 
+  // Owner (landlord) trust signals shown to the viewer
+  bool _landlordVerified = false;
+  double? _landlordRating;
+  int _landlordRatingCount = 0;
+
   /// Known city centres for fallback coordinates
   static const Map<String, LatLng> _cityCentres = {
     'Buea':      LatLng(4.1527,  9.2432),
@@ -69,6 +74,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       _isLoading = false;
       _resolvePropertyLocation();
       _incrementViewCount();
+      _loadLandlordTrust();
     } else {
       _loadPropertyDetails();
     }
@@ -163,10 +169,193 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
         });
         _resolvePropertyLocation();
         _incrementViewCount();
+        _loadLandlordTrust();
       }
     } catch (e) {
       print('Error loading property: $e');
       setState(() => _isLoading = false);
+    }
+  }
+
+  /// Loads the owner's real trust signals (KYC verification + reputation)
+  /// so the viewer sees an honest badge instead of an always-green checkmark.
+  Future<void> _loadLandlordTrust() async {
+    final landlordId = _property?['landlordId'];
+    if (landlordId == null) return;
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(landlordId.toString())
+          .get();
+
+      bool verified = false;
+      double? rating;
+      if (userDoc.exists) {
+        final data = userDoc.data() ?? {};
+        verified = data['isVerified'] == true;
+        final score = data['reputationScore'] ?? data['trustRating'];
+        if (score is num) rating = score.toDouble();
+      }
+
+      // Number of reviews backing the reputation score
+      final ratingsSnap = await FirebaseFirestore.instance
+          .collection('reputation_ratings')
+          .where('rateeId', isEqualTo: landlordId.toString())
+          .get();
+      final count = ratingsSnap.docs.length;
+
+      if (mounted) {
+        setState(() {
+          _landlordVerified = verified;
+          _landlordRating = count > 0 ? rating : null;
+          _landlordRatingCount = count;
+        });
+      }
+    } catch (e) {
+      print('Error loading landlord trust: $e');
+    }
+  }
+
+  /// Lets a viewer flag a suspicious listing. Writes to the `reports`
+  /// collection that the admin Reports screen reads.
+  Future<void> _reportListing() async {
+    final reasons = <String>[
+      'Suspected scam / fraud',
+      'Fake or misleading photos',
+      'Property does not exist',
+      'Wrong price or details',
+      'Already rented / unavailable',
+      'Other',
+    ];
+
+    String? selected;
+    final detailsController = TextEditingController();
+
+    final submitted = await showModalBottomSheet<bool>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (ctx, setModal) => Padding(
+            padding: EdgeInsets.only(
+              left: 20,
+              right: 20,
+              top: 20,
+              bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.flag_outlined, color: Color(0xFFEF4444)),
+                    const SizedBox(width: 8),
+                    const Text('Report this listing',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Help keep Home237 safe. Reports are reviewed by our team.',
+                  style: TextStyle(fontSize: 13, color: Colors.grey[600]),
+                ),
+                const SizedBox(height: 16),
+                ...reasons.map((r) => RadioListTile<String>(
+                      contentPadding: EdgeInsets.zero,
+                      dense: true,
+                      value: r,
+                      groupValue: selected,
+                      activeColor: const Color(0xFFEF4444),
+                      title: Text(r, style: const TextStyle(fontSize: 14)),
+                      onChanged: (v) => setModal(() => selected = v),
+                    )),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: detailsController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    hintText: 'Add details (optional)',
+                    border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(10)),
+                    contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12, vertical: 10),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFEF4444),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                    ),
+                    onPressed: selected == null
+                        ? null
+                        : () => Navigator.pop(ctx, true),
+                    child: const Text('Submit report',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (submitted != true || selected == null) return;
+
+    try {
+      // Ensure the reporter has at least an anonymous identity
+      if (authService.userId == null) {
+        await authService.ensureGuestChatIdentity();
+      }
+      final extra = detailsController.text.trim();
+      final reason = extra.isEmpty ? selected! : '${selected!} — $extra';
+
+      await FirebaseFirestore.instance.collection('reports').add({
+        'reportId':
+            '#REP-${DateTime.now().millisecondsSinceEpoch.toString().substring(7)}',
+        'propertyId': widget.propertyId,
+        'propertyTitle': _property?['title']?.toString() ??
+            _property?['area']?.toString() ??
+            'Property',
+        'landlordId': _property?['landlordId'],
+        'type': selected,
+        'reason': reason,
+        'reporterId': authService.userId,
+        'reporterName': authService.userName ?? 'Anonymous',
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Thanks — this listing has been reported for review.'),
+            backgroundColor: Color(0xFF10B981),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      print('Error submitting report: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Could not submit report. Please try again.'),
+            backgroundColor: Color(0xFFEF4444),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -405,7 +594,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
               Text('Sign in to $action',
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF1E293B))),
               const SizedBox(height: 8),
-              Text('Create a free account to contact landlords, save listings, and book tours.',
+              Text('Create a free account to contact agents, save listings, and book tours.',
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: isDark ? Colors.white60 : const Color(0xFF64748B), height: 1.5)),
               const SizedBox(height: 28),
@@ -475,8 +664,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
           ],
         ),
         content: const Text(
-          'Your tour request has been sent to the landlord. '
-          'Once the landlord approves your request, you will receive an active Tour Pass (QR Code) on your dashboard to use during the visit.'
+          'Your tour request has been sent to the agent. '
+          'Once the agent approves your request, you will receive an active Tour Pass (QR Code) on your dashboard to use during the visit.'
         ),
         actions: [
           ElevatedButton(
@@ -794,25 +983,24 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     }
   }
 
-  void _contactLandlord() {
+  Future<void> _contactLandlord() async {
     if (!authService.isLoggedIn) {
-      // Store this property + intended action so SignInScreen can return here
-      PendingPropertyService.instance.set(
-        widget.propertyId,
-        _property ?? widget.propertyData ?? {},
-        action: 'contact',
-      );
-      _showAuthPrompt('contact the landlord');
-      return;
+      // Viewers chat with agents without an account — sign in invisibly as an
+      // anonymous guest so the message has an identity, then continue.
+      final ok = await authService.ensureGuestChatIdentity();
+      if (!ok) {
+        if (mounted) _showAuthPrompt('contact the agent');
+        return;
+      }
     }
-    
+
     if (_property == null) return;
 
     final landlordId = _property!['landlordId'];
     if (landlordId == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Unable to contact landlord: Missing contact information.'),
+          content: Text('Unable to contact agent: Missing contact information.'),
           backgroundColor: Colors.red,
         ),
       );
@@ -838,7 +1026,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       MaterialPageRoute(
         builder: (context) => ChatScreen(
           recipientId: landlordId,
-          recipientName: _property!['landlordName'] ?? 'Landlord',
+          recipientName: _property!['landlordName'] ?? 'Agent',
           propertyTitle: _property!['title'],
           initialMessage: 'Hi, I\'m interested in your property: ${_property!['title']}',
           initialImage: imageUrl,
@@ -1016,6 +1204,17 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                 child: FavouriteButton(
                   propertyId: widget.propertyId,
                   propertyData: _property ?? widget.propertyData ?? {},
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(right: 8.0, top: 8.0),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black26,
+                  child: IconButton(
+                    icon: const Icon(Icons.flag_outlined, color: Colors.white),
+                    tooltip: 'Report this listing',
+                    onPressed: _reportListing,
+                  ),
                 ),
               ),
             ],
@@ -1242,7 +1441,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'In charge: ${_property!['landlordName']?.toString() ?? 'Landlord'}',
+                                'In charge: ${_property!['landlordName']?.toString() ?? 'Agent'}',
                                 style: TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.bold,
@@ -1260,11 +1459,91 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                       : Colors.grey[600],
                                 ),
                               ),
+                              if (_landlordRating != null) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.star_rounded,
+                                        color: Color(0xFFF59E0B), size: 15),
+                                    const SizedBox(width: 2),
+                                    Text(
+                                      '${_landlordRating!.toStringAsFixed(1)} · $_landlordRatingCount review${_landlordRatingCount == 1 ? '' : 's'}',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: isDark
+                                            ? Colors.grey[300]
+                                            : const Color(0xFF475569),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ] else ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  'No reviews yet',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: isDark
+                                        ? Colors.grey[500]
+                                        : Colors.grey[500],
+                                  ),
+                                ),
+                              ],
                             ],
                           ),
                         ),
-                        const Icon(Icons.verified,
-                            color: Color(0xFF10B981), size: 20),
+                        _landlordVerified
+                            ? Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF10B981)
+                                      .withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.verified,
+                                        color: Color(0xFF10B981), size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Verified',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF10B981),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              )
+                            : Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF59E0B)
+                                      .withOpacity(0.12),
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.gpp_maybe_outlined,
+                                        color: Color(0xFFB45309), size: 16),
+                                    SizedBox(width: 4),
+                                    Text(
+                                      'Not verified',
+                                      style: TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFFB45309),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                       ],
                     ),
                   ),
@@ -2103,7 +2382,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               onPressed: () {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
-                                    content: Text('Your tour request is pending landlord approval.'),
+                                    content: Text('Your tour request is pending agent approval.'),
                                     backgroundColor: Colors.orange,
                                   ),
                                 );

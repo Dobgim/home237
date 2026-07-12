@@ -342,7 +342,7 @@ class _RentTrackerScreenState extends State<RentTrackerScreen> {
     final status = lease['status'] ?? 'pending';
     final rent = lease['rentAmount'] as int? ?? 0;
     final title = lease['propertyTitle'] ?? 'Rental Property';
-    final landlordName = lease['landlordName'] ?? 'Landlord';
+    final landlordName = lease['landlordName'] ?? 'Agent';
     final tenantName = lease['tenantName'] ?? 'Tenant';
 
     return Container(
@@ -398,7 +398,7 @@ class _RentTrackerScreenState extends State<RentTrackerScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(isTenant ? 'Landlord' : 'Tenant', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
+                  Text(isTenant ? 'Agent' : 'Tenant', style: const TextStyle(fontSize: 12, color: Color(0xFF64748B))),
                   const SizedBox(height: 4),
                   Text(isTenant ? landlordName : tenantName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600)),
                 ],

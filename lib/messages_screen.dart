@@ -69,7 +69,7 @@ class MessagesScreen extends StatelessWidget {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Start a conversation with a landlord',
+                    'Start a conversation with an agent',
                     style: TextStyle(
                       fontSize: 14,
                       color: isDark ? Colors.grey[500] : Colors.grey[500],

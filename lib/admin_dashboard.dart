@@ -728,7 +728,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
                   final data = doc.data() as Map<String, dynamic>;
                   return _buildAlertCard(
                     title: data['userName'] ?? 'John Smith',
-                    subtitle: 'New landlord verification request',
+                    subtitle: 'New agent verification request',
                     time: '2m ago',
                     color: const Color(0xFF10B981),
                     icon: Icons.person,
@@ -872,7 +872,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
                     final data = doc.data() as Map<String, dynamic>;
                     final title = data['title'] ?? 'Untitled Property';
                     final landlordName =
-                        data['landlordName'] ?? 'Unknown Landlord';
+                        data['landlordName'] ?? 'Unknown Agent';
                     final location = data['location'] ?? 'Unknown location';
                     final createdAt = data['createdAt'] as Timestamp?;
                     String timeText = 'Just now';
@@ -917,7 +917,7 @@ class _AdminOverviewScreenState extends State<AdminOverviewScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                        '✅ "$title" approved and landlord notified!'),
+                                        '✅ "$title" approved and agent notified!'),
                                     backgroundColor:
                                         const Color(0xFF10B981),
                                     behavior: SnackBarBehavior.floating,

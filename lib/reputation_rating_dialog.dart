@@ -114,7 +114,7 @@ class _ReputationRatingDialogState extends State<ReputationRatingDialog> {
 
             // Param 1
             _buildRatingRow(
-              isTenantRater ? 'Landlord Professionalism' : 'Tenant Punctuality',
+              isTenantRater ? 'Agent Professionalism' : 'Tenant Punctuality',
               _param1,
               (val) => setState(() => _param1 = val),
             ),

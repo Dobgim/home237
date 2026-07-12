@@ -435,7 +435,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
           _safetyBullet(
             '✅',
-            'Report any landlord who asks you for money before viewing',
+            'Report any agent who asks you for money before viewing',
             isDark,
           ),
           const SizedBox(height: 10),

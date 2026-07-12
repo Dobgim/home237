@@ -97,7 +97,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 role: UserRole.tenant,
                 icon: Icons.person_outline,
-                title: 'Tenant',
+                title: 'Home-Seeker',
                 subtitle: "I'm looking to rent a home",
                 isSelected: _selectedRole == UserRole.tenant,
               ),
@@ -107,7 +107,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               _buildRoleCard(
                 role: UserRole.landlord,
                 icon: Icons.business_outlined,
-                title: 'Landlord',
+                title: 'Agent',
                 subtitle: "I'm renting out properties",
                 isSelected: _selectedRole == UserRole.landlord,
               ),

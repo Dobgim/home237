@@ -708,7 +708,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                 secondary: Icon(Icons.contact_phone_outlined, color: isDark ? Colors.grey[400] : const Color(0xFF64748B)),
                 title: const Text('Show Contact Info', style: TextStyle(fontWeight: FontWeight.w500)),
                 subtitle: Text(
-                  'Let landlords see your phone number',
+                  'Let agents see your phone number',
                   style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[500] : Colors.grey[600]),
                 ),
                 value: _showContactInfo,

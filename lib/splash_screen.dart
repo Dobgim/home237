@@ -7,12 +7,11 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'auth_service.dart';
-import 'tenant_dashboard.dart';
 import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
+import 'tenant_dashboard.dart';
 import 'theme_notifier.dart';
 import 'onboarding_screen.dart';
-import 'role_selection_screen.dart';
 import 'signin_screen.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -98,10 +97,16 @@ class _SplashScreenState extends State<SplashScreen>
 
   Future<void> _checkAuthAndNavigate() async {
     if (kIsWeb) {
+      // Never let the redirect-result handshake block startup. If it stalls
+      // (slow auth iframe, flaky network), time out and proceed — the
+      // currentUser check below still routes a signed-in user to their
+      // dashboard, so the app can never get stuck on the splash spinner.
       try {
-        await authService.handleRedirectResult();
+        await authService
+            .handleRedirectResult()
+            .timeout(const Duration(seconds: 4));
       } catch (e) {
-        debugPrint('Error checking Google redirect result: $e');
+        debugPrint('Redirect result check skipped/failed: $e');
       }
     }
 
@@ -180,14 +185,14 @@ class _SplashScreenState extends State<SplashScreen>
                   context.read<ThemeNotifier>().updateThemeForRole();
                 }
 
-                if (userRole == UserRole.tenant) {
-                  destination = const TenantDashboard();
-                } else if (userRole == UserRole.landlord) {
-                  destination = const LandlordDashboard();
+                if (userRole == UserRole.landlord) {
+                  destination = const LandlordDashboard(); // agent dashboard
                 } else if (userRole == UserRole.admin) {
                   destination = const AdminDashboard();
+                } else if (userRole == UserRole.tenant) {
+                  destination = const TenantDashboard(); // home-seeker dashboard
                 } else {
-                  destination = const RoleSelectionScreen();
+                  destination = const HomePage(); // guests browse
                 }
               }
             }
