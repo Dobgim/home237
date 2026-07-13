@@ -7,6 +7,7 @@ import 'auth_service.dart';
 import 'chat_screen.dart';
 import 'signin_screen.dart';
 import 'widgets/favourite_button.dart';
+import 'widgets/role_signup_sheet.dart';
 import 'pending_property_service.dart';
 import 'tour_player_screen.dart';
 import 'package:latlong2/latlong.dart';
@@ -570,77 +571,9 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   }
 
   void _showAuthPrompt(String action) {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 40, height: 4,
-                decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2)),
-              ),
-              const SizedBox(height: 24),
-              const Icon(Icons.lock_outline, size: 48, color: Color(0xFF3B82F6)),
-              const SizedBox(height: 16),
-              Text('Sign in to $action',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: isDark ? Colors.white : const Color(0xFF1E293B))),
-              const SizedBox(height: 8),
-              Text('Create a free account to contact agents, save listings, and book tours.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: isDark ? Colors.white60 : const Color(0xFF64748B), height: 1.5)),
-              const SizedBox(height: 28),
-              Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInScreen()));
-                      },
-                      style: OutlinedButton.styleFrom(
-                        foregroundColor: const Color(0xFF3B82F6),
-                        side: const BorderSide(color: Color(0xFF3B82F6)),
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                         // Since signup screen isn't imported here, we push SignIn and user can click sign up from there, or we can just import SignupScreen if available. For now push SignIn.
-                        Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInScreen()));
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6), foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                      ),
-                      child: const Text('Sign Up', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
+    // Viewers who change their mind mid-browse pick a role here
+    // (home-seeker or agent) instead of hitting a generic sign-in wall.
+    showRoleSignupSheet(context, action: action);
   }
 
   void _showSnackBar(String message) {

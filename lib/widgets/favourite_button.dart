@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../auth_service.dart';
+import 'role_signup_sheet.dart';
 
 class FavouriteButton extends StatefulWidget {
   final String propertyId;
@@ -45,6 +46,8 @@ class _FavouriteButtonState extends State<FavouriteButton> {
     if (!authService.isLoggedIn) {
       if (widget.onRequireAuth != null) {
         widget.onRequireAuth!();
+      } else {
+        showRoleSignupSheet(context, action: 'save this property');
       }
       return;
     }

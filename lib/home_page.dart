@@ -6,6 +6,7 @@ import 'signin_screen.dart';
 import 'explore_screen.dart';
 import 'property_details_screen.dart';
 import 'widgets/favourite_button.dart';
+import 'widgets/role_signup_sheet.dart';
 import 'location_service.dart';
 import 'package:flutter/foundation.dart'; // kIsWeb
 import 'package:shared_preferences/shared_preferences.dart';
@@ -402,57 +403,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _showSignInBottomSheet() {
-    final t = AppLocalizations.of(context);
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) {
-        final isDark = Theme.of(ctx).brightness == Brightness.dark;
-        return Container(
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(width: 40, height: 4,
-                  decoration: BoxDecoration(color: Colors.grey[300], borderRadius: BorderRadius.circular(2))),
-              const SizedBox(height: 24),
-              const Icon(Icons.lock_outline, size: 48, color: Color(0xFF3B82F6)),
-              const SizedBox(height: 16),
-              Text(t.get('sign_in_to_continue'),
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : const Color(0xFF1E293B))),
-              const SizedBox(height: 8),
-              Text(t.get('create_free_account_body'),
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 14, color: isDark ? Colors.white60 : const Color(0xFF64748B), height: 1.5)),
-              const SizedBox(height: 28),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    Navigator.push(context, MaterialPageRoute(builder: (_) => const SignInScreen()));
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6), foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  ),
-                  child: Text(t.get('sign_in_up_button'), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextButton(onPressed: () => Navigator.pop(ctx), child: Text(t.get('continue_browsing'))),
-              const SizedBox(height: 8),
-            ],
-          ),
-        );
-      },
-    );
+    // Viewers who change their mind pick a role (home-seeker or agent) here.
+    showRoleSignupSheet(context, action: 'save this property');
   }
 
   DateTime? _lastBackPressTime;
