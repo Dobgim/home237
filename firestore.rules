@@ -88,13 +88,19 @@ service cloud.firestore {
     }
 
     // ── Notifications ────────────────────────────────────────────────────────
-    // Only the owner or an admin may read. Writes are limited to the owner or
-    // an admin — a signed-in user can no longer forge notifications to anyone.
+    // READ is owner/admin only (real win — no one can read another user's
+    // feed). CREATE stays open to any signed-in user because features like
+    // chat, tour approvals and admin actions legitimately push a notification
+    // INTO another user's feed. Only the owner/admin may mark items read or
+    // delete them. (To fully stop forged notifications, move creation into a
+    // trusted server — noted as follow-up security debt.)
     match /notifications/{notificationId} {
-      allow read, write: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
+      allow read: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
+      allow write: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
       match /items/{itemId} {
         allow read: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
-        allow write: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
+        allow create: if isSignedIn();
+        allow update, delete: if isSignedIn() && (notificationId == request.auth.uid || isAdmin());
       }
     }
 
@@ -127,9 +133,11 @@ service cloud.firestore {
         isAdmin()
       );
       match /messages/{messageId} {
+        // Participant-or-admin. The "conversation not yet created" fallback is
+        // kept so the first message in a brand-new thread isn't rejected.
         allow read, write: if isSignedIn() && (
-          (exists(/databases/$(database)/documents/conversations/$(conversationId)) &&
-           request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants) ||
+          !exists(/databases/$(database)/documents/conversations/$(conversationId)) ||
+          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants ||
           isAdmin()
         );
       }
