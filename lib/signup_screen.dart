@@ -472,30 +472,35 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
     ]);
   }
 
-  // ── Agent registration banner (sign-up is for agents only) ──────────────────
-  // Viewers browse and chat without an account, so there is no role picker here.
+  // ── Registration banner — reflects the role chosen on the welcome dialog ────
   Widget _roleSection(dynamic t, bool isDark) {
+    final isSeeker = _selectedRole == UserRole.tenant;
+    final accent = isSeeker ? const Color(0xFF10B981) : const Color(0xFF3B82F6);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF3B82F6).withOpacity(isDark ? 0.14 : 0.07),
+        color: accent.withOpacity(isDark ? 0.14 : 0.07),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.35)),
+        border: Border.all(color: accent.withOpacity(0.35)),
       ),
       child: Row(children: [
         Container(
           padding: const EdgeInsets.all(9),
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6),
+            color: accent,
             borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.apartment_rounded, color: Colors.white, size: 20)),
+          child: Icon(isSeeker ? Icons.house_rounded : Icons.apartment_rounded,
+              color: Colors.white, size: 20)),
         const SizedBox(width: 12),
         Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text('Agent registration',
+          Text(isSeeker ? 'Home-seeker registration' : 'Agent registration',
             style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
               color: isDark ? Colors.white : const Color(0xFF1E293B))),
           const SizedBox(height: 2),
-          Text('Create an account to list and manage your properties.',
+          Text(
+            isSeeker
+                ? 'Create an account to save favourites, chat with agents and book visits.'
+                : 'Create an account to list and manage your properties.',
             style: TextStyle(fontSize: 11,
               color: isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B))),
         ])),
