@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../auth_service.dart';
 import '../signin_screen.dart';
 
@@ -17,6 +18,10 @@ void showRoleSignupSheet(BuildContext context, {String action = 'continue'}) {
       final subColor = isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
 
       void goTo(UserRole role) {
+        // Remember the choice so the sign-up screen shows the right
+        // registration banner even if the user detours via "Sign in".
+        SharedPreferences.getInstance().then((p) => p.setString(
+            'preferred_signup_role', role.toString().split('.').last));
         Navigator.pop(ctx);
         Navigator.push(
           context,

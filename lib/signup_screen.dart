@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'app_localizations.dart';
 import 'auth_service.dart';
 import 'signin_screen.dart';
@@ -49,9 +50,18 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
   @override
   void initState() {
     super.initState();
-    // Sign-up now registers agents only (viewers browse without an account),
-    // so default to the agent role; no on-screen role picker is needed.
+    // Role priority: explicitly passed > remembered choice from the welcome
+    // dialog / role sheet > agent (historic default).
     _selectedRole = widget.preselectedRole ?? UserRole.landlord;
+    if (widget.preselectedRole == null) {
+      SharedPreferences.getInstance().then((p) {
+        final stored = p.getString('preferred_signup_role');
+        if (stored != null && mounted) {
+          setState(() => _selectedRole =
+              stored == 'tenant' ? UserRole.tenant : UserRole.landlord);
+        }
+      });
+    }
     _aniCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 550));
     _fadeAni = CurvedAnimation(parent: _aniCtrl, curve: Curves.easeOut);
     _slideAni = Tween<Offset>(begin: const Offset(0, 0.04), end: Offset.zero)

@@ -84,8 +84,14 @@ class _HomePageState extends State<HomePage> {
         final subColor =
             isDark ? const Color(0xFF94A3B8) : const Color(0xFF475569);
 
-        void answer([Widget Function()? destination]) {
+        void answer([Widget Function()? destination, UserRole? role]) {
           prefs.setBool('hasAnsweredAgentPrompt', true);
+          if (role != null) {
+            // Remembered so the sign-up screen shows the matching
+            // registration banner whichever path the user takes there.
+            prefs.setString(
+                'preferred_signup_role', role.toString().split('.').last);
+          }
           Navigator.pop(ctx);
           if (destination != null) {
             Navigator.push(
@@ -138,8 +144,10 @@ class _HomePageState extends State<HomePage> {
                     accent: const Color(0xFF8B5CF6),
                     title: 'I\'m a property agent',
                     subtitle: 'List and manage properties, reach serious clients',
-                    onTap: () => answer(() =>
-                        const SignInScreen(preselectedRole: UserRole.landlord)),
+                    onTap: () => answer(
+                        () => const SignInScreen(
+                            preselectedRole: UserRole.landlord),
+                        UserRole.landlord),
                   ),
                   const SizedBox(height: 12),
                   _promptOption(
@@ -149,8 +157,10 @@ class _HomePageState extends State<HomePage> {
                     title: 'I\'m looking for a home',
                     subtitle:
                         'Sign up free to save favourites, chat with agents and book visits',
-                    onTap: () => answer(() =>
-                        const SignInScreen(preselectedRole: UserRole.tenant)),
+                    onTap: () => answer(
+                        () => const SignInScreen(
+                            preselectedRole: UserRole.tenant),
+                        UserRole.tenant),
                   ),
                   const SizedBox(height: 12),
                   _promptOption(
