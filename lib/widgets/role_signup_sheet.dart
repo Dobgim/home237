@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../auth_service.dart';
 import '../signin_screen.dart';
+import '../signup_screen.dart';
 
 /// Bottom sheet shown when a guest (viewer) tries a gated action — saving a
 /// property, contacting an agent, or booking a tour. Instead of a generic
@@ -23,10 +24,11 @@ void showRoleSignupSheet(BuildContext context, {String action = 'continue'}) {
         SharedPreferences.getInstance().then((p) => p.setString(
             'preferred_signup_role', role.toString().split('.').last));
         Navigator.pop(ctx);
+        // Open the sign-up page directly for the chosen role.
         Navigator.push(
           context,
           MaterialPageRoute(
-              builder: (_) => SignInScreen(preselectedRole: role)),
+              builder: (_) => SignUpScreen(preselectedRole: role)),
         );
       }
 

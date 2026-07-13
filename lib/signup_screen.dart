@@ -12,6 +12,8 @@ import 'home_page.dart';
 import 'landlord_dashboard.dart';
 import 'admin_dashboard.dart';
 import 'tenant_dashboard.dart';
+import 'pending_property_service.dart';
+import 'property_details_screen.dart';
 import 'theme_notifier.dart';
 import 'widgets/language_toggle.dart';
 
@@ -105,6 +107,17 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
       dest = HomePage(); // guests browse
     }
     Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => dest), (r) => false);
+
+    // If the user came here mid-action (e.g. tapped "Request Tour" on a
+    // property), bring them back to that property to finish what they started.
+    final pending = PendingPropertyService.instance.consume();
+    if (pending != null) {
+      Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsScreen(
+        propertyId: pending.propertyId,
+        propertyData: pending.propertyData,
+        autoAction: pending.pendingAction,
+      )));
+    }
   }
 
   void _showRoleSnackbar() {

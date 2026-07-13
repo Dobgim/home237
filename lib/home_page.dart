@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth_service.dart';
 import 'signin_screen.dart';
+import 'signup_screen.dart';
 import 'explore_screen.dart';
 import 'property_details_screen.dart';
 import 'widgets/favourite_button.dart';
@@ -145,7 +146,7 @@ class _HomePageState extends State<HomePage> {
                     title: 'I\'m a property agent',
                     subtitle: 'List and manage properties, reach serious clients',
                     onTap: () => answer(
-                        () => const SignInScreen(
+                        () => const SignUpScreen(
                             preselectedRole: UserRole.landlord),
                         UserRole.landlord),
                   ),
@@ -158,7 +159,7 @@ class _HomePageState extends State<HomePage> {
                     subtitle:
                         'Sign up free to save favourites, chat with agents and book visits',
                     onTap: () => answer(
-                        () => const SignInScreen(
+                        () => const SignUpScreen(
                             preselectedRole: UserRole.tenant),
                         UserRole.tenant),
                   ),
@@ -654,8 +655,10 @@ class _HomePageState extends State<HomePage> {
             builder: (context, _) {
               if (!authService.isLoggedIn) {
                 return TextButton(
-                  onPressed: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) => const SignInScreen())),
+                  // Ask the role first, then open the matching sign-up page.
+                  // Existing users tap "Already have an account? Sign in".
+                  onPressed: () =>
+                      showRoleSignupSheet(context, action: 'get started'),
                   style: TextButton.styleFrom(
                     backgroundColor: const Color(0xFF3B82F6),
                     foregroundColor: Colors.white,
