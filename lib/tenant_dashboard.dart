@@ -14,6 +14,7 @@ import 'property_details_screen.dart';
 import 'widgets/favourite_button.dart';
 import 'location_service.dart';
 import 'widgets/language_toggle.dart';
+import 'widgets/floating_nav_bar.dart';
 import 'app_localizations.dart';
 import 'utils/listing_flags.dart';
 import 'ai_agent_screen.dart';
@@ -1200,27 +1201,32 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
   Widget _buildBottomNav(bool isDark) {
     final t = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(isDark ? 0.3 : 0.05), blurRadius: 10, offset: const Offset(0, -2))],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedNavIndex,
-        onTap: _setNavIndex,
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        selectedItemColor: const Color(0xFF1E3A5F),
-        unselectedItemColor: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
-        selectedFontSize: 11, unselectedFontSize: 11, elevation: 0,
-        items: [
-          BottomNavigationBarItem(icon: const Icon(Icons.home_outlined), activeIcon: const Icon(Icons.home), label: t.get('nav_home')),
-          BottomNavigationBarItem(icon: const Icon(Icons.search), label: t.get('nav_explore')),
-          BottomNavigationBarItem(icon: _buildSavedBadgeIcon(const Icon(Icons.favorite_outline)), activeIcon: _buildSavedBadgeIcon(const Icon(Icons.favorite)), label: t.get('nav_saved')),
-          BottomNavigationBarItem(icon: _buildMessagesBadgeIcon(const Icon(Icons.chat_bubble_outline)), activeIcon: _buildMessagesBadgeIcon(const Icon(Icons.chat_bubble)), label: t.get('nav_messages')),
-          BottomNavigationBarItem(icon: const Icon(Icons.person_outline), activeIcon: const Icon(Icons.person), label: t.get('nav_profile')),
-        ],
-      ),
+    return FloatingNavBar(
+      currentIndex: _selectedNavIndex,
+      onTap: _setNavIndex,
+      items: [
+        FloatingNavItem(
+          icon: Icons.home_outlined, activeIcon: Icons.home,
+          label: t.get('nav_home')),
+        FloatingNavItem(
+          icon: Icons.search, activeIcon: Icons.search,
+          label: t.get('nav_explore')),
+        FloatingNavItem(
+          icon: Icons.favorite_outline, activeIcon: Icons.favorite,
+          label: t.get('nav_saved'),
+          iconBuilder: (active, color) => _buildSavedBadgeIcon(
+              Icon(active ? Icons.favorite : Icons.favorite_outline,
+                  color: color, size: 22))),
+        FloatingNavItem(
+          icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble,
+          label: t.get('nav_messages'),
+          iconBuilder: (active, color) => _buildMessagesBadgeIcon(
+              Icon(active ? Icons.chat_bubble : Icons.chat_bubble_outline,
+                  color: color, size: 22))),
+        FloatingNavItem(
+          icon: Icons.person_outline, activeIcon: Icons.person,
+          label: t.get('nav_profile')),
+      ],
     );
   }
 

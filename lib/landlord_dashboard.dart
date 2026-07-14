@@ -13,6 +13,7 @@ import 'support_chat_screen.dart';
 import 'verification_upload_screen.dart';
 import 'premium_subscription_screen.dart';
 import 'widgets/language_toggle.dart';
+import 'widgets/floating_nav_bar.dart';
 import 'app_localizations.dart';
 import 'rent_tracker_screen.dart';
 
@@ -1375,55 +1376,29 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
 
   Widget _buildBottomNav(bool isDark) {
     final t = AppLocalizations.of(context);
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isDark ? 0.3 : 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, -2),
-          ),
-        ],
-      ),
-      child: BottomNavigationBar(
-        currentIndex: _selectedNavIndex,
-        onTap: (index) => setState(() => _selectedNavIndex = index),
-        type: BottomNavigationBarType.fixed,
-        backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        selectedItemColor: const Color(0xFF1E3A5F),
-        unselectedItemColor: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
-        selectedFontSize: 11,
-        unselectedFontSize: 11,
-        elevation: 0,
-        items: [
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.dashboard_outlined),
-            activeIcon: const Icon(Icons.dashboard),
-            label: t.get('nav_dashboard'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home_outlined),
-            activeIcon: const Icon(Icons.home),
-            label: t.get('nav_properties'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.event_outlined),
-            activeIcon: const Icon(Icons.event),
-            label: t.get('nav_tours'),
-          ),
-          BottomNavigationBarItem(
-            icon: _buildMessagesBadgeIcon(const Icon(Icons.chat_bubble_outline)),
-            activeIcon: _buildMessagesBadgeIcon(const Icon(Icons.chat_bubble)),
-            label: t.get('nav_messages'),
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person_outline),
-            activeIcon: const Icon(Icons.person),
-            label: t.get('nav_profile'),
-          ),
-        ],
-      ),
+    return FloatingNavBar(
+      currentIndex: _selectedNavIndex,
+      onTap: (index) => setState(() => _selectedNavIndex = index),
+      items: [
+        FloatingNavItem(
+          icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard,
+          label: t.get('nav_dashboard')),
+        FloatingNavItem(
+          icon: Icons.home_outlined, activeIcon: Icons.home,
+          label: t.get('nav_properties')),
+        FloatingNavItem(
+          icon: Icons.event_outlined, activeIcon: Icons.event,
+          label: t.get('nav_tours')),
+        FloatingNavItem(
+          icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble,
+          label: t.get('nav_messages'),
+          iconBuilder: (active, color) => _buildMessagesBadgeIcon(
+              Icon(active ? Icons.chat_bubble : Icons.chat_bubble_outline,
+                  color: color, size: 22))),
+        FloatingNavItem(
+          icon: Icons.person_outline, activeIcon: Icons.person,
+          label: t.get('nav_profile')),
+      ],
     );
   }
 }

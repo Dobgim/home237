@@ -10,6 +10,7 @@ import 'admin_support_chats_screen.dart';
 import 'settings_screen.dart';
 import 'auth_service.dart';
 import 'email_service.dart';
+import 'widgets/floating_nav_bar.dart';
 import 'widgets/language_toggle.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
@@ -68,62 +69,17 @@ class _AdminDashboardState extends State<AdminDashboard> {
       },
       child: Scaffold(
         body: _screens[_selectedIndex],
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: _selectedIndex,
-            onTap: (index) => setState(() => _selectedIndex = index),
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: const Color(0xFF0EA5E9),
-            unselectedItemColor: const Color(0xFF94A3B8),
-            selectedFontSize: 10,
-            unselectedFontSize: 10,
-            showUnselectedLabels: true,
-            items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.dashboard_outlined),
-              activeIcon: Icon(Icons.dashboard),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.verified_user_outlined),
-              activeIcon: Icon(Icons.verified_user),
-              label: 'Verify',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_work_outlined),
-              activeIcon: Icon(Icons.home_work),
-              label: 'Properties',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.people_outline),
-              activeIcon: Icon(Icons.people),
-              label: 'Users',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.support_agent_outlined),
-              activeIcon: Icon(Icons.support_agent),
-              label: 'Support',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings_outlined),
-              activeIcon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
-        ),
-        ),
+      bottomNavigationBar: FloatingNavBar(
+        currentIndex: _selectedIndex,
+        onTap: (index) => setState(() => _selectedIndex = index),
+        items: const [
+          FloatingNavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard, label: 'Dashboard'),
+          FloatingNavItem(icon: Icons.verified_user_outlined, activeIcon: Icons.verified_user, label: 'Verify'),
+          FloatingNavItem(icon: Icons.home_work_outlined, activeIcon: Icons.home_work, label: 'Properties'),
+          FloatingNavItem(icon: Icons.people_outline, activeIcon: Icons.people, label: 'Users'),
+          FloatingNavItem(icon: Icons.support_agent_outlined, activeIcon: Icons.support_agent, label: 'Support'),
+          FloatingNavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'Settings'),
+        ],
       ),
     ),
   );
