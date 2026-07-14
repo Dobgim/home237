@@ -138,7 +138,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF1E3A5F),
                 ),
               ),
             ),
@@ -219,7 +219,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF1E3A5F)
                           : isDark
                           ? const Color(0xFF374151)
                           : const Color(0xFFF3F4F6),
@@ -302,14 +302,14 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF3B82F6).withOpacity(0.1)
+                          ? const Color(0xFF1E3A5F).withOpacity(0.1)
                           : isDark
                           ? const Color(0xFF374151)
                           : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF1E3A5F)
                             : Colors.transparent,
                       ),
                     ),
@@ -322,7 +322,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                             child: Icon(
                               Icons.check_circle,
                               size: 16,
-                              color: Color(0xFF3B82F6),
+                              color: Color(0xFF1E3A5F),
                             ),
                           ),
                         Text(
@@ -330,7 +330,7 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             color: isSelected
-                                ? const Color(0xFF3B82F6)
+                                ? const Color(0xFF1E3A5F)
                                 : isDark
                                 ? Colors.grey[300]
                                 : Colors.grey[700],

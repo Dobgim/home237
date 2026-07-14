@@ -261,7 +261,7 @@ class _LandlordProfileScreenState extends State<LandlordProfileScreen> {
               child: Text(
                 t.get('save'),
                 style: const TextStyle(
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF1E3A5F),
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
                 ),
@@ -309,7 +309,7 @@ class _LandlordProfileScreenState extends State<LandlordProfileScreen> {
                       child: Container(
                         padding: const EdgeInsets.all(6),
                         decoration: const BoxDecoration(
-                          color: Color(0xFF3B82F6),
+                          color: Color(0xFF1E3A5F),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(

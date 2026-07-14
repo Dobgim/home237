@@ -233,7 +233,7 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
                             Expanded(
                               child: Column(
                                 children: [
-                                  const Icon(Icons.draw, color: Colors.blue),
+                                  const Icon(Icons.draw, color: const Color(0xFF1E3A5F)),
                                   const SizedBox(height: 6),
                                   Text(
                                     leaseData['tenantName'] ?? 'Tenant',
@@ -249,7 +249,7 @@ class _LeaseAgreementScreenState extends State<LeaseAgreementScreen> {
                             Expanded(
                               child: Column(
                                 children: [
-                                  Icon(Icons.draw, color: status == 'active' ? Colors.blue : Colors.grey),
+                                  Icon(Icons.draw, color: status == 'active' ? const Color(0xFF1E3A5F) : Colors.grey),
                                   const SizedBox(height: 6),
                                   Text(
                                     leaseData['landlordName'] ?? 'Agent',

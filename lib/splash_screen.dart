@@ -235,7 +235,7 @@ class _SplashScreenState extends State<SplashScreen>
             width: 34,
             height: 34,
             child: CircularProgressIndicator(
-                strokeWidth: 2.6, color: Color(0xFF3B82F6)),
+                strokeWidth: 2.6, color: Color(0xFF1E3A5F)),
           ),
         ),
       );
@@ -284,7 +284,7 @@ class _SplashScreenState extends State<SplashScreen>
                               borderRadius: BorderRadius.circular(36),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF3B82F6)
+                                  color: const Color(0xFF1E3A5F)
                                       .withOpacity(0.35 * _pulseAnim.value),
                                   blurRadius: 40 * _pulseAnim.value,
                                   spreadRadius: 5 * _pulseAnim.value,
@@ -323,9 +323,9 @@ class _SplashScreenState extends State<SplashScreen>
                           child: ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
                               colors: [
-                                Color(0xFF60A5FA),
+                                Color(0xFFCA8A04),
                                 Color(0xFF34D399),
-                                Color(0xFF60A5FA),
+                                Color(0xFFCA8A04),
                               ],
                             ).createShader(bounds),
                             child: const Text(
@@ -376,7 +376,7 @@ class _SplashScreenState extends State<SplashScreen>
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: const Color(0xFF3B82F6)
+                            color: const Color(0xFF1E3A5F)
                                 .withOpacity(0.15 + 0.15 * _pulseAnim.value),
                             width: 1.5,
                           ),
@@ -386,7 +386,7 @@ class _SplashScreenState extends State<SplashScreen>
                           child: CircularProgressIndicator(
                             strokeWidth: 2.0,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Color(0xFF3B82F6),
+                              Color(0xFF1E3A5F),
                             ),
                           ),
                         ),
@@ -456,7 +456,7 @@ class _SplashScreenState extends State<SplashScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF3B82F6).withOpacity(0.08 * _pulseAnim.value),
+                    const Color(0xFF1E3A5F).withOpacity(0.08 * _pulseAnim.value),
                     Colors.transparent,
                   ],
                 ),
@@ -502,7 +502,7 @@ class _SplashScreenState extends State<SplashScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    const Color(0xFF1E40AF).withOpacity(0.05 * _pulseAnim.value),
+                    const Color(0xFF15294A).withOpacity(0.05 * _pulseAnim.value),
                     Colors.transparent,
                   ],
                 ),

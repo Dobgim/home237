@@ -78,7 +78,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
+                gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.smart_toy, color: Colors.white, size: 24),
@@ -357,7 +357,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                 const SliverToBoxAdapter(
                   child: Padding(
                     padding: EdgeInsets.symmetric(vertical: 60),
-                    child: Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
+                    child: Center(child: CircularProgressIndicator(color: Color(0xFF1E3A5F))),
                   ),
                 )
               else ...[
@@ -447,7 +447,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                             icon: const Icon(Icons.clear_rounded, size: 16),
                             label: const Text('Show all listings'),
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF3B82F6),
+                              backgroundColor: const Color(0xFF1E3A5F),
                               foregroundColor: Colors.white,
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                             ),
@@ -486,14 +486,14 @@ class _TenantDashboardState extends State<TenantDashboard> {
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+            colors: [Color(0xFF1E3A5F), Color(0xFF6366F1)],
             begin: Alignment.centerLeft,
             end: Alignment.centerRight,
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: const Color(0xFF3B82F6).withOpacity(0.25),
+              color: const Color(0xFF1E3A5F).withOpacity(0.25),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -554,7 +554,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
           Container(
             width: 46, height: 46,
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.12),
+              color: const Color(0xFF1E3A5F).withOpacity(0.12),
               shape: BoxShape.circle,
               image: auth.profileImage != null
                   ? DecorationImage(image: NetworkImage(auth.profileImage!), fit: BoxFit.cover) : null,
@@ -562,7 +562,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
             child: auth.profileImage == null
                 ? Center(
                     child: Text((auth.userName ?? 'U')[0].toUpperCase(),
-                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF3B82F6))),
+                      style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Color(0xFF1E3A5F))),
                   ) : null,
           ),
           const SizedBox(width: 12),
@@ -579,9 +579,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
                   overflow: TextOverflow.ellipsis, maxLines: 1),
                 if (_userCity != null)
                   Row(children: [
-                    const Icon(Icons.location_on, size: 12, color: Color(0xFF3B82F6)),
+                    const Icon(Icons.location_on, size: 12, color: Color(0xFF1E3A5F)),
                     const SizedBox(width: 2),
-                    Text(_userCity!, style: const TextStyle(fontSize: 12, color: Color(0xFF3B82F6), fontWeight: FontWeight.w500)),
+                    Text(_userCity!, style: const TextStyle(fontSize: 12, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w500)),
                   ]),
               ],
             ),
@@ -758,7 +758,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
           child: Row(
             children: [
               const SizedBox(width: 16),
-              const Icon(Icons.search, color: Color(0xFF3B82F6), size: 22),
+              const Icon(Icons.search, color: Color(0xFF1E3A5F), size: 22),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(t.get('search_hint'),
@@ -767,8 +767,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
               Container(
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.tune, color: Color(0xFF3B82F6), size: 18),
+                decoration: BoxDecoration(color: const Color(0xFF1E3A5F).withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.tune, color: Color(0xFF1E3A5F), size: 18),
               ),
             ],
           ),
@@ -795,10 +795,10 @@ class _TenantDashboardState extends State<TenantDashboard> {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF2D2D2D) : Colors.white),
+                color: isActive ? const Color(0xFF1E3A5F) : (isDark ? const Color(0xFF2D2D2D) : Colors.white),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: isActive
-                    ? [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
+                    ? [BoxShadow(color: const Color(0xFF1E3A5F).withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
                     : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
               ),
               child: Row(children: [
@@ -828,9 +828,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
         borderRadius: BorderRadius.circular(20),
         gradient: const LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF1D4ED8), Color(0xFF3B82F6), Color(0xFF06B6D4)],
+          colors: [Color(0xFF15294A), Color(0xFF1E3A5F), Color(0xFF06B6D4)],
         ),
-        boxShadow: [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
+        boxShadow: [BoxShadow(color: const Color(0xFF1E3A5F).withOpacity(0.3), blurRadius: 16, offset: const Offset(0, 6))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
@@ -904,9 +904,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
               GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ExploreScreen())),
                 child: Row(children: [
-                  Text(t.get('browse_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+                  Text(t.get('browse_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w600)),
                   const SizedBox(width: 2),
-                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF1E3A5F)),
                 ]),
               ),
             ],
@@ -945,12 +945,12 @@ class _TenantDashboardState extends State<TenantDashboard> {
             children: [
               Expanded(
                 child: Row(children: [
-                  if (iconOrString is IconData) ...[Icon(iconOrString, size: 20, color: isNearYou ? const Color(0xFF3B82F6) : (isDark ? Colors.white70 : const Color(0xFF64748B))), const SizedBox(width: 8)]
+                  if (iconOrString is IconData) ...[Icon(iconOrString, size: 20, color: isNearYou ? const Color(0xFF1E3A5F) : (isDark ? Colors.white70 : const Color(0xFF64748B))), const SizedBox(width: 8)]
                   else if (iconOrString is String && iconOrString.isNotEmpty) ...[Text(iconOrString, style: const TextStyle(fontSize: 20)), const SizedBox(width: 8)],
                   Flexible(
                     child: Text(title,
                         style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold,
-                            color: isNearYou ? const Color(0xFF3B82F6) : (isDark ? Colors.white : const Color(0xFF1E293B))),
+                            color: isNearYou ? const Color(0xFF1E3A5F) : (isDark ? Colors.white : const Color(0xFF1E293B))),
                         overflow: TextOverflow.ellipsis),
                   ),
                   if (docs.isNotEmpty) ...[
@@ -958,12 +958,12 @@ class _TenantDashboardState extends State<TenantDashboard> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
-                        color: isNearYou ? const Color(0xFF3B82F6).withOpacity(0.12) : (isDark ? Colors.white12 : const Color(0xFFF1F5F9)),
+                        color: isNearYou ? const Color(0xFF1E3A5F).withOpacity(0.12) : (isDark ? Colors.white12 : const Color(0xFFF1F5F9)),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text('${docs.length}',
                           style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold,
-                              color: isNearYou ? const Color(0xFF3B82F6) : (isDark ? Colors.white60 : const Color(0xFF64748B)))),
+                              color: isNearYou ? const Color(0xFF1E3A5F) : (isDark ? Colors.white60 : const Color(0xFF64748B)))),
                     ),
                   ],
                 ]),
@@ -971,9 +971,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
               GestureDetector(
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ExploreScreen(initialRegion: rawCity))),
                 child: Row(children: [
-                  Text(t.get('see_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+                  Text(t.get('see_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w600)),
                   const SizedBox(width: 2),
-                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.arrow_forward_ios, size: 12, color: Color(0xFF1E3A5F)),
                 ]),
               ),
             ],
@@ -1000,7 +1000,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                         const SizedBox(height: 6),
                         GestureDetector(
                           onTap: () => setState(() => _activeFilter = 'All'),
-                          child: Text(t.get('clear_filter'), style: const TextStyle(color: Color(0xFF3B82F6), fontSize: 12, fontWeight: FontWeight.w600)),
+                          child: Text(t.get('clear_filter'), style: const TextStyle(color: Color(0xFF1E3A5F), fontSize: 12, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ]),
@@ -1113,8 +1113,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
             // Type badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-              decoration: BoxDecoration(color: const Color(0xFF3B82F6).withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
-              child: Text(type, style: const TextStyle(fontSize: 11, color: Color(0xFF3B82F6), fontWeight: FontWeight.w600)),
+              decoration: BoxDecoration(color: const Color(0xFF1E3A5F).withOpacity(0.1), borderRadius: BorderRadius.circular(6)),
+              child: Text(type, style: const TextStyle(fontSize: 11, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w600)),
             ),
             const SizedBox(height: 6),
             // Location & Rating
@@ -1210,7 +1210,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
         onTap: _setNavIndex,
         type: BottomNavigationBarType.fixed,
         backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        selectedItemColor: const Color(0xFF3B82F6),
+        selectedItemColor: const Color(0xFF1E3A5F),
         unselectedItemColor: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
         selectedFontSize: 11, unselectedFontSize: 11, elevation: 0,
         items: [

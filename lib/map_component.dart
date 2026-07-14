@@ -223,7 +223,7 @@ class MapComponentState extends State<MapComponent>
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: Color(0xFF3B82F6)),
+              CircularProgressIndicator(color: Color(0xFF1E3A5F)),
               SizedBox(height: 12),
               Text('Loading map…',
                   style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
@@ -327,10 +327,10 @@ class MapComponentState extends State<MapComponent>
                       width: 18,
                       height: 18,
                       child: CircularProgressIndicator(
-                          strokeWidth: 2, color: Color(0xFF3B82F6)),
+                          strokeWidth: 2, color: Color(0xFF1E3A5F)),
                     )
                   : const Icon(Icons.my_location,
-                      size: 20, color: Color(0xFF3B82F6)),
+                      size: 20, color: Color(0xFF1E3A5F)),
             ),
           ),
 
@@ -398,12 +398,12 @@ class _PulsingPin extends StatelessWidget {
                 width: 40,
                 height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6),
+                  color: const Color(0xFF1E3A5F),
                   shape: BoxShape.circle,
                   border: Border.all(color: Colors.white, width: 3),
                   boxShadow: [
                     BoxShadow(
-                      color: const Color(0xFF3B82F6).withOpacity(0.5),
+                      color: const Color(0xFF1E3A5F).withOpacity(0.5),
                       blurRadius: 12,
                       spreadRadius: 4,
                     ),
@@ -416,7 +416,7 @@ class _PulsingPin extends StatelessWidget {
             // Pin tail
             CustomPaint(
               size: const Size(12, 8),
-              painter: _TrianglePainter(color: const Color(0xFF3B82F6)),
+              painter: _TrianglePainter(color: const Color(0xFF1E3A5F)),
             ),
           ],
         );

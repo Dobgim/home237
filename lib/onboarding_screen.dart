@@ -172,7 +172,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(4),
                             color: _currentPage == i
-                                ? const Color(0xFF3B82F6)
+                                ? const Color(0xFF1E3A5F)
                                 : (isDark
                                     ? Colors.white24
                                     : Colors.black12),
@@ -199,16 +199,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF1E3A5F),
                           foregroundColor: Colors.white,
                           disabledBackgroundColor:
-                              const Color(0xFF3B82F6).withOpacity(0.4),
+                              const Color(0xFF1E3A5F).withOpacity(0.4),
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(16)),
                           elevation: 4,
                           shadowColor:
-                              const Color(0xFF3B82F6).withOpacity(0.4),
+                              const Color(0xFF1E3A5F).withOpacity(0.4),
                         ),
                         child: Text(
                           _currentPage == 2
@@ -254,7 +254,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 borderRadius: BorderRadius.circular(32),
                 boxShadow: [
                   BoxShadow(
-                    color: const Color(0xFF3B82F6).withOpacity(0.4),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.4),
                     blurRadius: 24,
                     offset: const Offset(0, 10),
                   )
@@ -501,10 +501,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6).withOpacity(0.12),
+            color: const Color(0xFF1E3A5F).withOpacity(0.12),
             borderRadius: BorderRadius.circular(16),
           ),
-          child: Icon(icon, color: const Color(0xFF3B82F6), size: 26),
+          child: Icon(icon, color: const Color(0xFF1E3A5F), size: 26),
         ),
         const SizedBox(height: 8),
         Text(label,
@@ -530,7 +530,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       },
       {
         'icon': Icons.location_on_outlined,
-        'color': const Color(0xFF3B82F6),
+        'color': const Color(0xFF1E3A5F),
         'title': t.get('find_near_you_title'),
         'desc': t.get('find_near_you_body')
       },
@@ -769,7 +769,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   _selectedCity = null;
                 }),
                 child: Text(t.get('change_city'),
-                    style: const TextStyle(color: Color(0xFF3B82F6))),
+                    style: const TextStyle(color: Color(0xFF1E3A5F))),
               ),
             ],
 
@@ -831,14 +831,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           horizontal: 16, vertical: 10),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF1E3A5F)
                             : (isDark
                                 ? const Color(0xFF1E293B)
                                 : Colors.white),
                         borderRadius: BorderRadius.circular(24),
                         border: Border.all(
                             color: isSelected
-                                ? const Color(0xFF3B82F6)
+                                ? const Color(0xFF1E3A5F)
                                 : (isDark
                                     ? Colors.white24
                                     : const Color(0xFFE2E8F0)),
@@ -846,7 +846,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                    color: const Color(0xFF3B82F6)
+                                    color: const Color(0xFF1E3A5F)
                                         .withOpacity(0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 4))

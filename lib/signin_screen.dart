@@ -263,9 +263,9 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _handleSignIn,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF3B82F6),
+                                  backgroundColor: const Color(0xFF1E3A5F),
                                   foregroundColor: Colors.white,
-                                  disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.55),
+                                  disabledBackgroundColor: const Color(0xFF1E3A5F).withOpacity(0.55),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
                                 child: _isLoading
@@ -284,7 +284,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
                                 onTap: () => Navigator.pushReplacement(context,
                                   MaterialPageRoute(builder: (_) => SignUpScreen(preselectedRole: widget.preselectedRole))),
                                 child: Text(t.get('sign_up'),
-                                  style: const TextStyle(fontSize: 14, color: Color(0xFF3B82F6), fontWeight: FontWeight.w700))),
+                                  style: const TextStyle(fontSize: 14, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w700))),
                             ]),
                           ],
                         ),
@@ -306,7 +306,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF0EA5E9), Color(0xFF3B82F6), Color(0xFF6366F1)]),
+          colors: [Color(0xFF0EA5E9), Color(0xFF1E3A5F), Color(0xFF6366F1)]),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(36), bottomRight: Radius.circular(36))),
       child: SafeArea(
@@ -431,10 +431,10 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
             duration: const Duration(milliseconds: 150),
             width: 20, height: 20,
             decoration: BoxDecoration(
-              color: _rememberMe ? const Color(0xFF3B82F6) : Colors.transparent,
+              color: _rememberMe ? const Color(0xFF1E3A5F) : Colors.transparent,
               borderRadius: BorderRadius.circular(5),
               border: Border.all(
-                color: _rememberMe ? const Color(0xFF3B82F6)
+                color: _rememberMe ? const Color(0xFF1E3A5F)
                     : (isDark ? const Color(0xFF475569) : const Color(0xFFCBD5E1)),
                 width: 1.5)),
             child: _rememberMe
@@ -454,7 +454,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
           minimumSize: Size.zero,
           tapTargetSize: MaterialTapTargetSize.shrinkWrap),
         child: const Text('Forgot password?',
-          style: TextStyle(color: Color(0xFF3B82F6), fontSize: 13, fontWeight: FontWeight.w600))),
+          style: TextStyle(color: Color(0xFF1E3A5F), fontSize: 13, fontWeight: FontWeight.w600))),
     ]);
   }
 
@@ -471,7 +471,7 @@ class _SignInScreenState extends State<SignInScreen> with TickerProviderStateMix
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF1E3A5F), width: 2)),
       errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444))),
       focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2)),
     );

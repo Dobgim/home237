@@ -324,7 +324,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedFilter = filter);
                       },
-                      selectedColor: const Color(0xFF3B82F6),
+                      selectedColor: const Color(0xFF1E3A5F),
                       labelStyle: TextStyle(
                         color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -447,12 +447,12 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
                                     width: 54,
                                     height: 54,
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFF3B82F6).withOpacity(0.1),
+                                      color: const Color(0xFF1E3A5F).withOpacity(0.1),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
                                       Icons.person_outline,
-                                      color: Color(0xFF3B82F6),
+                                      color: Color(0xFF1E3A5F),
                                       size: 28,
                                     ),
                                   ),
@@ -711,7 +711,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
                                       icon: const Icon(Icons.chat_bubble_outline, size: 18),
                                       label: Text(authService.userRole == UserRole.tenant ? 'Message Agent' : 'Message Tenant', style: const TextStyle(fontWeight: FontWeight.bold)),
                                       style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF3B82F6),
+                                        backgroundColor: const Color(0xFF1E3A5F),
                                         foregroundColor: Colors.white,
                                         elevation: 0,
                                         padding: const EdgeInsets.symmetric(vertical: 12),
@@ -739,7 +739,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                CircularProgressIndicator(color: Color(0xFF1E3A5F)),
                 SizedBox(height: 16),
                 Text(
                   'Processing your Refund...',
@@ -770,7 +770,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
         color = Colors.grey;
         break;
       case 'escrowed':
-        color = const Color(0xFF3B82F6); // Blue for active escrow holding
+        color = const Color(0xFF1E3A5F); // Blue for active escrow holding
         break;
       default:
         color = const Color(0xFFF59E0B);

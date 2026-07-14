@@ -279,7 +279,7 @@ class SavedPropertiesScreen extends StatelessWidget {
                                           style: const TextStyle(
                                             fontSize: 16,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF3B82F6),
+                                            color: Color(0xFF1E3A5F),
                                           ),
                                         ),
                                       ],

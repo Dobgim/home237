@@ -108,7 +108,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
-              const Icon(Icons.lock_outline, color: Color(0xFF3B82F6)),
+              const Icon(Icons.lock_outline, color: Color(0xFF1E3A5F)),
               const SizedBox(width: 10),
               Text(t.get('change_password_title')),
             ],
@@ -270,7 +270,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: isLoading
@@ -315,7 +315,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: const Row(
             children: [
-              Icon(Icons.security, color: Color(0xFF3B82F6)),
+              Icon(Icons.security, color: Color(0xFF1E3A5F)),
               SizedBox(width: 10),
               Text('Enable 2FA'),
             ],
@@ -402,7 +402,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                       }
                       setDialogState(() => isVerifying = false);
                     },
-                    child: const Text('Resend Code', style: TextStyle(color: Color(0xFF3B82F6))),
+                    child: const Text('Resend Code', style: TextStyle(color: Color(0xFF1E3A5F))),
                   ),
                 ),
               ],
@@ -471,7 +471,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                       }
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: isVerifying
@@ -680,7 +680,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
           else
             TextButton(
               onPressed: _saveSettings,
-              child: const Text('Save', style: TextStyle(color: Color(0xFF3B82F6), fontWeight: FontWeight.bold)),
+              child: const Text('Save', style: TextStyle(color: Color(0xFF1E3A5F), fontWeight: FontWeight.bold)),
             ),
         ],
       ),
@@ -700,7 +700,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                   style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[500] : Colors.grey[600]),
                 ),
                 value: _profileVisible,
-                activeThumbColor: const Color(0xFF3B82F6),
+                activeThumbColor: const Color(0xFF1E3A5F),
                 onChanged: (v) => setState(() => _profileVisible = v),
               ),
               Divider(height: 1, color: isDark ? Colors.white12 : Colors.grey[200]),
@@ -712,7 +712,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
                   style: TextStyle(fontSize: 12, color: isDark ? Colors.grey[500] : Colors.grey[600]),
                 ),
                 value: _showContactInfo,
-                activeThumbColor: const Color(0xFF3B82F6),
+                activeThumbColor: const Color(0xFF1E3A5F),
                 onChanged: (v) => setState(() => _showContactInfo = v),
               ),
             ]),
@@ -766,7 +766,7 @@ class _PrivacySecurityScreenState extends State<PrivacySecurityScreen> {
             _sectionHeader('ACCOUNT DATA', isDark),
             _card(isDark, children: [
               ListTile(
-                leading: const Icon(Icons.download_outlined, color: Color(0xFF3B82F6)),
+                leading: const Icon(Icons.download_outlined, color: Color(0xFF1E3A5F)),
                 title: const Text('Download My Data', style: TextStyle(fontWeight: FontWeight.w500)),
                 subtitle: Text(
                   'Request a copy of your data',

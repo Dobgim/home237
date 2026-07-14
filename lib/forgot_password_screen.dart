@@ -77,7 +77,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Column(
           children: [
-            Icon(Icons.mark_email_read, color: Color(0xFF3B82F6), size: 48),
+            Icon(Icons.mark_email_read, color: Color(0xFF1E3A5F), size: 48),
             SizedBox(height: 16),
             Text('Check Your Email', textAlign: TextAlign.center),
           ],
@@ -96,7 +96,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Navigator.of(context).pop(); // Back to Sign In
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: const Text('Back to Sign In', style: TextStyle(color: Colors.white)),
@@ -141,13 +141,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
                     Icons.lock_reset,
                     size: 48,
-                    color: Color(0xFF3B82F6),
+                    color: Color(0xFF1E3A5F),
                   ),
                 ),
 
@@ -206,7 +206,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     ),
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2),
+                      borderSide: const BorderSide(color: Color(0xFF1E3A5F), width: 2),
                     ),
                   ),
                   validator: (value) {
@@ -229,7 +229,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   child: ElevatedButton(
                     onPressed: _isLoading ? null : _sendResetLink,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF1E3A5F),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -264,7 +264,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                     child: const Text(
                       'Back to Sign In',
                       style: TextStyle(
-                        color: Color(0xFF3B82F6),
+                        color: Color(0xFF1E3A5F),
                         fontWeight: FontWeight.w600,
                       ),
                     ),

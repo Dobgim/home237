@@ -246,7 +246,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         ),
                         prefixIcon: Icon(
                           Icons.search,
-                          color: isDark ? Colors.white38 : const Color(0xFF3B82F6),
+                          color: isDark ? Colors.white38 : const Color(0xFF1E3A5F),
                         ),
                         suffixIcon: _activeSearch.isNotEmpty
                             ? IconButton(
@@ -326,14 +326,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 18),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF1E3A5F)
                             : isDark
                                 ? const Color(0xFF374151)
                                 : Colors.white,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF3B82F6)
+                              ? const Color(0xFF1E3A5F)
                               : isDark
                                   ? const Color(0xFF4B5563)
                                   : const Color(0xFFE5E7EB),
@@ -646,16 +646,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                     horizontal: 8, vertical: 5),
                                 decoration: BoxDecoration(
                                   color: isSelected
-                                      ? const Color(0xFF1D4ED8)
+                                      ? const Color(0xFF15294A)
                                       : isPremium
                                           ? const Color(0xFF10B981)
-                                          : const Color(0xFF3B82F6),
+                                          : const Color(0xFF1E3A5F),
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
                                       color: (isSelected
-                                              ? const Color(0xFF1D4ED8)
-                                              : const Color(0xFF3B82F6))
+                                              ? const Color(0xFF15294A)
+                                              : const Color(0xFF1E3A5F))
                                           .withOpacity(0.45),
                                       blurRadius: 10,
                                       spreadRadius: 1,
@@ -688,10 +688,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                                 size: const Size(10, 6),
                                 painter: _MapPinTailPainter(
                                   color: isSelected
-                                      ? const Color(0xFF1D4ED8)
+                                      ? const Color(0xFF15294A)
                                       : isPremium
                                           ? const Color(0xFF10B981)
-                                          : const Color(0xFF3B82F6),
+                                          : const Color(0xFF1E3A5F),
                                 ),
                               ),
                             ],
@@ -795,10 +795,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                         width: 18,
                         height: 18,
                         child: CircularProgressIndicator(
-                            strokeWidth: 2, color: Color(0xFF3B82F6)),
+                            strokeWidth: 2, color: Color(0xFF1E3A5F)),
                       )
                     : const Icon(Icons.my_location,
-                        size: 20, color: Color(0xFF3B82F6)),
+                        size: 20, color: Color(0xFF1E3A5F)),
               ),
             ),
 
@@ -1196,7 +1196,7 @@ class _PropertyPopupCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6),
+                              color: const Color(0xFF1E3A5F),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text('FEATURED',
@@ -1211,7 +1211,7 @@ class _PropertyPopupCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 7, vertical: 2),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6),
+                              color: const Color(0xFF1E3A5F),
                               borderRadius: BorderRadius.circular(4),
                             ),
                             child: const Text('FEATURED',
@@ -1270,7 +1270,7 @@ class _PropertyPopupCard extends StatelessWidget {
                       style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF3B82F6)),
+                          color: Color(0xFF1E3A5F)),
                     ),
                     const SizedBox(height: 8),
                     SizedBox(
@@ -1278,7 +1278,7 @@ class _PropertyPopupCard extends StatelessWidget {
                       child: ElevatedButton(
                         onPressed: onViewDetails,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF1E3A5F),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(horizontal: 12),
                           shape: RoundedRectangleBorder(
@@ -1428,7 +1428,7 @@ class _UserLocationMarkerState extends State<_UserLocationMarker>
               width: _animation.value * 2,
               height: _animation.value * 2,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity((1.0 - _controller.value).clamp(0.0, 1.0)),
+                color: const Color(0xFF1E3A5F).withOpacity((1.0 - _controller.value).clamp(0.0, 1.0)),
                 shape: BoxShape.circle,
               ),
             ),
@@ -1451,7 +1451,7 @@ class _UserLocationMarkerState extends State<_UserLocationMarker>
               width: 10,
               height: 10,
               decoration: const BoxDecoration(
-                color: Color(0xFF3B82F6),
+                color: Color(0xFF1E3A5F),
                 shape: BoxShape.circle,
               ),
             ),

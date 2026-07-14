@@ -476,7 +476,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
                   Container(
                     width: 36, height: 36,
                     decoration: const BoxDecoration(
-                      gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
+                      gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(Icons.smart_toy, color: Colors.white, size: 18),
@@ -509,7 +509,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                      colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)],
                       begin: Alignment.topLeft, end: Alignment.bottomRight,
                     ),
                     borderRadius: BorderRadius.circular(12),
@@ -660,7 +660,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
           Container(
             width: 40, height: 40,
             decoration: BoxDecoration(
-              gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]),
+              gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]),
               shape: BoxShape.circle,
               boxShadow: [BoxShadow(color: const Color(0xFF8B5CF6).withOpacity(0.3), blurRadius: 8, offset: const Offset(0, 2))],
             ),
@@ -716,7 +716,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40),
       child: Column(children: [
-        _langBtn('english', '🇬🇧', 'English', const [Color(0xFF3B82F6), Color(0xFF2563EB)]),
+        _langBtn('english', '🇬🇧', 'English', const [Color(0xFF1E3A5F), Color(0xFF1E3A5F)]),
         const SizedBox(height: 12),
         _langBtn('french', '🇫🇷', 'Français', const [Color(0xFF8B5CF6), Color(0xFF7C3AED)]),
         const SizedBox(height: 8),
@@ -772,7 +772,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
         ),
         const SizedBox(width: 8),
         Container(
-          decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]), shape: BoxShape.circle),
+          decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]), shape: BoxShape.circle),
           child: IconButton(icon: const Icon(Icons.send, color: Colors.white), onPressed: _sendMessage),
         ),
       ]),
@@ -802,7 +802,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
           if (!isMe) ...[
             Container(
               width: 32, height: 32,
-              decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]), shape: BoxShape.circle),
+              decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]), shape: BoxShape.circle),
               child: const Icon(Icons.smart_toy, color: Colors.white, size: 16),
             ),
             const SizedBox(width: 8),
@@ -843,7 +843,7 @@ class _AiAgentScreenState extends State<AiAgentScreen> {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Row(crossAxisAlignment: CrossAxisAlignment.end, children: [
-        Container(width: 32, height: 32, decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)]), shape: BoxShape.circle), child: const Icon(Icons.smart_toy, color: Colors.white, size: 16)),
+        Container(width: 32, height: 32, decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF1E3A5F)]), shape: BoxShape.circle), child: const Icon(Icons.smart_toy, color: Colors.white, size: 16)),
         const SizedBox(width: 8),
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),

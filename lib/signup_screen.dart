@@ -177,10 +177,10 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                 Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.security_rounded, color: Color(0xFF3B82F6), size: 36),
+                  child: const Icon(Icons.security_rounded, color: Color(0xFF1E3A5F), size: 36),
                 ),
                 const SizedBox(height: 20),
                 Text(
@@ -371,9 +371,9 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                               child: ElevatedButton(
                                 onPressed: _isLoading ? null : _handleEmailSignUp,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF3B82F6),
+                                  backgroundColor: const Color(0xFF1E3A5F),
                                   foregroundColor: Colors.white,
-                                  disabledBackgroundColor: const Color(0xFF3B82F6).withOpacity(0.55),
+                                  disabledBackgroundColor: const Color(0xFF1E3A5F).withOpacity(0.55),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                                 ),
@@ -393,7 +393,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
                                 onTap: () => Navigator.pushReplacement(context,
                                   MaterialPageRoute(builder: (_) => SignInScreen(preselectedRole: widget.preselectedRole))),
                                 child: const Text('Sign In',
-                                  style: TextStyle(fontSize: 14, color: Color(0xFF3B82F6), fontWeight: FontWeight.w700)),
+                                  style: TextStyle(fontSize: 14, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w700)),
                               ),
                             ]),
                           ],
@@ -416,7 +416,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft, end: Alignment.bottomRight,
-          colors: [Color(0xFF0EA5E9), Color(0xFF3B82F6), Color(0xFF6366F1)],
+          colors: [Color(0xFF0EA5E9), Color(0xFF1E3A5F), Color(0xFF6366F1)],
         ),
         borderRadius: BorderRadius.only(
           bottomLeft: Radius.circular(36), bottomRight: Radius.circular(36)),
@@ -498,7 +498,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
   // ── Registration banner — reflects the role chosen on the welcome dialog ────
   Widget _roleSection(dynamic t, bool isDark) {
     final isSeeker = _selectedRole == UserRole.tenant;
-    final accent = isSeeker ? const Color(0xFF10B981) : const Color(0xFF3B82F6);
+    final accent = isSeeker ? const Color(0xFF10B981) : const Color(0xFF1E3A5F);
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
@@ -555,11 +555,11 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
         padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 10),
         decoration: BoxDecoration(
           color: sel
-              ? const Color(0xFF3B82F6).withOpacity(isDark ? 0.18 : 0.07)
+              ? const Color(0xFF1E3A5F).withOpacity(isDark ? 0.18 : 0.07)
               : (isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC)),
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: sel ? const Color(0xFF3B82F6)
+            color: sel ? const Color(0xFF1E3A5F)
                 : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)),
             width: sel ? 2 : 1.5),
         ),
@@ -568,13 +568,13 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: sel ? const Color(0xFF3B82F6)
+              color: sel ? const Color(0xFF1E3A5F)
                   : (isDark ? const Color(0xFF1E293B) : const Color(0xFFEFF6FF)),
               borderRadius: BorderRadius.circular(10)),
-            child: Icon(icon, color: sel ? Colors.white : const Color(0xFF3B82F6), size: 20)),
+            child: Icon(icon, color: sel ? Colors.white : const Color(0xFF1E3A5F), size: 20)),
           const SizedBox(height: 8),
           Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
-            color: sel ? const Color(0xFF3B82F6) : (isDark ? Colors.white : const Color(0xFF1E293B)))),
+            color: sel ? const Color(0xFF1E3A5F) : (isDark ? Colors.white : const Color(0xFF1E293B)))),
           const SizedBox(height: 2),
           Text(subtitle, textAlign: TextAlign.center,
             style: TextStyle(fontSize: 11,
@@ -648,7 +648,7 @@ class _SignUpScreenState extends State<SignUpScreen> with TickerProviderStateMix
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: border)),
-      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF3B82F6), width: 2)),
+      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF1E3A5F), width: 2)),
       errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444))),
       focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2)),
     );

@@ -19,21 +19,21 @@ class LanguageToggle extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: const Color(0xFF3B82F6).withOpacity(0.1),
+          color: const Color(0xFF1E3A5F).withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF3B82F6).withOpacity(0.2)),
+          border: Border.all(color: const Color(0xFF1E3A5F).withOpacity(0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.language_rounded, size: 14, color: Color(0xFF3B82F6)),
+            const Icon(Icons.language_rounded, size: 14, color: Color(0xFF1E3A5F)),
             const SizedBox(width: 4),
             Text(
               isEn ? 'EN' : 'FR', 
               style: const TextStyle(
                 fontSize: 11, 
                 fontWeight: FontWeight.bold, 
-                color: Color(0xFF3B82F6),
+                color: Color(0xFF1E3A5F),
               ),
             ),
           ],

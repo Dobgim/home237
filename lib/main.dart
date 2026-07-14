@@ -117,7 +117,8 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         brightness: Brightness.light,
         pageTransitionsTheme: kIsWeb ? _instantPageTransitions : null,
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.indigo,
+        primaryColor: const Color(0xFF1E3A5F),
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: Colors.white,
         appBarTheme: const AppBarTheme(
@@ -133,8 +134,8 @@ class MyApp extends StatelessWidget {
         ),
         cardColor: Colors.white,
         colorScheme: const ColorScheme.light(
-          primary: Colors.teal,
-          secondary: Color(0xFF3B82F6),
+          primary: Color(0xFF1E3A5F),
+          secondary: Color(0xFFCA8A04),
           surface: Colors.white,
           onPrimary: Colors.white,
           onSecondary: Colors.white,
@@ -144,7 +145,8 @@ class MyApp extends StatelessWidget {
       darkTheme: ThemeData(
         brightness: Brightness.dark,
         pageTransitionsTheme: kIsWeb ? _instantPageTransitions : null,
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.indigo,
+        primaryColor: const Color(0xFF1E3A5F),
         fontFamily: 'Roboto',
         scaffoldBackgroundColor: const Color(0xFF1E1E1E),
         appBarTheme: const AppBarTheme(
@@ -160,8 +162,8 @@ class MyApp extends StatelessWidget {
         ),
         cardColor: const Color(0xFF2D2D2D),
         colorScheme: const ColorScheme.dark(
-          primary: Colors.teal,
-          secondary: Color(0xFF3B82F6),
+          primary: Color(0xFF3B5B84),
+          secondary: Color(0xFFCA8A04),
           surface: Color(0xFF2D2D2D),
           onPrimary: Colors.white,
           onSecondary: Colors.white,
@@ -229,10 +231,10 @@ class _InactivityWrapperState extends State<InactivityWrapper> {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6).withOpacity(0.12),
+                color: const Color(0xFF1E3A5F).withOpacity(0.12),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.chat_bubble, color: Color(0xFF3B82F6), size: 20),
+              child: const Icon(Icons.chat_bubble, color: Color(0xFF1E3A5F), size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -270,7 +272,7 @@ class _InactivityWrapperState extends State<InactivityWrapper> {
         elevation: 6,
         action: SnackBarAction(
           label: 'View',
-          textColor: const Color(0xFF3B82F6),
+          textColor: const Color(0xFF1E3A5F),
           onPressed: () {
             navigatorKey.currentState?.push(
               MaterialPageRoute(builder: (context) => const MessagesScreen()),

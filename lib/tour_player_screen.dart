@@ -56,8 +56,8 @@ class _TourPlayerScreenState extends State<TourPlayerScreen> {
           ),
         ),
         materialProgressColors: ChewieProgressColors(
-          playedColor: const Color(0xFF3B82F6),
-          handleColor: const Color(0xFF3B82F6),
+          playedColor: const Color(0xFF1E3A5F),
+          handleColor: const Color(0xFF1E3A5F),
           backgroundColor: Colors.white24,
           bufferedColor: Colors.white38,
         ),
@@ -109,15 +109,15 @@ class _TourPlayerScreenState extends State<TourPlayerScreen> {
             margin: const EdgeInsets.only(right: 12),
             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withValues(alpha: 0.2),
+              color: const Color(0xFF1E3A5F).withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: const Color(0xFF3B82F6).withValues(alpha: 0.5)),
+              border: Border.all(color: const Color(0xFF1E3A5F).withValues(alpha: 0.5)),
             ),
             child: const Row(
               children: [
-                Icon(Icons.view_in_ar, size: 14, color: Color(0xFF3B82F6)),
+                Icon(Icons.view_in_ar, size: 14, color: Color(0xFF1E3A5F)),
                 SizedBox(width: 4),
-                Text('360°', style: TextStyle(fontSize: 12, color: Color(0xFF3B82F6), fontWeight: FontWeight.bold)),
+                Text('360°', style: TextStyle(fontSize: 12, color: Color(0xFF1E3A5F), fontWeight: FontWeight.bold)),
               ],
             ),
           ),
@@ -131,7 +131,7 @@ class _TourPlayerScreenState extends State<TourPlayerScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                        CircularProgressIndicator(color: Color(0xFF1E3A5F)),
                         SizedBox(height: 16),
                         Text('Loading virtual tour…', style: TextStyle(color: Colors.white70)),
                       ],

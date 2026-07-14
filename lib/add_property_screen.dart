@@ -252,7 +252,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                   MaterialPageRoute(builder: (context) => const PremiumSubscriptionScreen()),
                 );
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF3B82F6)),
+              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1E3A5F)),
               child: const Text('Upgrade Now', style: TextStyle(color: Colors.white)),
             ),
         ],
@@ -640,7 +640,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF1E3A5F),
                 ),
               ),
             ),
@@ -726,7 +726,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isGeocodingArea ? null : _geocodeAndFly,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF1E3A5F),
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12)),
@@ -1037,7 +1037,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF1E3A5F)
                           : isDark
                           ? const Color(0xFF374151)
                           : const Color(0xFFF3F4F6),
@@ -1120,14 +1120,14 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     decoration: BoxDecoration(
                       color: isSelected
-                          ? const Color(0xFF3B82F6).withValues(alpha: 0.1)
+                          ? const Color(0xFF1E3A5F).withValues(alpha: 0.1)
                           : isDark
                           ? const Color(0xFF374151)
                           : const Color(0xFFF3F4F6),
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF1E3A5F)
                             : Colors.transparent,
                       ),
                     ),
@@ -1140,7 +1140,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                             child: Icon(
                               Icons.check_circle,
                               size: 16,
-                              color: Color(0xFF3B82F6),
+                              color: Color(0xFF1E3A5F),
                             ),
                           ),
                         Text(
@@ -1148,7 +1148,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                           style: TextStyle(
                             fontSize: 13,
                             color: isSelected
-                                ? const Color(0xFF3B82F6)
+                                ? const Color(0xFF1E3A5F)
                                 : isDark
                                 ? Colors.grey[300]
                                 : Colors.grey[700],
@@ -1170,7 +1170,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
             // Header
             Row(
               children: [
-                const Icon(Icons.view_in_ar, color: Color(0xFF3B82F6), size: 20),
+                const Icon(Icons.view_in_ar, color: Color(0xFF1E3A5F), size: 20),
                 const SizedBox(width: 8),
                 Text(
                   '360° Interior Tour',
@@ -1202,19 +1202,19 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    const Color(0xFF3B82F6).withValues(alpha: isDark ? 0.25 : 0.08),
+                    const Color(0xFF1E3A5F).withValues(alpha: isDark ? 0.25 : 0.08),
                     const Color(0xFF8B5CF6).withValues(alpha: isDark ? 0.15 : 0.05),
                   ],
                 ),
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: const Color(0xFF3B82F6).withValues(alpha: 0.3),
+                  color: const Color(0xFF1E3A5F).withValues(alpha: 0.3),
                 ),
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.tips_and_updates_outlined, size: 18, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.tips_and_updates_outlined, size: 18, color: Color(0xFF1E3A5F)),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Text(
@@ -1241,7 +1241,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                     color: isDark ? const Color(0xFF374151) : const Color(0xFFF3F4F6),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.4),
+                      color: const Color(0xFF1E3A5F).withValues(alpha: 0.4),
                       style: BorderStyle.solid,
                       width: 2,
                     ),
@@ -1249,7 +1249,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.videocam_outlined, size: 40, color: const Color(0xFF3B82F6).withValues(alpha: 0.7)),
+                      Icon(Icons.videocam_outlined, size: 40, color: const Color(0xFF1E3A5F).withValues(alpha: 0.7)),
                       const SizedBox(height: 8),
                       Text(
                         'Tap to add interior walkthrough video',
@@ -1303,7 +1303,7 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
                       onPressed: _pickTourVideo,
                       icon: const Icon(Icons.swap_horiz, size: 16),
                       label: const Text('Replace', style: TextStyle(fontSize: 12)),
-                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF3B82F6)),
+                      style: TextButton.styleFrom(foregroundColor: const Color(0xFF1E3A5F)),
                     ),
                     IconButton(
                       icon: const Icon(Icons.close, size: 18, color: Colors.red),

@@ -646,10 +646,10 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withOpacity(0.12),
+                      color: const Color(0xFF1E3A5F).withOpacity(0.12),
                       shape: BoxShape.circle,
                     ),
-                    child: const Icon(Icons.event_available, color: Color(0xFF3B82F6), size: 24),
+                    child: const Icon(Icons.event_available, color: Color(0xFF1E3A5F), size: 24),
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
@@ -790,7 +790,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF1E3A5F),
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
@@ -944,7 +944,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('This is your own property.'),
-          backgroundColor: Colors.blue,
+          backgroundColor: const Color(0xFF1E3A5F),
         ),
       );
       return;
@@ -1203,7 +1203,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                                 loadingProgress
                                                     .expectedTotalBytes!
                                             : null,
-                                        color: const Color(0xFF3B82F6),
+                                        color: const Color(0xFF1E3A5F),
                                       ),
                                     );
                                   },
@@ -1292,7 +1292,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF3B82F6),
+                                color: Color(0xFF1E3A5F),
                               ),
                             ),
                             TextSpan(
@@ -1347,12 +1347,12 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           : const Color(0xFFF0F9FF),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: const Color(0xFF3B82F6).withOpacity(0.2)),
+                          color: const Color(0xFF1E3A5F).withOpacity(0.2)),
                     ),
                     child: Row(
                       children: [
                         CircleAvatar(
-                          backgroundColor: const Color(0xFF3B82F6),
+                          backgroundColor: const Color(0xFF1E3A5F),
                           radius: 20,
                           child: Text(
                             () {
@@ -1659,7 +1659,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
                               color:
-                                  const Color(0xFF3B82F6).withOpacity(0.4)),
+                                  const Color(0xFF1E3A5F).withOpacity(0.4)),
                         ),
                         child: Row(
                           children: [
@@ -1668,7 +1668,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               width: 56,
                               height: 56,
                               decoration: const BoxDecoration(
-                                color: Color(0xFF3B82F6),
+                                color: Color(0xFF1E3A5F),
                                 shape: BoxShape.circle,
                               ),
                               child: const Icon(Icons.play_arrow_rounded,
@@ -1705,7 +1705,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               ),
                             ),
                             const Icon(Icons.chevron_right,
-                                color: Color(0xFF3B82F6)),
+                                color: Color(0xFF1E3A5F)),
                             const SizedBox(width: 12),
                           ],
                         ),
@@ -1754,7 +1754,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                 width: 32,
                                 height: 32,
                                 child: CircularProgressIndicator(
-                                  color: Color(0xFF3B82F6),
+                                  color: Color(0xFF1E3A5F),
                                   strokeWidth: 3,
                                 ),
                               ),
@@ -1946,14 +1946,14 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                     children: [
                                       Icon(Icons.open_in_new,
                                           size: 13,
-                                          color: Color(0xFF3B82F6)),
+                                          color: Color(0xFF1E3A5F)),
                                       SizedBox(width: 4),
                                       Text(
                                         'Open in Maps',
                                         style: TextStyle(
                                           fontSize: 11,
                                           fontWeight: FontWeight.w600,
-                                          color: Color(0xFF3B82F6),
+                                          color: Color(0xFF1E3A5F),
                                         ),
                                       ),
                                     ],
@@ -2190,7 +2190,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                               child: ElevatedButton(
                                 onPressed: _isSubmittingReview ? null : _submitRating,
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: const Color(0xFF3B82F6),
+                                  backgroundColor: const Color(0xFF1E3A5F),
                                   foregroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
@@ -2225,7 +2225,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                                   'Sign in to leave a review',
                                   style: TextStyle(
                                     fontWeight: FontWeight.bold,
-                                    color: Color(0xFF3B82F6),
+                                    color: Color(0xFF1E3A5F),
                                   ),
                                 ),
                               ),
@@ -2349,7 +2349,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                         onPressed: _requestTour,
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          side: const BorderSide(color: Color(0xFF3B82F6)),
+                          side: const BorderSide(color: Color(0xFF1E3A5F)),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12)),
                         ),
@@ -2358,7 +2358,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              color: Color(0xFF3B82F6)),
+                              color: Color(0xFF1E3A5F)),
                         ),
                       ),
               ),
@@ -2368,7 +2368,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   onPressed: _contactLandlord,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 16),
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF1E3A5F),
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
@@ -2398,7 +2398,7 @@ Widget _buildInfoCard(IconData icon, String value, String label, bool isDark) {
         ),
         child: Column(
           children: [
-            Icon(icon, color: const Color(0xFF3B82F6), size: 24),
+            Icon(icon, color: const Color(0xFF1E3A5F), size: 24),
             const SizedBox(height: 8),
             Text(
               value,
@@ -2529,7 +2529,7 @@ class _FullscreenImageViewerState extends State<_FullscreenImageViewer> {
                     Text(
                       widget.price,
                       style: const TextStyle(
-                        color: Color(0xFF3B82F6),
+                        color: Color(0xFF1E3A5F),
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                       ),
@@ -2609,13 +2609,13 @@ class _AnimatedPropertyPinState extends State<_AnimatedPropertyPin>
               width: 38,
               height: 38,
               decoration: BoxDecoration(
-                color: const Color(0xFF3B82F6),
+                color: const Color(0xFF1E3A5F),
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 3),
                 boxShadow: [
                   BoxShadow(
                     color:
-                        const Color(0xFF3B82F6).withOpacity(0.5),
+                        const Color(0xFF1E3A5F).withOpacity(0.5),
                     blurRadius: 14,
                     spreadRadius: 3,
                   ),
@@ -2628,7 +2628,7 @@ class _AnimatedPropertyPinState extends State<_AnimatedPropertyPin>
           CustomPaint(
             size: const Size(12, 8),
             painter:
-                _TrianglePainter(color: const Color(0xFF3B82F6)),
+                _TrianglePainter(color: const Color(0xFF1E3A5F)),
           ),
         ],
       ),

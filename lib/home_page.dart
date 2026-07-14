@@ -117,11 +117,11 @@ class _HomePageState extends State<HomePage> {
                       width: 56,
                       height: 56,
                       decoration: BoxDecoration(
-                        color: const Color(0xFF3B82F6).withOpacity(0.12),
+                        color: const Color(0xFF1E3A5F).withOpacity(0.12),
                         borderRadius: BorderRadius.circular(16),
                       ),
                       child: const Icon(Icons.waving_hand_rounded,
-                          color: Color(0xFF3B82F6), size: 28),
+                          color: Color(0xFF1E3A5F), size: 28),
                     ),
                   ),
                   const SizedBox(height: 18),
@@ -167,7 +167,7 @@ class _HomePageState extends State<HomePage> {
                   _promptOption(
                     isDark: isDark,
                     icon: Icons.visibility_rounded,
-                    accent: const Color(0xFF3B82F6),
+                    accent: const Color(0xFF1E3A5F),
                     title: 'Just browsing',
                     subtitle: 'Explore listings as a guest — sign up anytime',
                     onTap: () => answer(),
@@ -302,10 +302,10 @@ class _HomePageState extends State<HomePage> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.12),
+                  color: const Color(0xFF1E3A5F).withOpacity(0.12),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.phone_android_rounded, color: Color(0xFF3B82F6), size: 24),
+                child: const Icon(Icons.phone_android_rounded, color: Color(0xFF1E3A5F), size: 24),
               ),
               const SizedBox(width: 14),
               const Expanded(
@@ -383,7 +383,7 @@ class _HomePageState extends State<HomePage> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 foregroundColor: Colors.white,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 elevation: 0,
@@ -527,7 +527,7 @@ class _HomePageState extends State<HomePage> {
                     const SliverToBoxAdapter(
                       child: Padding(
                         padding: EdgeInsets.symmetric(vertical: 60),
-                        child: Center(child: CircularProgressIndicator(color: Color(0xFF3B82F6))),
+                        child: Center(child: CircularProgressIndicator(color: Color(0xFF1E3A5F))),
                       ),
                     )
                   else ...[
@@ -618,10 +618,10 @@ class _HomePageState extends State<HomePage> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF3B82F6).withOpacity(0.12),
+              color: const Color(0xFF1E3A5F).withOpacity(0.12),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.home_rounded, color: Color(0xFF3B82F6), size: 22),
+            child: const Icon(Icons.home_rounded, color: Color(0xFF1E3A5F), size: 22),
           ),
           const SizedBox(width: 12),
           // App name — clear, prominent heading
@@ -660,7 +660,7 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () =>
                       showRoleSignupSheet(context, action: 'get started'),
                   style: TextButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF1E3A5F),
                     foregroundColor: Colors.white,
                     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -670,7 +670,7 @@ class _HomePageState extends State<HomePage> {
               }
               return CircleAvatar(
                 radius: 18,
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 backgroundImage: authService.profileImage != null
                     ? NetworkImage(authService.profileImage!) : null,
                 child: authService.profileImage == null
@@ -701,7 +701,7 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             children: [
               const SizedBox(width: 16),
-              const Icon(Icons.search, color: Color(0xFF3B82F6), size: 22),
+              const Icon(Icons.search, color: Color(0xFF1E3A5F), size: 22),
               const SizedBox(width: 12),
               Expanded(
                 child: Text(t.get('search_hint'),
@@ -711,9 +711,9 @@ class _HomePageState extends State<HomePage> {
                 margin: const EdgeInsets.only(right: 8),
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
                     borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.tune, color: Color(0xFF3B82F6), size: 18),
+                child: const Icon(Icons.tune, color: Color(0xFF1E3A5F), size: 18),
               ),
             ],
           ),
@@ -741,10 +741,10 @@ class _HomePageState extends State<HomePage> {
               duration: const Duration(milliseconds: 200),
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isActive ? const Color(0xFF3B82F6) : (isDark ? const Color(0xFF2D2D2D) : Colors.white),
+                color: isActive ? const Color(0xFF1E3A5F) : (isDark ? const Color(0xFF2D2D2D) : Colors.white),
                 borderRadius: BorderRadius.circular(22),
                 boxShadow: isActive
-                    ? [BoxShadow(color: const Color(0xFF3B82F6).withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
+                    ? [BoxShadow(color: const Color(0xFF1E3A5F).withOpacity(0.35), blurRadius: 8, offset: const Offset(0, 3))]
                     : [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6, offset: const Offset(0, 2))],
               ),
               child: Row(children: [
@@ -771,11 +771,11 @@ class _HomePageState extends State<HomePage> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF1D4ED8), Color(0xFF2563EB), Color(0xFF0891B2)],
+          colors: [Color(0xFF15294A), Color(0xFF1E3A5F), Color(0xFFCA8A04)],
         ),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.35),
+            color: const Color(0xFF1E3A5F).withOpacity(0.35),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -842,13 +842,13 @@ class _HomePageState extends State<HomePage> {
                       Text(
                         'Explore Properties',
                         style: TextStyle(
-                          color: Color(0xFF1D4ED8),
+                          color: Color(0xFF15294A),
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
                       SizedBox(width: 6),
-                      Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF1D4ED8)),
+                      Icon(Icons.arrow_forward_rounded, size: 16, color: Color(0xFF15294A)),
                     ],
                   ),
                 ),
@@ -903,11 +903,11 @@ class _HomePageState extends State<HomePage> {
                   Text(t.get('browse_all'),
                       style: const TextStyle(
                         fontSize: 13,
-                        color: Color(0xFF3B82F6),
+                        color: Color(0xFF1E3A5F),
                         fontWeight: FontWeight.w600,
                       )),
                   const SizedBox(width: 2),
-                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF1E3A5F)),
                 ]),
               ),
             ],
@@ -956,7 +956,7 @@ class _HomePageState extends State<HomePage> {
                       iconOrString,
                       size: 19,
                       color: isNearYou
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF1E3A5F)
                           : (isDark ? Colors.white54 : const Color(0xFF94A3B8)),
                     ),
                     const SizedBox(width: 8),
@@ -972,7 +972,7 @@ class _HomePageState extends State<HomePage> {
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.2,
                         color: isNearYou
-                            ? const Color(0xFF3B82F6)
+                            ? const Color(0xFF1E3A5F)
                             : (isDark ? Colors.white : const Color(0xFF0F172A)),
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -985,7 +985,7 @@ class _HomePageState extends State<HomePage> {
                       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                       decoration: BoxDecoration(
                         color: isNearYou
-                            ? const Color(0xFF3B82F6).withOpacity(0.12)
+                            ? const Color(0xFF1E3A5F).withOpacity(0.12)
                             : (isDark ? Colors.white12 : const Color(0xFFF1F5F9)),
                         borderRadius: BorderRadius.circular(10),
                       ),
@@ -995,7 +995,7 @@ class _HomePageState extends State<HomePage> {
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: isNearYou
-                              ? const Color(0xFF3B82F6)
+                              ? const Color(0xFF1E3A5F)
                               : (isDark ? Colors.white60 : const Color(0xFF64748B)),
                         ),
                       ),
@@ -1012,12 +1012,12 @@ class _HomePageState extends State<HomePage> {
                     t.get('see_all'),
                     style: const TextStyle(
                       fontSize: 13,
-                      color: Color(0xFF3B82F6),
+                      color: Color(0xFF1E3A5F),
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(width: 2),
-                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF3B82F6)),
+                  const Icon(Icons.arrow_forward_ios, size: 11, color: Color(0xFF1E3A5F)),
                 ]),
               ),
             ],
@@ -1045,7 +1045,7 @@ class _HomePageState extends State<HomePage> {
                         GestureDetector(
                           onTap: () => setState(() => _activeFilter = 'All'),
                           child: const Text('Clear filter',
-                              style: TextStyle(color: Color(0xFF3B82F6), fontSize: 12, fontWeight: FontWeight.w600)),
+                              style: TextStyle(color: Color(0xFF1E3A5F), fontSize: 12, fontWeight: FontWeight.w600)),
                         ),
                       ],
                     ]),

@@ -60,10 +60,10 @@ class InactivityService with WidgetsBindingObserver {
                 Container(
                   width: 70, height: 70,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.12),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.timer_off_rounded, color: Color(0xFF3B82F6), size: 36),
+                  child: const Icon(Icons.timer_off_rounded, color: Color(0xFF1E3A5F), size: 36),
                 ),
                 const SizedBox(height: 18),
                 Text('Session Expired',
@@ -80,7 +80,7 @@ class InactivityService with WidgetsBindingObserver {
                   child: ElevatedButton(
                     onPressed: () => Navigator.of(dialogCtx).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF1E3A5F),
                       foregroundColor: Colors.white, elevation: 0,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                       padding: const EdgeInsets.symmetric(vertical: 14),

@@ -221,14 +221,14 @@ class _RentTrackerScreenState extends State<RentTrackerScreen> {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF0EA5E9), Color(0xFF2563EB)],
+          colors: [Color(0xFF0EA5E9), Color(0xFF1E3A5F)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF2563EB).withOpacity(0.3),
+            color: const Color(0xFF1E3A5F).withOpacity(0.3),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

@@ -326,11 +326,11 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             decoration: BoxDecoration(
                               color: isMyReaction 
-                                  ? const Color(0xFF3B82F6).withOpacity(0.2)
+                                  ? const Color(0xFF1E3A5F).withOpacity(0.2)
                                   : isDark ? Colors.grey[800] : Colors.grey[200],
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                color: isMyReaction ? const Color(0xFF3B82F6) : Colors.transparent,
+                                color: isMyReaction ? const Color(0xFF1E3A5F) : Colors.transparent,
                                 width: 1,
                               ),
                             ),
@@ -483,11 +483,11 @@ class _AdminChatDetailScreenState extends State<AdminChatDetailScreen> {
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
                       color: isSelected 
-                          ? const Color(0xFF3B82F6).withOpacity(0.1)
+                          ? const Color(0xFF1E3A5F).withOpacity(0.1)
                           : Colors.transparent,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+                        color: isSelected ? const Color(0xFF1E3A5F) : Colors.transparent,
                         width: 2,
                       ),
                     ),

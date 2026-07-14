@@ -173,7 +173,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 child: ElevatedButton(
                   onPressed: _handleContinue,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF1E3A5F),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
@@ -226,13 +226,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFFE5E7EB),
+            color: isSelected ? const Color(0xFF1E3A5F) : const Color(0xFFE5E7EB),
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: const Color(0xFF3B82F6).withOpacity(0.1),
+              color: const Color(0xFF1E3A5F).withOpacity(0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -246,13 +246,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
               height: 50,
               decoration: BoxDecoration(
                 color: isSelected
-                    ? const Color(0xFF3B82F6).withOpacity(0.1)
+                    ? const Color(0xFF1E3A5F).withOpacity(0.1)
                     : const Color(0xFFF3F4F6),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 icon,
-                color: isSelected ? const Color(0xFF3B82F6) : const Color(0xFF64748B),
+                color: isSelected ? const Color(0xFF1E3A5F) : const Color(0xFF64748B),
                 size: 26,
               ),
             ),
@@ -267,7 +267,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                       fontSize: 17,
                       fontWeight: FontWeight.w600,
                       color: isSelected
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF1E3A5F)
                           : const Color(0xFF1E293B),
                     ),
                   ),
@@ -289,11 +289,11 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(
                   color: isSelected
-                      ? const Color(0xFF3B82F6)
+                      ? const Color(0xFF1E3A5F)
                       : const Color(0xFFD1D5DB),
                   width: 2,
                 ),
-                color: isSelected ? const Color(0xFF3B82F6) : Colors.transparent,
+                color: isSelected ? const Color(0xFF1E3A5F) : Colors.transparent,
               ),
               child: isSelected
                   ? const Icon(Icons.check, color: Colors.white, size: 16)

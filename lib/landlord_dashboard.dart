@@ -102,7 +102,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                       height: 140,
                       decoration: const BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+                          colors: [Color(0xFF1E3A5F), Color(0xFF1E3A5F)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -148,7 +148,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                         auth.completeWelcome();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF1E3A5F),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -229,7 +229,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                   'You need to verify your identity before posting properties. '
                   'Please upload your documents and wait for admin approval. '
                   'This ensures a safe and trusted platform for all users.';
-              accentColor = const Color(0xFF3B82F6);
+              accentColor = const Color(0xFF1E3A5F);
               dialogIcon = Icons.verified_user_outlined;
             }
 
@@ -346,7 +346,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                     ),
                     ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3B82F6),
+                        backgroundColor: const Color(0xFF1E3A5F),
                         foregroundColor: Colors.white,
                       ),
                       onPressed: () => Navigator.pop(ctx, true),
@@ -455,7 +455,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
       floatingActionButton: _selectedNavIndex == 1
           ? FloatingActionButton.extended(
         onPressed: () => _navigateToAddProperty(context, auth),
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: const Color(0xFF1E3A5F),
         icon: const Icon(Icons.add, color: Colors.white),
         label: Text(
           t.get('add_property'),
@@ -567,7 +567,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
+          colors: [Color(0xFF1E3A5F), Color(0xFF1E3A5F)],
         ),
       ),
       child: Column(
@@ -785,7 +785,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
     IconData iconData;
 
     if (status == 'pending') {
-      iconColor = const Color(0xFF3B82F6); // Blue for Landlord pending
+      iconColor = const Color(0xFF1E3A5F); // Blue for Landlord pending
       iconData = Icons.hourglass_top_rounded;
     } else if (status == 'rejected') {
       iconColor = const Color(0xFFEF4444); // Red
@@ -907,7 +907,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                   t.get('total_properties'),
                   totalProperties.toString(),
                   Icons.home,
-                  const Color(0xFF3B82F6),
+                  const Color(0xFF1E3A5F),
                   isDark,
                   onTap: () => setState(() => _selectedNavIndex = 1),
                 ),
@@ -1037,7 +1037,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                 child: _buildActionCard(
                   t.get('add_property'),
                   Icons.add_home,
-                  const Color(0xFF3B82F6),
+                  const Color(0xFF1E3A5F),
                   () => _navigateToAddProperty(context, auth),
                   isDark,
                 ),
@@ -1257,12 +1257,12 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                             width: 50,
                             height: 50,
                             decoration: BoxDecoration(
-                              color: const Color(0xFF3B82F6).withOpacity(0.1),
+                              color: const Color(0xFF1E3A5F).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(25),
                             ),
                             child: const Icon(
                               Icons.person,
-                              color: Color(0xFF3B82F6),
+                              color: Color(0xFF1E3A5F),
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -1391,7 +1391,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         onTap: (index) => setState(() => _selectedNavIndex = index),
         type: BottomNavigationBarType.fixed,
         backgroundColor: isDark ? const Color(0xFF2D2D2D) : Colors.white,
-        selectedItemColor: const Color(0xFF3B82F6),
+        selectedItemColor: const Color(0xFF1E3A5F),
         unselectedItemColor: isDark ? const Color(0xFF6B7280) : const Color(0xFF9CA3AF),
         selectedFontSize: 11,
         unselectedFontSize: 11,

@@ -746,7 +746,7 @@ class _PremiumSubscriptionScreenState
                           strokeWidth: 5,
                           color: _loadingMessage.contains('📱')
                               ? const Color(0xFFFFCC00)
-                              : const Color(0xFF3B82F6),
+                              : const Color(0xFF1E3A5F),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -837,7 +837,7 @@ class _PremiumSubscriptionScreenState
           duration: const Duration(milliseconds: 200),
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
           decoration: BoxDecoration(
-            color: selected ? const Color(0xFF3B82F6) : Colors.transparent,
+            color: selected ? const Color(0xFF1E3A5F) : Colors.transparent,
             borderRadius: BorderRadius.circular(12),
           ),
           child: Column(
@@ -913,7 +913,7 @@ class _PremiumSubscriptionScreenState
     final cardColor =
         isDark ? const Color(0xFF1F2937) : Colors.white;
     final borderColor = isPremium
-        ? const Color(0xFF3B82F6)
+        ? const Color(0xFF1E3A5F)
         : (isDark ? const Color(0xFF374151) : const Color(0xFFE5E7EB));
 
     return Container(
@@ -926,7 +926,7 @@ class _PremiumSubscriptionScreenState
         boxShadow: isPremium
             ? [
                 BoxShadow(
-                    color: const Color(0xFF3B82F6).withAlpha(25),
+                    color: const Color(0xFF1E3A5F).withAlpha(25),
                     blurRadius: 24,
                     offset: const Offset(0, 8))
               ]
@@ -949,7 +949,7 @@ class _PremiumSubscriptionScreenState
                       horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
                     gradient: const LinearGradient(
-                      colors: [Color(0xFF3B82F6), Color(0xFF6366F1)],
+                      colors: [Color(0xFF1E3A5F), Color(0xFF6366F1)],
                     ),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -1023,7 +1023,7 @@ class _PremiumSubscriptionScreenState
                       fontSize: 30,
                       fontWeight: FontWeight.bold,
                       color: isPremium
-                          ? const Color(0xFF3B82F6)
+                          ? const Color(0xFF1E3A5F)
                           : null)),
               const SizedBox(width: 4),
               Padding(

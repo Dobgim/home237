@@ -103,7 +103,7 @@ class MessagesScreen extends StatelessWidget {
                   children: [
                     CircleAvatar(
                       radius: 28,
-                      backgroundColor: const Color(0xFF3B82F6),
+                      backgroundColor: const Color(0xFF1E3A5F),
                       child: Text(
                         otherUserName[0].toUpperCase(),
                         style: const TextStyle(
@@ -158,7 +158,7 @@ class MessagesScreen extends StatelessWidget {
                         _formatTime(lastMessageTime),
                         style: TextStyle(
                           fontSize: 11,
-                          color: unreadCount > 0 ? const Color(0xFF3B82F6) : Colors.grey[500],
+                          color: unreadCount > 0 ? const Color(0xFF1E3A5F) : Colors.grey[500],
                         ),
                       ),
                     if (unreadCount > 0) ...[
@@ -166,7 +166,7 @@ class MessagesScreen extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF3B82F6),
+                          color: const Color(0xFF1E3A5F),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(

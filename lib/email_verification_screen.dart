@@ -319,13 +319,13 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF3B82F6).withOpacity(0.1),
+                  color: const Color(0xFF1E3A5F).withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
                   Icons.email_outlined,
                   size: 80,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF1E3A5F),
                 ),
               ),
 
@@ -360,7 +360,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF3B82F6),
+                  color: Color(0xFF1E3A5F),
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -381,7 +381,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                   children: [
                     Row(
                       children: [
-                        const Icon(Icons.info_outline, size: 20, color: Color(0xFF3B82F6)),
+                        const Icon(Icons.info_outline, size: 20, color: Color(0xFF1E3A5F)),
                         const SizedBox(width: 8),
                         Text(
                           t.get('verify_instructions_title'),
@@ -446,7 +446,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                 child: ElevatedButton(
                   onPressed: _isChecking ? null : _checkEmailVerified,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
+                    backgroundColor: const Color(0xFF1E3A5F),
                     foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
@@ -484,7 +484,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                     side: BorderSide(
                       color: (_isResending || _secondsRemaining > 0)
                           ? (isDark ? Colors.white24 : Colors.black12)
-                          : const Color(0xFF3B82F6),
+                          : const Color(0xFF1E3A5F),
                       width: 1.5,
                     ),
                     shape: RoundedRectangleBorder(
@@ -497,7 +497,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF1E3A5F)),
                           ),
                         )
                       : Text(
@@ -508,7 +508,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
                             fontSize: 16,
                             color: (_isResending || _secondsRemaining > 0)
                                 ? subtitleColor
-                                : const Color(0xFF3B82F6),
+                                : const Color(0xFF1E3A5F),
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -529,7 +529,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
           width: 22,
           height: 22,
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6).withOpacity(0.2),
+            color: const Color(0xFF1E3A5F).withOpacity(0.2),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -538,7 +538,7 @@ class _EmailVerificationScreenState extends State<EmailVerificationScreen> {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: Color(0xFF3B82F6),
+                color: Color(0xFF1E3A5F),
               ),
             ),
           ),

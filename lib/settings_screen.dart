@@ -94,7 +94,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           title: Row(
             children: [
-              const Icon(Icons.lock_outline, color: Color(0xFF3B82F6)),
+              const Icon(Icons.lock_outline, color: Color(0xFF1E3A5F)),
               const SizedBox(width: 10),
               Text(t.get('change_password_title')),
             ],
@@ -222,7 +222,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 }
               },
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF3B82F6),
+                backgroundColor: const Color(0xFF1E3A5F),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               child: isLoading

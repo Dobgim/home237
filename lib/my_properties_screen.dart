@@ -172,7 +172,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
             Center(
               child: Text(
                 '$amount FCFA',
-                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF3B82F6)),
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold, color: Color(0xFF1E3A5F)),
               ),
             ),
             const SizedBox(height: 24),
@@ -484,7 +484,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                       onSelected: (selected) {
                         if (selected) setState(() => _selectedStatus = status);
                       },
-                      selectedColor: const Color(0xFF3B82F6),
+                      selectedColor: const Color(0xFF1E3A5F),
                       labelStyle: TextStyle(
                         color: isSelected ? Colors.white : (isDark ? Colors.grey[300] : Colors.grey[700]),
                         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
@@ -766,7 +766,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                         style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: Color(0xFF3B82F6),
+                                          color: Color(0xFF1E3A5F),
                                         ),
                                       ),
                                     ],
@@ -818,8 +818,8 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                             );
                                           },
                                           style: OutlinedButton.styleFrom(
-                                            foregroundColor: const Color(0xFF3B82F6),
-                                            side: const BorderSide(color: Color(0xFF3B82F6)),
+                                            foregroundColor: const Color(0xFF1E3A5F),
+                                            side: const BorderSide(color: Color(0xFF1E3A5F)),
                                             padding: const EdgeInsets.symmetric(vertical: 12),
                                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                           ),
@@ -841,7 +841,7 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                                             );
                                           },
                                           style: ElevatedButton.styleFrom(
-                                            backgroundColor: const Color(0xFF3B82F6),
+                                            backgroundColor: const Color(0xFF1E3A5F),
                                             foregroundColor: Colors.white,
                                             elevation: 0,
                                             padding: const EdgeInsets.symmetric(vertical: 12),
@@ -923,12 +923,12 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF3B82F6).withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     (status == 'active' || status == 'approved') ? Icons.visibility_off : Icons.visibility,
-                    color: const Color(0xFF3B82F6),
+                    color: const Color(0xFF1E3A5F),
                     size: 20,
                   ),
                 ),
@@ -977,10 +977,10 @@ class _MyPropertiesScreenState extends State<MyPropertiesScreen> {
                 leading: Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.blue.withOpacity(0.1),
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.verified_outlined, color: Colors.blue, size: 20),
+                  child: const Icon(Icons.verified_outlined, color: const Color(0xFF1E3A5F), size: 20),
                 ),
                 title: const Text('Confirm Still Available', style: TextStyle(fontWeight: FontWeight.w600)),
                 subtitle: const Text('Listings not confirmed for 30 days rank lower in search'),
