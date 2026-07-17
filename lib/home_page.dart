@@ -773,6 +773,8 @@ class _HomePageState extends State<HomePage> {
 
   // Removed from the page to keep the home screen simple; kept for reuse.
   // ignore: unused_element
+  // Removed from the homepage layout; kept for reference. Not called.
+  // ignore: unused_element
   Widget _buildHeroBanner(bool isDark, int total, int cities) {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 10, 20, 18),

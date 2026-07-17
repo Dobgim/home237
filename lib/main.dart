@@ -112,8 +112,9 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
 
-      // 🎨 Theme
-      themeMode: themeNotifier.themeMode,
+      // 🎨 Theme — the website always uses the light (white) theme; the mobile
+      // app respects the user's chosen/system theme.
+      themeMode: kIsWeb ? ThemeMode.light : themeNotifier.themeMode,
       theme: ThemeData(
         brightness: Brightness.light,
         pageTransitionsTheme: kIsWeb ? _instantPageTransitions : null,
