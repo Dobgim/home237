@@ -240,6 +240,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
       },
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        extendBody: true, // page scrolls behind the frosted nav bar
         body: IndexedStack(
           index: _selectedNavIndex,
           children: [
@@ -257,7 +258,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
               MaterialPageRoute(builder: (context) => const AiAgentScreen()),
             );
           },
-          backgroundColor: const Color(0xFF8B5CF6),
+          backgroundColor: const Color(0xFF1C1917), // charcoal — matches nav accent
           elevation: 4,
           child: const Icon(Icons.smart_toy, color: Colors.white),
         ) : null,
@@ -331,9 +332,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
               // 1. Header
               SliverToBoxAdapter(child: _buildHeader(isDark, auth, allApproved.length)),
 
-              // 2. Verification Banner
-              SliverToBoxAdapter(child: _buildVerificationBanner(isDark, auth)),
-
               // 2b. Active Passes
               SliverToBoxAdapter(child: _buildActivePassesSection(isDark, auth)),
 
@@ -346,9 +344,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
               // 4. Filter Chips
               SliverToBoxAdapter(child: _buildFilterChips(isDark)),
-
-              // 5. Hero Banner
-              SliverToBoxAdapter(child: _buildHeroBanner(isDark, allApproved.length, byCity.length)),
 
               // 6. Preference Filter Banner (only when prefs are active)
               if (_prefActive)
@@ -660,6 +655,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   // ── Verification Banner ────────────────────────────────────────────────
+  // Kept for possible reuse (e.g. profile tab); no longer on the home tab.
+  // ignore: unused_element
   Widget _buildVerificationBanner(bool isDark, AuthService auth) {
     final t = AppLocalizations.of(context);
     if (auth.userId == null) return const SizedBox.shrink();
@@ -819,6 +816,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   // ── Hero Banner ────────────────────────────────────────────────────────
+  // Kept for possible reuse; removed from the home tab to reduce clutter.
+  // ignore: unused_element
   Widget _buildHeroBanner(bool isDark, int total, int cities) {
     final t = AppLocalizations.of(context);
     final title = t.get('hero_title');

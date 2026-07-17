@@ -507,7 +507,12 @@ class _HomePageState extends State<HomePage> {
               // Only cities that have listings
               final citiesWithListings = _cities.where((c) => byCity.containsKey(c['name'])).toList();
 
-              return CustomScrollView(
+              // On wide screens (desktop web) the content is centred in a
+              // max-width column instead of stretching edge-to-edge.
+              return Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 1150),
+                  child: CustomScrollView(
                 physics: const BouncingScrollPhysics(),
                 slivers: [
                   // ① App bar
@@ -518,9 +523,6 @@ class _HomePageState extends State<HomePage> {
 
                   // ③ Filter chips
                   SliverToBoxAdapter(child: _buildFilterChips(isDark)),
-
-                  // ④ Hero / stats banner
-                  SliverToBoxAdapter(child: _buildHeroBanner(isDark, allApproved.length, byCity.length)),
 
                   // Loading indicator
                   if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData)
@@ -599,6 +601,8 @@ class _HomePageState extends State<HomePage> {
 
                   const SliverToBoxAdapter(child: SizedBox(height: 32)),
                 ],
+                  ),
+                ),
               );
             },
           ),
@@ -763,6 +767,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Removed from the page to keep the home screen simple; kept for reuse.
+  // ignore: unused_element
   Widget _buildHeroBanner(bool isDark, int total, int cities) {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 10, 20, 18),

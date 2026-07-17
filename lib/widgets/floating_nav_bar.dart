@@ -1,3 +1,4 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 
 /// One tab in [FloatingNavBar].
@@ -19,11 +20,12 @@ class FloatingNavItem {
   });
 }
 
-/// A floating, rounded "pill" bottom navigation bar.
+/// Home237's floating bottom navigation bar.
 ///
-/// Sits above the bottom edge on a dark navy bar; the selected tab expands into
-/// a gold pill showing its icon + label, unselected tabs are icon-only. Matches
-/// the Home237 Navy & Gold identity.
+/// A clean white frosted pill floats above the bottom edge. The selected tab
+/// expands into a gold pill (the app accent) with its icon + label; the other
+/// tabs are quiet warm-gray glyphs. Hovering a tab (web/desktop) tints it
+/// with the same gold — no blues anywhere.
 class FloatingNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -36,80 +38,126 @@ class FloatingNavBar extends StatelessWidget {
     required this.items,
   });
 
-  static const Color _bar = Color(0xFF0F1E38); // deep navy bar
-  static const Color _gold = Color(0xFFCA8A04); // active pill
-  static const Color _onGold = Color(0xFF0F172A); // text/icon on gold
-  static const Color _inactive = Colors.white70;
+  static const Color _accent = Color(0xFF1C1917); // deep charcoal — active pill
+  static const Color _accentDark = Color(0xFF000000); // pill gradient end
+  static const Color _onAccent = Colors.white; // icon/label on the pill
+  static const Color _inactiveLight = Color(0xFF8A8577); // warm gray (no blue)
+  static const Color _inactiveDark = Color(0xFFB8B3A6);
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final barColor = isDark
+        ? const Color(0xFF201F1C).withValues(alpha: 0.86)
+        : Colors.white.withValues(alpha: 0.88);
+    final inactive = isDark ? _inactiveDark : _inactiveLight;
+
     return SafeArea(
       top: false,
-      child: Container(
-        margin: const EdgeInsets.fromLTRB(16, 6, 16, 14),
-        height: 64,
-        padding: const EdgeInsets.symmetric(horizontal: 8),
-        decoration: BoxDecoration(
-          color: _bar,
-          borderRadius: BorderRadius.circular(30),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.28),
-              blurRadius: 22,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        // FittedBox scales the whole row down on very narrow screens instead
-        // of overflowing, so 5–6 tabs stay on one line everywhere.
-        child: Center(
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: List.generate(items.length, (i) {
-                final item = items[i];
-                final active = i == currentIndex;
-                final color = active ? _onGold : _inactive;
-                final iconWidget = item.iconBuilder != null
-                    ? item.iconBuilder!(active, color)
-                    : Icon(active ? item.activeIcon : item.icon,
-                        color: color, size: 22);
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 6, 18, 16),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(34),
+          child: BackdropFilter(
+            filter: ui.ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+            child: Container(
+              height: 66,
+              padding: const EdgeInsets.symmetric(horizontal: 10),
+              decoration: BoxDecoration(
+                color: barColor,
+                borderRadius: BorderRadius.circular(34),
+                border: Border.all(
+                  color: (isDark ? Colors.white : const Color(0xFF1C1917))
+                      .withValues(alpha: 0.05),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.10),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ],
+              ),
+              // FittedBox scales the row down on very narrow screens instead
+              // of overflowing, so 5–6 tabs stay on one line everywhere.
+              child: Center(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(items.length, (i) {
+                      final item = items[i];
+                      final active = i == currentIndex;
+                      final color = active ? _onAccent : inactive;
+                      final iconWidget = item.iconBuilder != null
+                          ? item.iconBuilder!(active, color)
+                          : Icon(active ? item.activeIcon : item.icon,
+                              color: color, size: 22);
 
-                return GestureDetector(
-                  behavior: HitTestBehavior.opaque,
-                  onTap: () => onTap(i),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 220),
-                    curve: Curves.easeOut,
-                    margin: const EdgeInsets.symmetric(horizontal: 3),
-                    padding: active
-                        ? const EdgeInsets.symmetric(horizontal: 15, vertical: 9)
-                        : const EdgeInsets.all(9),
-                    decoration: BoxDecoration(
-                      color: active ? _gold : Colors.transparent,
-                      borderRadius: BorderRadius.circular(22),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        iconWidget,
-                        if (active) ...[
-                          const SizedBox(width: 8),
-                          Text(
-                            item.label,
-                            style: const TextStyle(
-                              color: _onGold,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w700,
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Material(
+                          color: Colors.transparent,
+                          borderRadius: BorderRadius.circular(28),
+                          child: InkWell(
+                            onTap: () => onTap(i),
+                            borderRadius: BorderRadius.circular(28),
+                            // Hover/press feedback in the SAME gold accent.
+                            hoverColor: _accent.withValues(alpha: 0.12),
+                            splashColor: _accent.withValues(alpha: 0.18),
+                            highlightColor: _accent.withValues(alpha: 0.10),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOutCubic,
+                              padding: active
+                                  ? const EdgeInsets.symmetric(
+                                      horizontal: 18, vertical: 11)
+                                  : const EdgeInsets.all(11),
+                              decoration: BoxDecoration(
+                                gradient: active
+                                    ? const LinearGradient(
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                        colors: [_accent, _accentDark],
+                                      )
+                                    : null,
+                                borderRadius: BorderRadius.circular(28),
+                                boxShadow: active
+                                    ? [
+                                        BoxShadow(
+                                          color: _accent.withValues(alpha: 0.30),
+                                          blurRadius: 12,
+                                          offset: const Offset(0, 5),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  iconWidget,
+                                  if (active) ...[
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      item.label,
+                                      style: const TextStyle(
+                                        color: _onAccent,
+                                        fontSize: 13.5,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
                             ),
                           ),
-                        ],
-                      ],
-                    ),
+                        ),
+                      );
+                    }),
                   ),
-                );
-              }),
+                ),
+              ),
             ),
           ),
         ),

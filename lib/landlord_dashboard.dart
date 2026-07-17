@@ -441,6 +441,7 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
       },
       child: Scaffold(
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8FAFC),
+        extendBody: true, // page scrolls behind the frosted nav bar
         body: SafeArea(
         child: _selectedNavIndex == 0
             ? _buildDashboardView(isDark, auth)

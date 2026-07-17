@@ -130,7 +130,9 @@ class _SplashScreenState extends State<SplashScreen>
 
       // A signed-in user (including one returning from a Google redirect) must
       // always land on their dashboard — never the onboarding/role screen.
-      if (currentUser == null && webRole == null && !hasSeenOnboarding) {
+      // On the WEB the onboarding is skipped entirely: visitors land straight
+      // on the homepage (mobile app keeps the onboarding tour).
+      if (!kIsWeb && currentUser == null && webRole == null && !hasSeenOnboarding) {
         destination = const OnboardingScreen();
       } else {
         if (currentUser != null) {
