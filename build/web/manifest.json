@@ -1,11 +1,11 @@
 {
-    "name": "home237",
-    "short_name": "home237",
+    "name": "Home237 — Cameroon Property Rentals",
+    "short_name": "Home237",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#FFFFFF",
-    "description": "A new Flutter project.",
+    "description": "Find and list verified rental homes across Cameroon — apartments, studios, hotels and offices in Douala, Yaoundé, Buea and beyond.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

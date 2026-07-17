@@ -63,12 +63,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
     super.initState();
     _loadUserCity();
     _loadUserPreferences();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!_hasShownWelcome && mounted) {
-        _showAiWelcomeMessage();
-        _hasShownWelcome = true;
-      }
-    });
   }
 
   void _showAiWelcomeMessage() {
@@ -250,17 +244,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
             const TenantProfileScreen(),
           ],
         ),
-        floatingActionButton: _selectedNavIndex == 0 ? FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const AiAgentScreen()),
-            );
-          },
-          backgroundColor: const Color(0xFF1C1917), // charcoal — matches nav accent
-          elevation: 4,
-          child: const Icon(Icons.smart_toy, color: Colors.white),
-        ) : null,
         bottomNavigationBar: _buildBottomNav(isDark),
       ),
     );
