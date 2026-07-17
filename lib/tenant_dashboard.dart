@@ -334,10 +334,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
               // 2b. Active Passes
               SliverToBoxAdapter(child: _buildActivePassesSection(isDark, auth)),
 
-              // 2c. Rent & Trust Quick Row
-              if (auth.userId != null)
-                SliverToBoxAdapter(child: _buildRentAndTrustRow(isDark, auth)),
-
               // 3. Search Bar
               SliverToBoxAdapter(child: _buildSearchSection(isDark)),
 
@@ -1459,6 +1455,8 @@ class _TenantDashboardState extends State<TenantDashboard> {
     }
   }
 
+  // Removed from the home tab; kept for possible reuse elsewhere.
+  // ignore: unused_element
   Widget _buildRentAndTrustRow(bool isDark, AuthService auth) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 4),
