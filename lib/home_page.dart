@@ -32,7 +32,7 @@ class _HomePageState extends State<HomePage> {
     {'label': 'All',       'icon': Icons.home_outlined},
     {'label': 'Apartment', 'icon': Icons.apartment_outlined},
     {'label': 'Studio',    'icon': Icons.weekend_outlined},
-    {'label': 'House',     'icon': Icons.house_outlined},
+    {'label': 'Hotel',     'icon': Icons.hotel_outlined},
     {'label': 'Office',    'icon': Icons.business_outlined},
     {'label': 'Land',      'icon': Icons.landscape_outlined},
   ];

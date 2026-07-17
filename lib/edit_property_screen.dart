@@ -31,10 +31,10 @@ class _EditPropertyScreenState extends State<EditPropertyScreen> {
 
   final List<String> _propertyTypes = [
     'Apartment',
-    'House',
+    'Hotel',
     'Studio',
-    'Condo',
-    'Villa',
+    'Office',
+    'Land',
     'Room',
   ];
 

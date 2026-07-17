@@ -46,10 +46,10 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
   String _selectedType = 'Apartment';
   final List<String> _propertyTypes = [
     'Apartment',
-    'House',
+    'Hotel',
     'Studio',
-    'Condo',
-    'Villa',
+    'Office',
+    'Land',
     'Room',
   ];
 

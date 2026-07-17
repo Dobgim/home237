@@ -43,7 +43,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
   LatLng? _userLocation;
   bool _isLocating = false;
 
-  final List<String> _categories = ['All', 'Apartment', 'House', 'Studio', 'Condo', 'Villa', 'Room'];
+  final List<String> _categories = ['All', 'Apartment', 'Hotel', 'Studio', 'Office', 'Land', 'Room'];
   final List<String> _regions = [
     'All Regions',
     'Buea',
