@@ -918,13 +918,11 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
 
   Future<void> _contactLandlord() async {
     if (!authService.isLoggedIn) {
-      // Viewers chat with agents without an account — sign in invisibly as an
-      // anonymous guest so the message has an identity, then continue.
-      final ok = await authService.ensureGuestChatIdentity();
-      if (!ok) {
-        if (mounted) _showAuthPrompt('contact the agent');
-        return;
+      // Viewers must sign up before they can contact an agent.
+      if (mounted) {
+        showRoleSignupSheet(context, action: 'contact the agent');
       }
+      return;
     }
 
     if (_property == null) return;

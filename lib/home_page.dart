@@ -14,6 +14,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'app_localizations.dart';
 import 'utils/listing_flags.dart';
+import 'widgets/language_toggle.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -653,6 +654,9 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           const Spacer(),
+          // Language toggle
+          const LanguageToggle(),
+          const SizedBox(width: 4),
           // Login / Avatar
           ListenableBuilder(
             listenable: authService,
