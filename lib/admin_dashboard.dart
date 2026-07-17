@@ -68,7 +68,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         }
       },
       child: Scaffold(
-        extendBody: true, // page scrolls behind the frosted nav bar
         body: _screens[_selectedIndex],
       bottomNavigationBar: FloatingNavBar(
         currentIndex: _selectedIndex,

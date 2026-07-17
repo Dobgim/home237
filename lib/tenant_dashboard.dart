@@ -240,7 +240,6 @@ class _TenantDashboardState extends State<TenantDashboard> {
       },
       child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        extendBody: true, // page scrolls behind the frosted nav bar
         body: IndexedStack(
           index: _selectedNavIndex,
           children: [
