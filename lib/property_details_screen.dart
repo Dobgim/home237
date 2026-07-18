@@ -15,6 +15,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:uuid/uuid.dart';
 import 'tour_pass_display_screen.dart';
+import 'services/fapshi_service.dart';
 class PropertyDetailsScreen extends StatefulWidget {
   final String propertyId;
   final Map<String, dynamic>? propertyData;
@@ -629,6 +630,9 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 
+  // Fixed displacement (visit) fee held in escrow until the agent shows up.
+  static const int _displacementFee = 5000;
+
   Future<void> _requestTour() async {
     if (!authService.isLoggedIn) {
       // Store this property + intended action so SignInScreen can return here
@@ -642,9 +646,23 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     }
     if (_property == null) return;
 
-    final messageController = TextEditingController();
-    bool isSubmitting = false;
+    // Prefill the seeker's phone from their profile (used for MoMo + refund).
+    String prefillPhone = '';
+    try {
+      final userDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(authService.userId)
+          .get();
+      if (userDoc.exists) {
+        prefillPhone = (userDoc.data()?['phone'] ?? '').toString();
+      }
+    } catch (_) {}
 
+    final phoneController = TextEditingController(text: prefillPhone);
+    final messageController = TextEditingController();
+    DateTime? visitDate;
+
+    if (!mounted) return;
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -667,10 +685,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   ),
                   const SizedBox(width: 12),
                   const Expanded(
-                    child: Text(
-                      'Schedule a Tour',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                    ),
+                    child: Text('Book a Visit',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20)),
                   ),
                 ],
               ),
@@ -679,38 +695,114 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Request a physical viewing of this property. Tours on Home237 are completely free.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: isDark ? Colors.grey[300] : Colors.grey[600],
-                        height: 1.4,
+                    // Escrow explainer
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.3)),
+                      ),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Icon(Icons.shield_outlined, color: Color(0xFF10B981), size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'A 5,000 FCFA visit fee is held safely by Home237. '
+                              'It is released to the agent only after you meet. '
+                              'If the agent doesn\'t show within 24h of your chosen day, '
+                              'it is automatically refunded to you.',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                height: 1.4,
+                                color: isDark ? Colors.grey[300] : const Color(0xFF065F46),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 18),
-                    Text(
-                      'Optional Note/Preferred Time',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: isDark ? Colors.grey[400] : Colors.grey[700],
+                    const SizedBox(height: 16),
+                    // Visit date
+                    Text('Visit day *',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.grey[400] : Colors.grey[700])),
+                    const SizedBox(height: 8),
+                    InkWell(
+                      onTap: () async {
+                        final now = DateTime.now();
+                        final picked = await showDatePicker(
+                          context: context,
+                          initialDate: now.add(const Duration(days: 1)),
+                          firstDate: now,
+                          lastDate: now.add(const Duration(days: 60)),
+                        );
+                        if (picked != null) setStateDialog(() => visitDate = picked);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: isDark ? const Color(0xFF2D2D2D) : Colors.grey[100],
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.calendar_today, size: 18, color: Color(0xFF1E3A5F)),
+                            const SizedBox(width: 10),
+                            Text(
+                              visitDate == null
+                                  ? 'Choose your visit day'
+                                  : '${visitDate!.day}/${visitDate!.month}/${visitDate!.year}',
+                              style: TextStyle(
+                                color: visitDate == null
+                                    ? (isDark ? Colors.white38 : Colors.grey[500])
+                                    : (isDark ? Colors.white : Colors.black87),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    // Phone
+                    Text('Mobile Money number *',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.grey[400] : Colors.grey[700])),
                     const SizedBox(height: 8),
                     TextField(
-                      controller: messageController,
-                      maxLines: 3,
-                      enabled: !isSubmitting,
+                      controller: phoneController,
+                      keyboardType: TextInputType.phone,
                       style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                       decoration: InputDecoration(
-                        hintText: 'e.g. Saturday afternoon or Sunday 2PM...',
+                        hintText: '6XXXXXXXX',
                         hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.grey[400]),
                         filled: true,
                         fillColor: isDark ? const Color(0xFF2D2D2D) : Colors.grey[100],
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide.none,
-                        ),
+                            borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
+                        contentPadding: const EdgeInsets.all(16),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Note
+                    Text('Note / preferred time (optional)',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.grey[400] : Colors.grey[700])),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: messageController,
+                      maxLines: 2,
+                      style: TextStyle(color: isDark ? Colors.white : Colors.black87),
+                      decoration: InputDecoration(
+                        hintText: 'e.g. around 2PM',
+                        hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.grey[400]),
+                        filled: true,
+                        fillColor: isDark ? const Color(0xFF2D2D2D) : Colors.grey[100],
+                        border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
                         contentPadding: const EdgeInsets.all(16),
                       ),
                     ),
@@ -723,86 +815,39 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                   children: [
                     Expanded(
                       child: OutlinedButton(
-                        onPressed: isSubmitting ? null : () => Navigator.pop(ctx),
+                        onPressed: () => Navigator.pop(ctx),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           side: BorderSide(color: isDark ? Colors.white24 : Colors.grey[300]!),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                         ),
-                        child: Text(
-                          'Cancel',
-                          style: TextStyle(
-                            color: isDark ? Colors.grey[400] : Colors.grey[700],
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                        child: Text('Cancel',
+                            style: TextStyle(
+                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                                fontWeight: FontWeight.w600)),
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: isSubmitting
-                            ? null
-                            : () async {
-                                setStateDialog(() => isSubmitting = true);
-                                try {
-                                  final String escrowCode = const Uuid().v4();
-                                  
-                                  String tenantPhone = '';
-                                  if (authService.userId != null) {
-                                    final userDoc = await FirebaseFirestore.instance
-                                        .collection('users')
-                                        .doc(authService.userId)
-                                        .get();
-                                    if (userDoc.exists) {
-                                      tenantPhone = userDoc.data()?['phone'] as String? ?? '';
-                                    }
-                                  }
-                                  
-                                  await FirebaseFirestore.instance.collection('tour_requests').add({
-                                    'propertyId': widget.propertyId,
-                                    'tenantId': authService.userId,
-                                    'tenantName': authService.userName,
-                                    'landlordId': _property!['landlordId'],
-                                    'propertyTitle': _property!['title'] ?? 'Property',
-                                    'status': 'pending',
-                                    'escrowCode': escrowCode,
-                                    'amount': 0,
-                                    'platformFee': 0,
-                                    'tenantPhone': tenantPhone ?? '',
-                                    'message': messageController.text.trim(),
-                                    'createdAt': DateTime.now(),
-                                  });
-
-                                  // Send notification to landlord
-                                  final landlordId = _property!['landlordId'];
-                                  if (landlordId != null) {
-                                    await FirebaseFirestore.instance
-                                        .collection('notifications')
-                                        .doc(landlordId)
-                                        .collection('items')
-                                        .add({
-                                      'title': 'New Tour Request',
-                                      'message': '${authService.userName ?? 'A tenant'} has requested a tour for "${_property!['title'] ?? 'Property'}".',
-                                      'type': 'tour_request',
-                                      'read': false,
-                                      'timestamp': FieldValue.serverTimestamp(),
-                                    });
-                                  }
-
-                                  Navigator.pop(ctx); // Close confirmation dialog
-                                  _showTourSuccessDialog();
-                                  _loadTourStatus(); // Reload status in this screen
-                                } catch (e) {
-                                  setStateDialog(() => isSubmitting = false);
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text('Failed to request tour: $e'),
-                                      backgroundColor: Colors.red,
-                                    ),
-                                  );
-                                }
-                              },
+                        onPressed: () {
+                          if (visitDate == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Please choose your visit day')));
+                            return;
+                          }
+                          if (phoneController.text.trim().length < 9) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('Enter a valid Mobile Money number')));
+                            return;
+                          }
+                          Navigator.pop(ctx);
+                          _processTourEscrow(
+                            visitDate: visitDate!,
+                            phone: phoneController.text.trim(),
+                            note: messageController.text.trim(),
+                          );
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1E3A5F),
                           foregroundColor: Colors.white,
@@ -810,16 +855,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
                         ),
-                        child: isSubmitting
-                            ? const SizedBox(
-                                width: 20,
-                                height: 20,
-                                child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
-                              )
-                            : const Text(
-                                'Request',
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
+                        child: const Text('Pay 5,000 FCFA',
+                            style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
                   ],
@@ -830,6 +867,126 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
         );
       },
     );
+  }
+
+  /// Charges the 5,000 FCFA displacement fee via Fapshi and, on success,
+  /// creates an ESCROWED tour request the agent can later scan to get paid.
+  Future<void> _processTourEscrow({
+    required DateTime visitDate,
+    required String phone,
+    required String note,
+  }) async {
+    final medium = (phone.startsWith('67') || phone.startsWith('65') || phone.startsWith('68'))
+        ? FapshiService.mediumMTN
+        : FapshiService.mediumOrange;
+    final fapshi = FapshiService();
+    final userId = authService.userId;
+
+    // Non-dismissible progress dialog.
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) => const AlertDialog(
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(color: Color(0xFF1E3A5F)),
+            SizedBox(height: 16),
+            Text('📱 Check your phone for the Mobile Money prompt and enter your PIN…',
+                textAlign: TextAlign.center),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final transId = await fapshi.directPay(
+        amount: _displacementFee,
+        phone: phone,
+        medium: medium,
+        message: 'Home237 visit fee',
+        userId: userId,
+        externalId: 'home237_tour_${userId}_${DateTime.now().millisecondsSinceEpoch}',
+      );
+      if (transId == null) {
+        throw Exception('Failed to start payment. Please try again.');
+      }
+
+      // Poll for payment success (max ~2 min).
+      const maxAttempts = 40;
+      bool paid = false;
+      for (int i = 0; i < maxAttempts; i++) {
+        await Future.delayed(const Duration(seconds: 3));
+        final status = await fapshi.getPaymentStatus(transId);
+        if (status == FapshiStatus.successful) {
+          paid = true;
+          break;
+        }
+        if (status == FapshiStatus.failed) {
+          throw Exception(fapshi.lastStatusReason ??
+              'Payment was declined. Check your Mobile Money balance and try again.');
+        }
+        if (status == FapshiStatus.expired) {
+          throw Exception('Payment request expired. Please try again.');
+        }
+      }
+      if (!paid) {
+        throw Exception('Payment timed out. If you were debited, contact support — you will be refunded.');
+      }
+
+      // Create the escrowed visit request.
+      final escrowCode = const Uuid().v4();
+      await FirebaseFirestore.instance.collection('tour_requests').add({
+        'propertyId': widget.propertyId,
+        'tenantId': userId,
+        'tenantName': authService.userName,
+        'landlordId': _property!['landlordId'],
+        'propertyTitle': _property!['title'] ?? 'Property',
+        'status': 'escrowed',
+        'escrowCode': escrowCode,
+        'amount': _displacementFee,
+        'platformFee': 0,
+        'tenantPhone': phone,
+        'escrowPayoutMedium': medium,
+        'transId': transId,
+        'visitDate': Timestamp.fromDate(visitDate),
+        'message': note,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+
+      // Notify the agent, including the chosen visit day.
+      final landlordId = _property!['landlordId'];
+      if (landlordId != null) {
+        await FirebaseFirestore.instance
+            .collection('notifications')
+            .doc(landlordId)
+            .collection('items')
+            .add({
+          'title': 'New Paid Visit Booked',
+          'message':
+              '${authService.userName ?? 'A home-seeker'} paid the visit fee for "${_property!['title'] ?? 'Property'}" '
+              'and chose ${visitDate.day}/${visitDate.month}/${visitDate.year}. '
+              'Scan their Tour Pass when you meet to receive the fee.',
+          'type': 'tour_request',
+          'read': false,
+          'timestamp': FieldValue.serverTimestamp(),
+        });
+      }
+
+      if (mounted) Navigator.pop(context); // close progress
+      _showTourSuccessDialog();
+      _loadTourStatus();
+    } catch (e) {
+      if (mounted) Navigator.pop(context); // close progress
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString().replaceAll('Exception: ', '')),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _cancelTourRequest() async {

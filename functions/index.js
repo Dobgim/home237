@@ -1,5 +1,6 @@
 const { onDocumentCreated } = require("firebase-functions/v2/firestore");
 const { onCall } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const { logger } = require("firebase-functions");
 const nodemailer = require("nodemailer");
@@ -918,4 +919,105 @@ exports.sendFapshiPayout = onCall(async (request) => {
   }
   logger.error(`sendFapshiPayout: Fapshi error ${res.status}: ${msg}`);
   throw new Error(msg);
+});
+
+/** Core Fapshi payout (disbursement), shared by callable + scheduled jobs. */
+async function doFapshiPayout(amount, phone, medium) {
+  const { apiUser, apiKey, baseUrl } = await loadFapshiCredentials();
+  const cleanPhone = normalizeCmrPhone(String(phone));
+  const res = await fetch(`${baseUrl}/payout`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apiuser: apiUser, apikey: apiKey },
+    body: JSON.stringify({ amount, phone: cleanPhone, medium }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (res.status === 200 || res.status === 201) return true;
+  if (res.status === 401 || res.status === 403) _fapshiCache = null;
+  throw new Error(data.message || `Payout failed (${res.status}).`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AUTO-REFUND NO-SHOW VISITS (displacement fee escrow)
+//
+// Runs hourly. A paid visit sits as `escrowed`/`approved` until the agent scans
+// the seeker's Tour Pass in person (which flips it to `completed` and pays the
+// agent). If the seeker's chosen visit day passed more than 24h ago and it was
+// never scanned, the 5,000 FCFA fee is automatically refunded to the seeker.
+// ─────────────────────────────────────────────────────────────────────────────
+exports.autoRefundNoShowTours = onSchedule("every 60 minutes", async () => {
+  const db = admin.firestore();
+  const now = Date.now();
+  const GRACE_MS = 24 * 60 * 60 * 1000;
+
+  const snap = await db
+    .collection("tour_requests")
+    .where("status", "in", ["escrowed", "approved"])
+    .get();
+
+  logger.info(`autoRefundNoShowTours: scanning ${snap.size} active visits`);
+
+  for (const doc of snap.docs) {
+    const d = doc.data();
+    const visit = d.visitDate;
+    if (!visit) continue;
+
+    const visitMs = visit.toDate
+      ? visit.toDate().getTime()
+      : visit._seconds
+        ? visit._seconds * 1000
+        : new Date(visit).getTime();
+    if (isNaN(visitMs)) continue;
+    if (now < visitMs + GRACE_MS) continue; // grace window not elapsed yet
+
+    const amount = d.amount || 0;
+    const phone = d.tenantPhone;
+
+    // Free visit or missing phone — nothing to refund, just close it out.
+    if (amount <= 0 || !phone) {
+      await doc.ref.update({
+        status: "expired_no_show",
+        noShowAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+      continue;
+    }
+
+    try {
+      const last9 = String(phone).replace(/[^0-9]/g, "").slice(-9);
+      const medium =
+        d.escrowPayoutMedium || (/^6[758]/.test(last9) ? "mobile money" : "orange money");
+
+      await doFapshiPayout(amount, phone, medium);
+
+      await doc.ref.update({
+        status: "refunded",
+        refundedAt: admin.firestore.FieldValue.serverTimestamp(),
+        escrowPayoutStatus: "refunded",
+        escrowPayoutMedium: medium,
+        escrowPayoutNumber: phone,
+        refundReason: "auto_no_show",
+      });
+
+      if (d.tenantId) {
+        await db.collection("notifications").doc(d.tenantId).collection("items").add({
+          title: "Visit Fee Refunded",
+          message: `The agent did not show for "${d.propertyTitle || "the property"}", so your ${amount} FCFA visit fee has been automatically refunded.`,
+          type: "tour_request",
+          read: false,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+      if (d.landlordId) {
+        await db.collection("notifications").doc(d.landlordId).collection("items").add({
+          title: "Visit Auto-Refunded",
+          message: `You didn't scan the visitor's Tour Pass for "${d.propertyTitle || "the property"}" within 24h of the visit day, so their fee was refunded.`,
+          type: "tour_request",
+          read: false,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+      }
+      logger.info(`autoRefundNoShowTours: refunded ${doc.id} (${amount} FCFA)`);
+    } catch (e) {
+      logger.error(`autoRefundNoShowTours: refund failed for ${doc.id}: ${e.message}`);
+    }
+  }
 });

@@ -638,7 +638,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
                                              child: OutlinedButton.icon(
                                                onPressed: () => _requestEscrowRefund(doc.id, request),
                                                icon: const Icon(Icons.undo_rounded, size: 18),
-                                               label: const Text('Request Refund', style: TextStyle(fontWeight: FontWeight.bold)),
+                                               label: const Text("Agent didn't show — Refund", style: TextStyle(fontWeight: FontWeight.bold)),
                                                style: OutlinedButton.styleFrom(
                                                  foregroundColor: Colors.orange,
                                                  side: const BorderSide(color: Colors.orange),
