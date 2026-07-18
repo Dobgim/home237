@@ -308,6 +308,24 @@ class _TenantDashboardState extends State<TenantDashboard> {
 
           final citiesWithListings = _cities.where((c) => byCity.containsKey(c['name'])).toList();
 
+          // Fallback so the screen never feels empty: most-recent approved
+          // listings from anywhere, used when the user's own city has none.
+          final recentListings = List<QueryDocumentSnapshot>.from(allApproved)
+            ..sort((a, b) {
+              final aD = a.data() as Map<String, dynamic>;
+              final bD = b.data() as Map<String, dynamic>;
+              final aB = isBoostActive(aD);
+              final bB = isBoostActive(bD);
+              if (aB && !bB) return -1;
+              if (!aB && bB) return 1;
+              final aT = aD['createdAt'];
+              final bT = bD['createdAt'];
+              if (aT == null && bT == null) return 0;
+              if (aT == null) return 1;
+              if (bT == null) return -1;
+              return (bT as Timestamp).compareTo(aT as Timestamp);
+            });
+
           return CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
@@ -335,13 +353,22 @@ class _TenantDashboardState extends State<TenantDashboard> {
                   ),
                 )
               else ...[
-                // Near You
-                if (_userCity != null)
+                // Near You — falls back to "Popular in Cameroon" when the
+                // user's city has nothing yet, so the screen never feels empty.
+                if (_userCity != null && _applyFilter(byCity[_userCity] ?? []).isNotEmpty)
                   SliverToBoxAdapter(
                     child: _buildCitySection(
                       t.get('near_you_dash').replaceAll('{city}', _userCity!), '',
                       _applyFilter(byCity[_userCity] ?? []),
                       isDark, isNearYou: true,
+                    ),
+                  )
+                else if (_applyFilter(recentListings).isNotEmpty)
+                  SliverToBoxAdapter(
+                    child: _buildCitySection(
+                      'Popular in Cameroon', '',
+                      _applyFilter(recentListings).take(10).toList(),
+                      isDark, exploreAll: true,
                     ),
                   ),
 
@@ -891,7 +918,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
           ),
         ),
         SizedBox(
-          height: 310,
+          height: 334,
           child: ListView.builder(
             scrollDirection: Axis.horizontal, physics: const BouncingScrollPhysics(),
             padding: const EdgeInsets.only(left: 20, right: 40),
@@ -908,7 +935,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   // ── City Carousel ──────────────────────────────────────────────────────
-  Widget _buildCitySection(String title, dynamic iconOrString, List<QueryDocumentSnapshot> docs, bool isDark, {bool isNearYou = false}) {
+  Widget _buildCitySection(String title, dynamic iconOrString, List<QueryDocumentSnapshot> docs, bool isDark, {bool isNearYou = false, bool exploreAll = false}) {
     final t = AppLocalizations.of(context);
     final rawCity = isNearYou ? (_userCity ?? title) : title;
     if (docs.isEmpty && !isNearYou) return const SizedBox.shrink();
@@ -947,7 +974,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
                 ]),
               ),
               GestureDetector(
-                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ExploreScreen(initialRegion: rawCity))),
+                onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ExploreScreen(initialRegion: exploreAll ? null : rawCity))),
                 child: Row(children: [
                   Text(t.get('see_all'), style: const TextStyle(fontSize: 13, color: Color(0xFF1E3A5F), fontWeight: FontWeight.w600)),
                   const SizedBox(width: 2),
@@ -958,7 +985,7 @@ class _TenantDashboardState extends State<TenantDashboard> {
           ),
         ),
         SizedBox(
-          height: 300,
+          height: 324,
           child: docs.isEmpty
               ? Container(
                   margin: const EdgeInsets.symmetric(horizontal: 20),
@@ -1011,6 +1038,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
     final ratingCount = data['ratingCount'] ?? 0;
     final ratingVal = data['rating'] ?? 0.0;
     final ratingStr = ratingCount > 0 ? '${ratingVal.toStringAsFixed(1)} ($ratingCount)' : 'New';
+    final agentName = (data['landlordName'] ?? '').toString().trim();
+    final landlordVerified = data['landlordVerified'] == true;
+    final views = (data['views'] is int) ? data['views'] as int : 0;
 
     return GestureDetector(
       onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => PropertyDetailsScreen(propertyId: propertyId, propertyData: data))),
@@ -1119,6 +1149,35 @@ class _TenantDashboardState extends State<TenantDashboard> {
                   TextSpan(text: ' ${t.get('per_month')}', style: TextStyle(fontWeight: FontWeight.normal, fontSize: 12, color: isDark ? Colors.white60 : Colors.grey[600])),
                 ],
               ),
+            ),
+            const SizedBox(height: 7),
+            // Agent + social proof (trust signals)
+            Row(
+              children: [
+                Container(
+                  width: 20, height: 20,
+                  decoration: BoxDecoration(shape: BoxShape.circle, color: const Color(0xFF1E3A5F).withOpacity(0.12)),
+                  alignment: Alignment.center,
+                  child: Text((agentName.isNotEmpty ? agentName[0] : 'A').toUpperCase(),
+                      style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Color(0xFF1E3A5F))),
+                ),
+                const SizedBox(width: 6),
+                Flexible(
+                  child: Text(agentName.isNotEmpty ? agentName : 'Agent',
+                      style: TextStyle(fontSize: 11, color: isDark ? Colors.white70 : const Color(0xFF64748B)),
+                      maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+                if (landlordVerified) ...[
+                  const SizedBox(width: 3),
+                  const Icon(Icons.verified, size: 12, color: Color(0xFF10B981)),
+                ],
+                if (views > 0) ...[
+                  const SizedBox(width: 8),
+                  Icon(Icons.remove_red_eye_outlined, size: 12, color: isDark ? Colors.white38 : Colors.grey[400]),
+                  const SizedBox(width: 3),
+                  Text('$views', style: TextStyle(fontSize: 11, color: isDark ? Colors.white38 : Colors.grey[500])),
+                ],
+              ],
             ),
           ],
         ),
