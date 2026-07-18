@@ -712,8 +712,8 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                             child: Text(
                               'A 5,000 FCFA visit fee is held safely by Home237. '
                               'It is released to the agent only after you meet. '
-                              'If the agent doesn\'t show within 24h of your chosen day, '
-                              'it is automatically refunded to you.',
+                              'If the agent doesn\'t show up, you can request a full '
+                              'refund from your Tour Requests.',
                               style: TextStyle(
                                 fontSize: 12.5,
                                 height: 1.4,

@@ -139315,7 +139315,7 @@ return new A.iG(new A.beG(s.a,s.b,s.c,s.d,a),null)},
 $S:56}
 A.beG.prototype={
 $2(a0,a1){var s,r,q,p,o,n,m,l,k,j=this,i=null,h=A.P(a0).ax.a===B.R,g=h?B.ho:B.d,f=A.z(24),e=t.p,d=A.a4(A.a([A.F(i,B.a9z,B.j,i,i,new A.R(A.H(31,B.l.l()>>>16&255,B.l.l()>>>8&255,B.l.l()&255),i,i,i,i,i,B.as),i,i,i,B.c2,i,i,i),B.aq,B.a4E],e),B.k,B.h,B.i,0),c=A.H(B.e.X(25.5),B.w.l()>>>16&255,B.w.l()>>>8&255,B.w.l()&255),b=A.z(12),a=A.bJ(A.H(B.e.X(76.5),B.w.l()>>>16&255,B.w.l()>>>8&255,B.w.l()&255),B.v,1)
-c=A.F(i,A.a4(A.a([B.a97,B.Z,A.aC(A.r("A 5,000 FCFA visit fee is held safely by Home237. It is released to the agent only after you meet. If the agent doesn't show within 24h of your chosen day, it is automatically refunded to you.",i,i,i,A.E(i,i,h?B.ax:B.a0B,i,i,i,i,i,i,i,i,12.5,i,i,i,i,1.4,!0,i,i,i,i,i,i,i,i),i,i,i),1)],e),B.A,B.h,B.i,0),B.j,i,i,new A.R(c,i,a,b,i,i,B.p),i,i,i,B.cb,i,i,i)
+c=A.F(i,A.a4(A.a([B.a97,B.Z,A.aC(A.r("A 5,000 FCFA visit fee is held safely by Home237. It is released to the agent only after you meet. If the agent doesn't show up, you can request a full refund from your Tour Requests.",i,i,i,A.E(i,i,h?B.ax:B.a0B,i,i,i,i,i,i,i,i,12.5,i,i,i,i,1.4,!0,i,i,i,i,i,i,i,i),i,i,i),1)],e),B.A,B.h,B.i,0),B.j,i,i,new A.R(c,i,a,b,i,i,B.p),i,i,i,B.cb,i,i,i)
 b=A.r("Visit day *",i,i,i,A.E(i,i,h?B.G:B.aE,i,i,i,i,i,i,i,i,12,i,i,B.u,i,i,!0,i,i,i,i,i,i,i,i),i,i,i)
 a=j.a
 s=h?B.aL:B.dM
