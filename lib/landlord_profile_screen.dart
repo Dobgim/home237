@@ -9,6 +9,8 @@ import 'settings_screen.dart';
 import 'home_page.dart';
 import 'permission_service.dart';
 import 'help_support_screen.dart';
+import 'company_registration_screen.dart';
+import 'verification_upload_screen.dart';
 import 'package:home237/app_localizations.dart';
 class LandlordProfileScreen extends StatefulWidget {
   const LandlordProfileScreen({super.key});
@@ -505,6 +507,57 @@ class _LandlordProfileScreenState extends State<LandlordProfileScreen> {
                       ),
                     ),
                     const SizedBox(height: 12),
+
+                    // Verify identity (Tier 1) — required before posting.
+                    _buildSettingsOption(
+                      context,
+                      icon: Icons.verified_user_outlined,
+                      title: 'Verify Your Identity',
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => VerificationUploadScreen(
+                              userRole: authService.userRole,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+
+                    // Convert an individual agent account into a company/agency.
+                    if (!authService.isCompany)
+                      _buildSettingsOption(
+                        context,
+                        icon: Icons.apartment,
+                        title: 'Register as Company / Agency',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CompanyRegistrationScreen(),
+                            ),
+                          );
+                        },
+                      ),
+
+                    // Company already registered — apply for / update the Verified badge.
+                    if (authService.isCompany)
+                      _buildSettingsOption(
+                        context,
+                        icon: Icons.workspace_premium_outlined,
+                        title: 'Company Verification Badge',
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const CompanyRegistrationScreen(),
+                            ),
+                          );
+                        },
+                      ),
 
                     _buildSettingsOption(
                       context,

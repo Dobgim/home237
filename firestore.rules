@@ -16,6 +16,24 @@ service cloud.firestore {
     function selfRoleAllowed() {
       return request.resource.data.role in ['none', 'tenant', 'landlord'];
     }
+    // A user may submit/keep their company status as pending/rejected but may
+    // NEVER approve themselves — only an admin can set companyStatus to
+    // 'approved'. Unchanged values are always allowed.
+    function selfCompanyStatusAllowed() {
+      return !('companyStatus' in request.resource.data) ||
+             request.resource.data.companyStatus in ['none', 'pending', 'rejected'] ||
+             request.resource.data.companyStatus == resource.data.companyStatus;
+    }
+    // Trust signals (tier, verified/phone flags) may only be changed by an admin.
+    // A self-write must leave them unchanged (or omit them).
+    function selfTrustUnchanged() {
+      return (!('verificationTier' in request.resource.data) ||
+              request.resource.data.verificationTier == resource.data.get('verificationTier', 0)) &&
+             (!('isVerified' in request.resource.data) ||
+              request.resource.data.isVerified == resource.data.get('isVerified', false)) &&
+             (!('phoneVerified' in request.resource.data) ||
+              request.resource.data.phoneVerified == resource.data.get('phoneVerified', false));
+    }
 
     // ── Users ────────────────────────────────────────────────────────────────
     // A user may edit their own document but may NOT change their own role
@@ -25,7 +43,9 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == userId
                     && request.resource.data.role in ['none', 'tenant', 'landlord'];
       allow update: if isAdmin() ||
-                    (isSignedIn() && request.auth.uid == userId && selfRoleAllowed());
+                    (isSignedIn() && request.auth.uid == userId
+                     && selfRoleAllowed() && selfCompanyStatusAllowed()
+                     && selfTrustUnchanged());
       allow delete: if isAdmin();
     }
 
@@ -41,6 +61,16 @@ service cloud.firestore {
     match /verifications/{verificationId} {
       allow read, write: if isSignedIn() &&
         (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+    }
+
+    // ── Company registrations ────────────────────────────────────────────────
+    // A company can create/read its own registration; only an admin may update
+    // it (approve/reject).
+    match /company_registrations/{regId} {
+      allow read: if isSignedIn() &&
+        (resource == null || resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow update, delete: if isAdmin();
     }
 
     // ── Properties ───────────────────────────────────────────────────────────

@@ -22,14 +22,30 @@ class _PremiumSubscriptionScreenState
   final FapshiService _fapshi = FapshiService();
 
   // ── Pricing constants ──────────────────────────────────────────────────────
-  static const int _monthlyAmount = 5000;
-  static const int _annualAmount  = 45000;
+  // Company/agency accounts get the "Company Unlimited" plan (unlimited
+  // listings); individual agents get the standard Premium plan.
+  bool get _isCompany => authService.isCompany;
+  int  get _monthlyAmount => _isCompany ? 15000 : 5000;
+  int  get _annualAmount  => _isCompany ? 150000 : 45000;
 
   int    get _currentAmount => _isAnnual ? _annualAmount : _monthlyAmount;
   int    get _currentDays   => _isAnnual ? 365 : 30;
+  String get _planName      => _isCompany ? 'Company Unlimited' : 'Premium';
   String get _currentLabel  => _isAnnual
-      ? '1 year Premium subscription'
-      : '1 month Premium subscription';
+      ? '1 year $_planName subscription'
+      : '1 month $_planName subscription';
+
+  // Formats an integer amount with thousands separators, e.g. 150000 → "150,000".
+  String _money(int amount) => amount.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+  String get _monthlyLabel => '${_money(_monthlyAmount)} FCFA';
+  String get _annualLabel  => '${_money(_annualAmount)} FCFA';
+  String get _annualSavingsLabel =>
+      '🎉 Save ${_money(_monthlyAmount * 12 - _annualAmount)} FCFA vs monthly billing';
+  String get _savingsBadge =>
+      'SAVE ${(((_monthlyAmount * 12 - _annualAmount) / (_monthlyAmount * 12)) * 100).round()}%';
+  String get _listingsFeature =>
+      _isCompany ? 'Post unlimited properties' : 'Post up to 3 properties';
 
   // ── Phone number dialog ────────────────────────────────────────────────────
 
@@ -103,7 +119,7 @@ class _PremiumSubscriptionScreenState
                               : Colors.grey[600])),
                   const SizedBox(height: 4),
                   Text(
-                    _isAnnual ? '45,000 FCFA' : '5,000 FCFA',
+                    _isAnnual ? _annualLabel : _monthlyLabel,
                     style: const TextStyle(
                         fontSize: 22, fontWeight: FontWeight.bold),
                   ),
@@ -120,9 +136,9 @@ class _PremiumSubscriptionScreenState
                         color: const Color(0xFF10B981).withAlpha(30),
                         borderRadius: BorderRadius.circular(6),
                       ),
-                      child: const Text(
-                        '🎉 Save 15,000 FCFA vs monthly billing',
-                        style: TextStyle(
+                      child: Text(
+                        _annualSavingsLabel,
+                        style: const TextStyle(
                             fontSize: 11,
                             color: Color(0xFF10B981),
                             fontWeight: FontWeight.w600),
@@ -460,7 +476,7 @@ class _PremiumSubscriptionScreenState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    _isAnnual ? '45,000 FCFA' : '5,000 FCFA',
+                    _isAnnual ? _annualLabel : _monthlyLabel,
                     style: TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
@@ -632,8 +648,8 @@ class _PremiumSubscriptionScreenState
       backgroundColor:
           isDark ? const Color(0xFF111827) : const Color(0xFFF9FAFB),
       appBar: AppBar(
-        title: const Text('Upgrade to Premium',
-            style: TextStyle(fontWeight: FontWeight.bold)),
+        title: Text('Upgrade to $_planName',
+            style: const TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         foregroundColor: isDark ? Colors.white : Colors.black,
@@ -672,8 +688,10 @@ class _PremiumSubscriptionScreenState
                   title: 'Free',
                   price: '0 FCFA',
                   period: 'forever',
-                  features: const [
-                    'Post up to 1 property',
+                  features: [
+                    _isCompany
+                        ? 'Post up to 5 properties'
+                        : 'Post up to 1 property',
                     'Standard search visibility',
                     'Basic support',
                   ],
@@ -686,22 +704,24 @@ class _PremiumSubscriptionScreenState
 
                 // Premium plan card — price & features update with billing cycle
                 _buildPlanCard(
-                  title: 'Premium',
-                  price: _isAnnual ? '45,000 FCFA' : '5,000 FCFA',
+                  title: _planName,
+                  price: _isAnnual ? _annualLabel : _monthlyLabel,
                   period: _isAnnual ? '/year' : '/month',
-                  savingsBadge: _isAnnual ? 'SAVE 25%' : null,
+                  savingsBadge: _isAnnual ? _savingsBadge : null,
                   features: _isAnnual
-                      ? const [
-                          'Post up to 3 new properties every month',
-                          'Featured "Premium" badge',
+                      ? [
+                          _isCompany
+                              ? 'Post unlimited properties'
+                              : 'Post up to 3 new properties every month',
+                          'Featured "${_isCompany ? 'Company' : 'Premium'}" badge',
                           'Priority in search results',
                           'Priority customer support',
                           'Advanced analytics dashboard',
                           '🎉 2 months FREE vs monthly billing',
                         ]
-                      : const [
-                          'Post up to 3 properties',
-                          'Featured "Premium" badge',
+                      : [
+                          _listingsFeature,
+                          'Featured "${_isCompany ? 'Company' : 'Premium'}" badge',
                           'Priority in search results',
                           'Priority customer support',
                           'Advanced analytics dashboard',
@@ -804,15 +824,15 @@ class _PremiumSubscriptionScreenState
         children: [
           _buildToggleOption(
             label: 'Monthly',
-            sublabel: '5,000 FCFA',
+            sublabel: _monthlyLabel,
             selected: !_isAnnual,
             isDark: isDark,
             onTap: () => setState(() => _isAnnual = false),
           ),
           _buildToggleOption(
             label: 'Annual',
-            sublabel: '45,000 FCFA',
-            savingsBadge: 'SAVE 25%',
+            sublabel: _annualLabel,
+            savingsBadge: _savingsBadge,
             selected: _isAnnual,
             isDark: isDark,
             onTap: () => setState(() => _isAnnual = true),

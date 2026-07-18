@@ -19,11 +19,20 @@ class VerificationUploadScreen extends StatefulWidget {
 
 class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
   final ImagePicker _picker = ImagePicker();
+  final TextEditingController _phoneController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   XFile? _idDocument;
   XFile? _secondaryDocument; // Proof of address or Ownership
   XFile? _additionalDocument;
   bool _isUploading = false;
   final double _uploadProgress = 0.0;
+
+  @override
+  void dispose() {
+    _phoneController.dispose();
+    _addressController.dispose();
+    super.dispose();
+  }
 
   // Removed local _requestPermission as it is now in PermissionService
 
@@ -169,7 +178,19 @@ class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
   Future<void> _submitVerification() async {
     if (_idDocument == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please upload your ID document')),
+        const SnackBar(content: Text('Please upload your national ID')),
+      );
+      return;
+    }
+    if (_phoneController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your phone number')),
+      );
+      return;
+    }
+    if (_addressController.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter your physical address')),
       );
       return;
     }
@@ -197,6 +218,9 @@ class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
         'userEmail': authService.userEmail,
         'userRole': authService.userRole.toString().split('.').last,
         'status': 'pending',
+        'tier': 1, // Tier 1 application: national ID + phone + address
+        'phoneNumber': _phoneController.text.trim(),
+        'physicalAddress': _addressController.text.trim(),
         'idDocumentUrl': idUrl,
         'secondaryDocumentUrl': secondaryUrl,
         'additionalDocumentUrl': additionalUrl,
@@ -298,6 +322,70 @@ class _VerificationUploadScreenState extends State<VerificationUploadScreen> {
                 ),
 
                 const SizedBox(height: 24),
+
+                // Phone number (Required — admin verifies, no OTP)
+                const Text(
+                  'Phone Number *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _phoneController,
+                  keyboardType: TextInputType.phone,
+                  decoration: InputDecoration(
+                    hintText: 'e.g. +237 6XX XXX XXX',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
+
+                // Physical address (Required)
+                const Text(
+                  'Physical Address *',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF0F172A),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _addressController,
+                  maxLines: 2,
+                  decoration: InputDecoration(
+                    hintText: 'Neighbourhood, city (e.g. Bonamoussadi, Douala)',
+                    filled: true,
+                    fillColor: Colors.white,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                    ),
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  ),
+                ),
+
+                const SizedBox(height: 20),
 
                 // ID Document (Required)
                 const Text(

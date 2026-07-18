@@ -169,10 +169,13 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
   }
 
   Future<void> _navigateToAddProperty(BuildContext context, AuthService auth) async {
-    // ─── Step 1: Verification Gate ────────────────────────────────────────────
-    // Check if the landlord has been approved by the admin before allowing posting.
     final userId = auth.userId;
-    if (userId != null) {
+
+    // ─── Tier 1 Gate ──────────────────────────────────────────────────────────
+    // Anyone (agent or company) must reach Tier 1 — national ID + phone + address,
+    // approved by an admin — before they can post. `canListProperties` is
+    // backward-compatible: legacy `isVerified` users count as Tier 1.
+    if (userId != null && !auth.canListProperties) {
       String verStatus = 'none';
       try {
         final verSnap = await FirebaseFirestore.instance
@@ -322,9 +325,12 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
             .where('landlordId', isEqualTo: userId)
             .get();
         final currentCount = propertiesSnapshot.docs.length;
-        final limit = auth.isPremium ? 3 : 1;
+        // Free caps: agent 1, company 5. Premium: agent 3, company unlimited (-1).
+        final int limit = auth.isCompany
+            ? (auth.isPremium ? -1 : 5)
+            : (auth.isPremium ? 3 : 1);
 
-        if (currentCount >= limit) {
+        if (limit != -1 && currentCount >= limit) {
           if (!context.mounted) return;
           if (!auth.isPremium) {
             final wantToUpgrade = await showDialog<bool>(
@@ -442,15 +448,22 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
       child: Scaffold(
         backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8FAFC),
         body: SafeArea(
-        child: _selectedNavIndex == 0
-            ? _buildDashboardView(isDark, auth)
-            : _selectedNavIndex == 1
-            ? const MyPropertiesScreen()
-            : _selectedNavIndex == 2
-            ? const TourRequestsScreen()
-            : _selectedNavIndex == 3
-            ? const MessagesScreen()
-            : const LandlordProfileScreen(),
+        child: Column(
+          children: [
+            _buildCompanyStatusBanner(auth),
+            Expanded(
+              child: _selectedNavIndex == 0
+                  ? _buildDashboardView(isDark, auth)
+                  : _selectedNavIndex == 1
+                  ? const MyPropertiesScreen()
+                  : _selectedNavIndex == 2
+                  ? const TourRequestsScreen()
+                  : _selectedNavIndex == 3
+                  ? const MessagesScreen()
+                  : const LandlordProfileScreen(),
+            ),
+          ],
+        ),
       ),
       bottomNavigationBar: _buildBottomNav(isDark),
       floatingActionButton: _selectedNavIndex == 1
@@ -464,6 +477,38 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         ),
       )
           : null,
+      ),
+    );
+  }
+
+  // Slim status banner shown to company accounts that aren't approved yet.
+  Widget _buildCompanyStatusBanner(AuthService auth) {
+    if (!auth.isCompany || auth.isCompanyApproved) {
+      return const SizedBox.shrink();
+    }
+    final bool rejected = auth.companyStatus == 'rejected';
+    final Color bg = rejected ? const Color(0xFFEF4444) : const Color(0xFFF59E0B);
+    return Container(
+      width: double.infinity,
+      color: bg.withOpacity(0.12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      child: Row(
+        children: [
+          Icon(rejected ? Icons.gpp_bad_outlined : Icons.hourglass_top_rounded,
+              size: 20, color: bg),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              rejected
+                  ? 'Your company documents were not approved. Please contact support.'
+                  : 'Your company is under review. You can post listings once approved.',
+              style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: bg),
+            ),
+          ),
+        ],
       ),
     );
   }

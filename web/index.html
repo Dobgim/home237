@@ -61,6 +61,8 @@
   
   
   <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  
+  
   <style id="splash-screen-style">
     html {
       height: 100%
@@ -69,7 +71,7 @@
     body {
       margin: 0;
       min-height: 100%;
-      background-color: #FFFFFF;
+      background-color: #0A1628;
           background-size: 100% 100%;
     }
 
@@ -118,90 +120,22 @@
       bottom: 0;
       right: 0;
     }
-
-    /* Branded loading screen shown while main.dart.js downloads. */
-    #splash {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 18px;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      animation: h237fade 0.5s ease-out;
-    }
-
-    #splash .h237-logo {
-      width: 84px;
-      height: 84px;
-      border-radius: 22px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-      animation: h237pulse 1.6s ease-in-out infinite;
-    }
-
-    #splash .h237-title {
-      color: #1E3A5F;
-      font-size: 26px;
-      font-weight: 800;
-      letter-spacing: -0.4px;
-      margin: 0;
-    }
-
-    #splash .h237-sub {
-      color: #64748b;
-      font-size: 13px;
-      margin: -10px 0 0 0;
-    }
-
-    #splash .h237-bar {
-      width: 180px;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(30, 58, 95, 0.12);
-      overflow: hidden;
-      position: relative;
-    }
-
-    #splash .h237-bar::after {
-      content: '';
-      position: absolute;
-      left: -40%;
-      width: 40%;
-      height: 100%;
-      border-radius: 2px;
-      background: linear-gradient(90deg, #CA8A04, #F59E0B);
-      animation: h237slide 1.1s ease-in-out infinite;
-    }
-
-    #splash .h237-hint {
-      color: #64748b;
-      font-size: 11px;
-      margin: 0;
-    }
-
-    @keyframes h237slide {
-      to { left: 100%; }
-    }
-
-    @keyframes h237pulse {
-      0%, 100% { transform: scale(1); }
-      50% { transform: scale(1.06); }
-    }
-
-    @keyframes h237fade {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
   </style>
   <script id="splash-screen-script">
     function removeSplashFromWeb() {
       document.getElementById("splash")?.remove();
       document.getElementById("splash-branding")?.remove();
-      document.getElementById("mobile-app-banner")?.remove();
       document.body.style.background = "transparent";
     }
   </script>
 </head>
 
 <body>
+  <picture id="splash">
+      <source srcset="splash/img/light-1x.png 1x, splash/img/light-2x.png 2x, splash/img/light-3x.png 3x, splash/img/light-4x.png 4x" media="(prefers-color-scheme: light)">
+      <source srcset="splash/img/dark-1x.png 1x, splash/img/dark-2x.png 2x, splash/img/dark-3x.png 3x, splash/img/dark-4x.png 4x" media="(prefers-color-scheme: dark)">
+      <img class="center" aria-hidden="true" src="splash/img/light-1x.png" alt="">
+  </picture>
   <!-- Mobile App Promo Banner (Visible immediately during slow load) -->
   <div id="mobile-app-banner" style="
     position: fixed;
@@ -227,7 +161,7 @@
   ">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
       <div style="display: flex; gap: 12px; align-items: center;">
-        <img src="favicon.png" style="width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" />
+        <img src="favicon.png" style="width: 40px; height: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
         <div>
           <h4 style="margin: 0; font-size: 14px; font-weight: 700; color: #fff;">Get the Home237 App</h4>
           <p style="margin: 2px 0 0 0; font-size: 11px; color: #94a3b8; line-height: 1.4;">For a faster, smoother, and data-friendly experience.</p>
@@ -262,20 +196,14 @@
         text-align: center;
         transition: background-color 0.2s;
       " onmouseover="this.style.backgroundColor='#15294A'" onmouseout="this.style.backgroundColor='#1E3A5F'">
-        <svg style="width: 12px; height: 12px; fill: currentColor;" viewBox="0 0 24 24"><path d="M17.5 1h-11C5.12 1 4 2.12 4 3.5v17C4 21.88 5.12 23 6.5 23h11c1.38 0 2.5-1.12 2.5-2.5v-17C20 2.12 18.88 1 17.5 1zm-11 2h11c.28 0 .5.22.5.5V18H6V3.5c0-.28.22-.5.5-.5zM12 21c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"/></svg>
+        <svg style="width: 12px; height: 12px; fill: currentColor;" viewBox="0 0 24 24"><path d="M17.5 1h-11C5.12 1 4 2.12 4 3.5v17C4 21.88 5.12 23 6.5 23h11c1.38 0 2.5-1.12 2.5-2.5v-17C20 2.12 18.88 1 17.5 1zm-11 2h11c.28 0 .5.22.5.5V18H6V3.5c0-.28.22-.5.5-.5zM12 21c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1z"></path></svg>
         Download Android APK
       </a>
     </div>
   </div>
 
   <!-- Branded loading screen while the app bundle downloads. -->
-  <div id="splash" class="center">
-      <img class="h237-logo" src="favicon.png" alt="Home237" />
-      <h1 class="h237-title">Home237</h1>
-      <p class="h237-sub">Cameroon Property Rentals</p>
-      <div class="h237-bar" aria-hidden="true"></div>
-      <p class="h237-hint">Loading your homes…</p>
-  </div>
+  
   
   <script src="flutter_bootstrap.js" async=""></script>
 </body></html>

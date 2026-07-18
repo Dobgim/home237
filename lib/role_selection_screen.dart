@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'auth_service.dart';
 import 'landlord_dashboard.dart';
 import 'tenant_dashboard.dart';
+import 'company_registration_screen.dart';
 import 'theme_notifier.dart';
 
 class RoleSelectionScreen extends StatefulWidget {
@@ -14,8 +15,20 @@ class RoleSelectionScreen extends StatefulWidget {
 
 class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
   UserRole? _selectedRole;
+  bool _companySelected = false; // "Company / Agency" — not a UserRole value
 
   void _handleContinue() {
+    // Company path: role & account type are set inside the registration screen
+    // after the documents are uploaded.
+    if (_companySelected) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => const CompanyRegistrationScreen()),
+      );
+      return;
+    }
+
     if (_selectedRole != null) {
       authService.setUserRole(_selectedRole!);
 
@@ -109,8 +122,12 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                 icon: Icons.business_outlined,
                 title: 'Agent',
                 subtitle: "I'm renting out properties",
-                isSelected: _selectedRole == UserRole.landlord,
+                isSelected: _selectedRole == UserRole.landlord && !_companySelected,
               ),
+
+              const SizedBox(height: 16),
+
+              _buildCompanyCard(),
 
               const SizedBox(height: 32),
 
@@ -218,7 +235,10 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
     required bool isSelected,
   }) {
     return GestureDetector(
-      onTap: () => setState(() => _selectedRole = role),
+      onTap: () => setState(() {
+        _selectedRole = role;
+        _companySelected = false;
+      }),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(16),
@@ -275,6 +295,120 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> {
                   Text(
                     subtitle,
                     style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: isSelected
+                      ? const Color(0xFF1E3A5F)
+                      : const Color(0xFFD1D5DB),
+                  width: 2,
+                ),
+                color: isSelected ? const Color(0xFF1E3A5F) : Colors.transparent,
+              ),
+              child: isSelected
+                  ? const Icon(Icons.check, color: Colors.white, size: 16)
+                  : null,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompanyCard() {
+    final isSelected = _companySelected;
+    return GestureDetector(
+      onTap: () => setState(() {
+        _companySelected = true;
+        _selectedRole = null;
+      }),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF1E3A5F) : const Color(0xFFE5E7EB),
+            width: isSelected ? 2 : 1,
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: const Color(0xFF1E3A5F).withOpacity(0.1),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              decoration: BoxDecoration(
+                color: isSelected
+                    ? const Color(0xFF1E3A5F).withOpacity(0.1)
+                    : const Color(0xFFF3F4F6),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.apartment,
+                color: isSelected ? const Color(0xFF1E3A5F) : const Color(0xFF64748B),
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'Company / Agency',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: isSelected
+                              ? const Color(0xFF1E3A5F)
+                              : const Color(0xFF1E293B),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFCA8A04).withOpacity(0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          '5 free',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFFCA8A04),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 2),
+                  const Text(
+                    'We manage multiple properties (documents required)',
+                    style: TextStyle(
                       fontSize: 13,
                       color: Color(0xFF9CA3AF),
                     ),

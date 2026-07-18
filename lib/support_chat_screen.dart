@@ -12,7 +12,7 @@ class SupportChatScreen extends StatefulWidget {
 class _SupportChatScreenState extends State<SupportChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
-  DateTime? _lastAutoReplyTime;
+  bool _autoReplyHandled = false; // in-session guard against rapid double-fires
 
   @override
   void initState() {
@@ -526,45 +526,54 @@ class _SupportChatScreenState extends State<SupportChatScreen> {
     }
   }
 
-  void _triggerAutoReply() {
-    final now = DateTime.now();
-    // Only auto-reply if we haven't in the last hour
-    if (_lastAutoReplyTime != null && now.difference(_lastAutoReplyTime!) < const Duration(hours: 1)) {
-      return;
+  // Sends the greeting exactly once — on the user's very first message.
+  // After that, the persistent `autoReplySent` flag stays true forever, so
+  // every subsequent message goes straight to a real support agent.
+  Future<void> _triggerAutoReply() async {
+    if (_autoReplyHandled) return; // guard against rapid double-fires this session
+    _autoReplyHandled = true;
+
+    try {
+      final chatRef = FirebaseFirestore.instance
+          .collection('support_chats')
+          .doc(authService.userId);
+
+      final chatSnap = await chatRef.get();
+      final data = chatSnap.data();
+      // Already greeted in a previous session → let a human handle it.
+      if (data != null && data['autoReplySent'] == true) return;
+
+      // Claim the greeting immediately so a second message can't also trigger it.
+      await chatRef.update({'autoReplySent': true});
+
+      // Small delay to feel more natural.
+      await Future.delayed(const Duration(seconds: 2));
+
+      final autoMessage =
+          "Hello! Thank you for contacting Home237 Support. One of our agents will be with you shortly. In the meantime, please feel free to describe your issue or inquiry in detail so we can help you better.";
+
+      final batch = FirebaseFirestore.instance.batch();
+      final messageRef = chatRef.collection('messages').doc();
+
+      batch.set(messageRef, {
+        'message': autoMessage,
+        'senderId': 'system_support',
+        'senderName': 'Support Team',
+        'isAdmin': true,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+
+      batch.update(chatRef, {
+        'lastMessage': autoMessage,
+        'lastMessageTime': FieldValue.serverTimestamp(),
+        'unreadByUser': FieldValue.increment(1),
+      });
+
+      await batch.commit();
+    } catch (e) {
+      print('Error sending auto-reply: $e');
+      _autoReplyHandled = false; // allow a retry if it failed
     }
-
-    _lastAutoReplyTime = now;
-
-    // Wait 2 seconds to feel more natural
-    Future.delayed(const Duration(seconds: 2), () async {
-      if (!mounted) return;
-
-      try {
-        final autoMessage = "Hello! Thank you for contacting Home237 Support. One of our agents will be with you shortly. In the meantime, please feel free to describe your issue or inquiry in detail so we can help you better.";
-        
-        final batch = FirebaseFirestore.instance.batch();
-        final chatRef = FirebaseFirestore.instance.collection('support_chats').doc(authService.userId);
-        final messageRef = chatRef.collection('messages').doc();
-
-        batch.set(messageRef, {
-          'message': autoMessage,
-          'senderId': 'system_support',
-          'senderName': 'Support Team',
-          'isAdmin': true,
-          'timestamp': FieldValue.serverTimestamp(),
-        });
-
-        batch.update(chatRef, {
-          'lastMessage': autoMessage,
-          'lastMessageTime': FieldValue.serverTimestamp(),
-          'unreadByUser': FieldValue.increment(1),
-        });
-
-        await batch.commit();
-      } catch (e) {
-        print('Error sending auto-reply: $e');
-      }
-    });
   }
 
   void _showReactionPicker(String messageId, Map<String, dynamic> currentReactions) {

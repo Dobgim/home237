@@ -173,6 +173,16 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
       final data = userDoc.data() ?? {};
       final isPremium = (data['subscriptionStatus'] ?? 'free') == 'premium';
       final isAnnual = (data['subscriptionPlan'] ?? '').toString() == 'annual';
+      final isCompany = (data['accountType'] ?? 'agent') == 'company';
+
+      if (isCompany) {
+        // Company: 5 free listings; Premium (Company Unlimited) = no cap.
+        // Posting permission itself is gated by Tier 1 in the dashboard.
+        if (!isPremium && snapshot.docs.length >= 5 && mounted) {
+          _showLimitDialog(isPremium: false, isAnnual: false, isCompany: true);
+        }
+        return;
+      }
 
       if (!isPremium) {
         // Free plan: 1 property total.
@@ -209,11 +219,19 @@ class _AddPropertyScreenState extends State<AddPropertyScreen> {
     }
   }
 
-  void _showLimitDialog({required bool isPremium, required bool isAnnual}) {
+  void _showLimitDialog(
+      {required bool isPremium,
+      required bool isAnnual,
+      bool isCompany = false}) {
     final String title =
         isAnnual ? 'Monthly Limit Reached' : 'Listing Limit Reached';
     final String message;
-    if (!isPremium) {
+    if (isCompany) {
+      // Company free tier: 5 listings, then upgrade to Company Unlimited.
+      message =
+          'Your agency has used all 5 free listings. Upgrade to Company '
+          'Unlimited to post as many properties as you like!';
+    } else if (!isPremium) {
       message =
           'On the Free plan you can only post 1 property. Upgrade to Premium to '
           'post up to 3 — or choose the Annual plan to post 3 new properties every month!';

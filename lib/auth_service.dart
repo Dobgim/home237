@@ -25,6 +25,13 @@ class AuthService extends ChangeNotifier {
   String? _profileImage;
   String _subscriptionStatus = 'free'; // 'free' or 'premium'
   DateTime? _subscriptionExpiry;
+  String _accountType = 'agent'; // 'agent' (individual) or 'company' (agency)
+  String? _companyName;
+  String _companyStatus = 'none'; // 'none' | 'pending' | 'approved' | 'rejected'
+  // Trust tier: 0 none · 1 Listed (can post) · 2 Verified badge · 3 Trusted agency.
+  int _verificationTier = 0;
+  bool _phoneVerified = false;
+  bool _isVerified = false; // legacy "ID verified" flag (backward compatibility)
   bool _isEmailVerified = false;
   String? _lastError;
   String? _localSessionToken;
@@ -45,6 +52,23 @@ class AuthService extends ChangeNotifier {
   String get subscriptionStatus => _subscriptionStatus;
   DateTime? get subscriptionExpiry => _subscriptionExpiry;
   bool get isPremium => _subscriptionStatus == 'premium';
+  String get accountType => _accountType;
+  String? get companyName => _companyName;
+  String get companyStatus => _companyStatus;
+  bool get isCompany => _accountType == 'company';
+  // A company may only post once its documents have been approved by an admin.
+  bool get isCompanyApproved => _companyStatus == 'approved';
+
+  // ── Verification tiers ──────────────────────────────────────────────────────
+  int get verificationTier => _verificationTier;
+  bool get phoneVerified => _phoneVerified;
+  // Tier 1+ may post listings. Backward compat: legacy `isVerified` users (who
+  // predate the tier system) are treated as Tier 1 so they're never locked out.
+  bool get canListProperties => _verificationTier >= 1 || _isVerified;
+  // Tier 2+ carries the public "Verified" trust badge.
+  bool get hasVerifiedBadge => _verificationTier >= 2 || _isVerified;
+  // Tier 3 is the top "Trusted Agency" status (assigned by an admin).
+  bool get isTrustedAgency => _verificationTier >= 3;
   bool get hasSelectedRole => _userRole != UserRole.none;
   String? get lastError => _lastError;
 
@@ -190,8 +214,16 @@ class AuthService extends ChangeNotifier {
         _userName = data['name'] ?? email.split('@')[0];
         _profileImage = data['profileImage'];
         _subscriptionStatus = data['subscriptionStatus'] ?? 'free';
-        _subscriptionExpiry = data['subscriptionExpiry'] != null 
-            ? (data['subscriptionExpiry'] as Timestamp).toDate() 
+        _accountType = data['accountType'] ?? 'agent';
+        _companyName = data['companyName'];
+        _companyStatus = data['companyStatus'] ?? 'none';
+        _verificationTier = (data['verificationTier'] ?? 0) is int
+            ? (data['verificationTier'] ?? 0)
+            : int.tryParse('${data['verificationTier']}') ?? 0;
+        _phoneVerified = data['phoneVerified'] == true;
+        _isVerified = data['isVerified'] == true;
+        _subscriptionExpiry = data['subscriptionExpiry'] != null
+            ? (data['subscriptionExpiry'] as Timestamp).toDate()
             : null;
 
         final roleStr = data['role'] ?? 'none';
@@ -388,6 +420,14 @@ class AuthService extends ChangeNotifier {
               (user.email != null ? user.email!.split('@')[0] : 'User');
           _profileImage = data['profileImage'] ?? user.photoURL;
           _subscriptionStatus = data['subscriptionStatus'] ?? 'free';
+          _accountType = data['accountType'] ?? 'agent';
+          _companyName = data['companyName'];
+          _companyStatus = data['companyStatus'] ?? 'none';
+          _verificationTier = (data['verificationTier'] ?? 0) is int
+              ? (data['verificationTier'] ?? 0)
+              : int.tryParse('${data['verificationTier']}') ?? 0;
+          _phoneVerified = data['phoneVerified'] == true;
+          _isVerified = data['isVerified'] == true;
           _subscriptionExpiry = data['subscriptionExpiry'] != null
               ? (data['subscriptionExpiry'] as Timestamp).toDate()
               : null;
@@ -505,6 +545,14 @@ class AuthService extends ChangeNotifier {
               (user.email != null ? user.email!.split('@')[0] : 'User');
           _profileImage = data['profileImage'] ?? user.photoURL;
           _subscriptionStatus = data['subscriptionStatus'] ?? 'free';
+          _accountType = data['accountType'] ?? 'agent';
+          _companyName = data['companyName'];
+          _companyStatus = data['companyStatus'] ?? 'none';
+          _verificationTier = (data['verificationTier'] ?? 0) is int
+              ? (data['verificationTier'] ?? 0)
+              : int.tryParse('${data['verificationTier']}') ?? 0;
+          _phoneVerified = data['phoneVerified'] == true;
+          _isVerified = data['isVerified'] == true;
           _subscriptionExpiry = data['subscriptionExpiry'] != null
               ? (data['subscriptionExpiry'] as Timestamp).toDate()
               : null;
@@ -625,6 +673,34 @@ class AuthService extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Registers the current user as a company/agency. The account uses the
+  /// `landlord` role (same dashboard & listing flow) but is flagged
+  /// `accountType: company` with a `pending` status until an admin approves
+  /// the uploaded documents. Companies get 5 free listings (vs 1 for agents).
+  Future<void> registerAsCompany({
+    required String companyName,
+    required Map<String, String> companyDocs,
+  }) async {
+    _userRole = UserRole.landlord;
+    _accountType = 'company';
+    _companyName = companyName;
+    _companyStatus = 'pending';
+    _isNewUser = false;
+
+    if (_userId != null) {
+      await FirebaseFirestore.instance.collection('users').doc(_userId).set({
+        'role': 'landlord',
+        'accountType': 'company',
+        'companyName': companyName,
+        'companyStatus': 'pending',
+        'companyDocs': companyDocs,
+        'companySubmittedAt': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+    }
+
+    notifyListeners();
+  }
+
   // NEW: Force refresh user status from server
   Future<void> refreshUserStatus() async {
     final user = FirebaseAuth.instance.currentUser;
@@ -678,6 +754,13 @@ class AuthService extends ChangeNotifier {
     _isNewUser = false;
     _isGuest = false;
     _profileImage = null;
+    _accountType = 'agent';
+    _companyName = null;
+    _companyStatus = 'none';
+    _verificationTier = 0;
+    _phoneVerified = false;
+    _isVerified = false;
+    _subscriptionStatus = 'free';
 
     // Sign out from Firebase and Google
     await FirebaseAuth.instance.signOut();

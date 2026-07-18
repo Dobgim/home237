@@ -10,6 +10,7 @@ class AdminVerificationsScreen extends StatefulWidget {
 
 class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
   String _selectedTab = 'Pending';
+  String _kind = 'users'; // 'users' (individual verifications) | 'companies'
 
   /// Propagates a landlord's verification status to the denormalized
   /// `landlordVerified` flag on every listing they own, so browse cards
@@ -55,7 +56,19 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
       ),
       body: Column(
         children: [
-          // Tabs
+          // Users / Companies switch
+          Container(
+            color: Colors.white,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+            child: Row(
+              children: [
+                _buildKindTab('Users', 'users'),
+                const SizedBox(width: 12),
+                _buildKindTab('Companies', 'companies'),
+              ],
+            ),
+          ),
+          // Status tabs
           Container(
             color: Colors.white,
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -74,7 +87,9 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance
-                  .collection('verifications')
+                  .collection(_kind == 'companies'
+                      ? 'company_registrations'
+                      : 'verifications')
                   .where('status', isEqualTo: _selectedTab.toLowerCase())
                   .snapshots(),
               builder: (context, snapshot) {
@@ -88,13 +103,16 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.verified_user_outlined,
+                          _kind == 'companies'
+                              ? Icons.apartment
+                              : Icons.verified_user_outlined,
                           size: 64,
                           color: Colors.grey[300],
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          'No ${_selectedTab.toLowerCase()} verifications',
+                          'No ${_selectedTab.toLowerCase()} '
+                          '${_kind == 'companies' ? 'companies' : 'verifications'}',
                           style: const TextStyle(
                             fontSize: 16,
                             color: Color(0xFF64748B),
@@ -110,11 +128,12 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                   itemCount: snapshot.data!.docs.length,
                   separatorBuilder: (context, index) => const SizedBox(height: 12),
                   itemBuilder: (context, index) {
-                    final verificationData =
+                    final data =
                         snapshot.data!.docs[index].data() as Map<String, dynamic>;
-                    final verificationId = snapshot.data!.docs[index].id;
-                    return _buildVerificationCard(
-                        verificationData, verificationId);
+                    final id = snapshot.data!.docs[index].id;
+                    return _kind == 'companies'
+                        ? _buildCompanyCard(data, id)
+                        : _buildVerificationCard(data, id);
                   },
                 );
               },
@@ -533,6 +552,13 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                             'isVerified': true,
                             // Kept for backward compatibility with older reads
                             'idVerified': true,
+                            // Tier 1 "Listed" — national ID + phone + address verified.
+                            'verificationTier': 1,
+                            'phoneVerified': true,
+                            if (data['phoneNumber'] != null)
+                              'phoneNumber': data['phoneNumber'],
+                            if (data['physicalAddress'] != null)
+                              'physicalAddress': data['physicalAddress'],
                             'verifiedAt': FieldValue.serverTimestamp(),
                           });
 
@@ -553,6 +579,352 @@ class _AdminVerificationsScreenState extends State<AdminVerificationsScreen> {
                           });
                         }
                         
+                        if (mounted) Navigator.pop(context);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF10B981),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Approve'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildKindTab(String label, String value) {
+    final isSelected = _kind == value;
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _kind = value),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            border: Border(
+              bottom: BorderSide(
+                color: isSelected
+                    ? const Color(0xFF0EA5E9)
+                    : Colors.transparent,
+                width: 2.5,
+              ),
+            ),
+          ),
+          child: Center(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: isSelected
+                    ? const Color(0xFF0EA5E9)
+                    : const Color(0xFF94A3B8),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCompanyCard(Map<String, dynamic> data, String id) {
+    final companyName = data['companyName'] ?? 'Unknown Company';
+    final status = (data['status'] ?? 'pending').toString();
+    final submitted = data['createdAt'] as Timestamp?;
+
+    String timeAgo = '';
+    if (submitted != null) {
+      final diff = DateTime.now().difference(submitted.toDate());
+      if (diff.inHours < 1) {
+        timeAgo = '${diff.inMinutes}m ago';
+      } else if (diff.inHours < 24) {
+        timeAgo = '${diff.inHours}h ago';
+      } else {
+        timeAgo = '${diff.inDays}d ago';
+      }
+    }
+
+    Color statusColor;
+    switch (status) {
+      case 'approved':
+        statusColor = const Color(0xFF10B981);
+        break;
+      case 'rejected':
+        statusColor = const Color(0xFFEF4444);
+        break;
+      default:
+        statusColor = const Color(0xFFF59E0B);
+    }
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1E3A5F).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.apartment, color: Color(0xFF1E3A5F)),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            companyName,
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF0F172A),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: statusColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                          child: Text(
+                            status.toUpperCase(),
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: statusColor,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${data['userEmail'] ?? ''}  ·  $timeAgo',
+                      style: const TextStyle(
+                          fontSize: 13, color: Color(0xFF64748B)),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _reviewCompany(id, data),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3A5F),
+                foregroundColor: Colors.white,
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Review Company',
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _reviewCompany(String id, Map<String, dynamic> data) {
+    final userId = data['userId'];
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => DraggableScrollableSheet(
+        initialChildSize: 0.7,
+        minChildSize: 0.5,
+        maxChildSize: 0.95,
+        expand: false,
+        builder: (context, scrollController) => Container(
+          padding: const EdgeInsets.all(20),
+          child: ListView(
+            controller: scrollController,
+            children: [
+              const Text(
+                'Review Company',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF0F172A),
+                ),
+              ),
+              const SizedBox(height: 20),
+              Text('Company: ${data['companyName'] ?? 'Unknown'}',
+                  style: const TextStyle(fontSize: 16)),
+              const SizedBox(height: 8),
+              Text('Email: ${data['userEmail'] ?? 'N/A'}',
+                  style: const TextStyle(
+                      fontSize: 14, color: Color(0xFF64748B))),
+              const SizedBox(height: 20),
+              const Text('Documents',
+                  style:
+                      TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 12),
+              if (data['businessRegUrl'] != null)
+                _buildDocumentItem('Business Registration',
+                    Icons.business_center_outlined, data['businessRegUrl']),
+              if (data['niuUrl'] != null)
+                _buildDocumentItem('Taxpayer Number (NIU)',
+                    Icons.receipt_long_outlined, data['niuUrl']),
+              if (data['repIdUrl'] != null)
+                _buildDocumentItem("Representative's ID",
+                    Icons.badge_outlined, data['repIdUrl']),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () async {
+                        final TextEditingController reasonController =
+                            TextEditingController();
+                        final bool? confirmReject = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16)),
+                            title: const Text('Rejection Reason',
+                                style:
+                                    TextStyle(fontWeight: FontWeight.bold)),
+                            content: TextField(
+                              controller: reasonController,
+                              decoration: const InputDecoration(
+                                hintText: 'e.g., documents unreadable',
+                                border: OutlineInputBorder(),
+                              ),
+                              maxLines: 3,
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
+                              ),
+                              ElevatedButton(
+                                onPressed: () {
+                                  if (reasonController.text.trim().isNotEmpty) {
+                                    Navigator.pop(ctx, true);
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFFEF4444),
+                                  foregroundColor: Colors.white,
+                                ),
+                                child: const Text('Reject'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmReject != true) return;
+                        final reason = reasonController.text.trim();
+
+                        await FirebaseFirestore.instance
+                            .collection('company_registrations')
+                            .doc(id)
+                            .update({
+                          'status': 'rejected',
+                          'rejectionReason': reason,
+                        });
+                        if (userId != null) {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userId)
+                              .update({'companyStatus': 'rejected'});
+                          await FirebaseFirestore.instance
+                              .collection('notifications')
+                              .doc(userId)
+                              .collection('items')
+                              .add({
+                            'title': 'Company Not Approved',
+                            'message':
+                                'Your company registration was rejected. Reason: $reason.',
+                            'type': 'system',
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'read': false,
+                          });
+                        }
+                        if (mounted) Navigator.pop(context);
+                      },
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFFEF4444),
+                        side: const BorderSide(color: Color(0xFFEF4444)),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: const Text('Reject'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () async {
+                        await FirebaseFirestore.instance
+                            .collection('company_registrations')
+                            .doc(id)
+                            .update({'status': 'approved'});
+                        if (userId != null) {
+                          await FirebaseFirestore.instance
+                              .collection('users')
+                              .doc(userId)
+                              .update({
+                            'companyStatus': 'approved',
+                            'isVerified': true,
+                            // Tier 2 "Verified" — business docs + office check approved.
+                            'verificationTier': 2,
+                            'verifiedAt': FieldValue.serverTimestamp(),
+                          });
+                          await _syncLandlordVerifiedFlag(userId, true);
+                          await FirebaseFirestore.instance
+                              .collection('notifications')
+                              .doc(userId)
+                              .collection('items')
+                              .add({
+                            'title': 'Company Approved',
+                            'message':
+                                'Congratulations! Your company has been approved. You can now post up to 5 listings for free.',
+                            'type': 'system',
+                            'timestamp': FieldValue.serverTimestamp(),
+                            'read': false,
+                          });
+                        }
                         if (mounted) Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
