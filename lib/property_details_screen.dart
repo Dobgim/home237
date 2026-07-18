@@ -193,9 +193,17 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
       double? rating;
       if (userDoc.exists) {
         final data = userDoc.data() ?? {};
-        verified = data['isVerified'] == true;
+        // Verified = KYC flag OR Tier 2+ (Verified badge). Fall back to the
+        // listing's denormalized flag so the detail badge can never contradict
+        // the browse card the user just tapped.
+        final tier = data['verificationTier'];
+        verified = data['isVerified'] == true ||
+            (tier is int && tier >= 2) ||
+            _property?['landlordVerified'] == true;
         final score = data['reputationScore'] ?? data['trustRating'];
         if (score is num) rating = score.toDouble();
+      } else {
+        verified = _property?['landlordVerified'] == true;
       }
 
       // Number of reviews backing the reputation score
