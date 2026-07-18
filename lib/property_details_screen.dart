@@ -183,45 +183,51 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   Future<void> _loadLandlordTrust() async {
     final landlordId = _property?['landlordId'];
     if (landlordId == null) return;
+
+    // Base trust from the listing's PUBLIC denormalized flag. This is readable
+    // even when logged out, so the detail badge always matches the browse card
+    // (the account read below requires sign-in and fails for guests).
+    bool verified = _property?['landlordVerified'] == true;
+    double? rating;
+    int count = 0;
+
+    // Best-effort enrichment from the owner's live account + reputation.
+    // Any of these can throw permission-denied for logged-out viewers — that's
+    // fine, we keep the public flag above.
     try {
       final userDoc = await FirebaseFirestore.instance
           .collection('users')
           .doc(landlordId.toString())
           .get();
-
-      bool verified = false;
-      double? rating;
       if (userDoc.exists) {
         final data = userDoc.data() ?? {};
-        // Verified = KYC flag OR Tier 2+ (Verified badge). Fall back to the
-        // listing's denormalized flag so the detail badge can never contradict
-        // the browse card the user just tapped.
         final tier = data['verificationTier'];
-        verified = data['isVerified'] == true ||
-            (tier is int && tier >= 2) ||
-            _property?['landlordVerified'] == true;
+        verified = verified ||
+            data['isVerified'] == true ||
+            (tier is int && tier >= 2);
         final score = data['reputationScore'] ?? data['trustRating'];
         if (score is num) rating = score.toDouble();
-      } else {
-        verified = _property?['landlordVerified'] == true;
       }
+    } catch (e) {
+      print('landlord account read skipped: $e');
+    }
 
-      // Number of reviews backing the reputation score
+    try {
       final ratingsSnap = await FirebaseFirestore.instance
           .collection('reputation_ratings')
           .where('rateeId', isEqualTo: landlordId.toString())
           .get();
-      final count = ratingsSnap.docs.length;
-
-      if (mounted) {
-        setState(() {
-          _landlordVerified = verified;
-          _landlordRating = count > 0 ? rating : null;
-          _landlordRatingCount = count;
-        });
-      }
+      count = ratingsSnap.docs.length;
     } catch (e) {
-      print('Error loading landlord trust: $e');
+      print('reputation read skipped: $e');
+    }
+
+    if (mounted) {
+      setState(() {
+        _landlordVerified = verified;
+        _landlordRating = count > 0 ? rating : null;
+        _landlordRatingCount = count;
+      });
     }
   }
 
