@@ -20,6 +20,7 @@ import 'utils/listing_flags.dart';
 import 'ai_agent_screen.dart';
 import 'tour_pass_display_screen.dart';
 import 'rent_tracker_screen.dart';
+import 'services/fapshi_service.dart';
 
 class TenantDashboard extends StatefulWidget {
   const TenantDashboard({super.key});
@@ -1384,7 +1385,9 @@ class _TenantDashboardState extends State<TenantDashboard> {
                                       minimumSize: const Size(0, 32),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                                     ),
-                                    child: const Text('Cancel', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                                    child: Text(
+                                        data['status'] == 'escrowed' ? 'Refund' : 'Cancel',
+                                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                                   ),
                                 ],
                               ),
@@ -1405,19 +1408,29 @@ class _TenantDashboardState extends State<TenantDashboard> {
   }
 
   Future<void> _cancelActiveTour(BuildContext context, String tourRequestId, Map<String, dynamic> request) async {
+    final bool isPaid = (request['status'] ?? '') == 'escrowed' &&
+        ((request['amount'] ?? 0) as num) > 0;
     final bool? confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Row(
+        title: Row(
           children: [
-            Icon(Icons.cancel_outlined, color: Colors.red, size: 28),
-            SizedBox(width: 8),
-            Text('Cancel Tour Request', style: TextStyle(fontWeight: FontWeight.bold)),
+            Icon(isPaid ? Icons.undo_rounded : Icons.cancel_outlined,
+                color: isPaid ? Colors.orange : Colors.red, size: 28),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(isPaid ? 'Request Refund' : 'Cancel Tour Request',
+                  style: const TextStyle(fontWeight: FontWeight.bold)),
+            ),
           ],
         ),
-        content: const Text(
-          'Are you sure you want to cancel this tour request?'
+        content: Text(
+          isPaid
+              ? 'Agent didn\'t show up, or you changed your mind?\n\n'
+                  'Your ${request['amount'] ?? 10000} FCFA visit fee will be '
+                  'returned to your Mobile Money instantly.'
+              : 'Are you sure you want to cancel this tour request?',
         ),
         actions: [
           TextButton(
@@ -1443,19 +1456,69 @@ class _TenantDashboardState extends State<TenantDashboard> {
     try {
       final status = request['status'] ?? 'pending';
       if (status == 'escrowed') {
-        showDialog(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Paid Tour Refund'),
-            content: const Text('This is a legacy paid tour. Please use the Tour Requests screen to cancel it and receive your automated refund.'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('OK'),
-              ),
-            ],
-          ),
-        );
+        // Paid visit — refund the fee to the seeker's Mobile Money.
+        String? tenantPhone = request['tenantPhone'] as String?;
+        if (tenantPhone == null || tenantPhone.isEmpty) {
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(authService.userId)
+              .get();
+          tenantPhone = userDoc.data()?['phone'] as String?;
+        }
+        if (tenantPhone == null || tenantPhone.isEmpty) {
+          throw Exception('No Mobile Money number found for the refund. '
+              'Please update your profile phone number.');
+        }
+
+        final amount = (request['amount'] as num?)?.toInt() ?? 10000;
+        final medium = tenantPhone.startsWith('67') ||
+                tenantPhone.startsWith('65') ||
+                tenantPhone.startsWith('68')
+            ? FapshiService.mediumMTN
+            : FapshiService.mediumOrange;
+
+        final ok = await FapshiService()
+            .sendPayout(amount: amount, phone: tenantPhone, medium: medium);
+        if (!ok) {
+          throw Exception('Refund transfer failed. Please try again or contact support.');
+        }
+
+        await FirebaseFirestore.instance
+            .collection('tour_requests')
+            .doc(tourRequestId)
+            .update({
+          'status': 'refunded',
+          'refundedAt': DateTime.now(),
+          'escrowPayoutStatus': 'refunded',
+          'escrowPayoutMedium': medium,
+          'escrowPayoutNumber': tenantPhone,
+        });
+
+        final landlordId = request['landlordId'] as String?;
+        if (landlordId != null) {
+          await FirebaseFirestore.instance
+              .collection('notifications')
+              .doc(landlordId)
+              .collection('items')
+              .add({
+            'title': 'Visit Refunded',
+            'message':
+                'The home-seeker requested a refund for the visit to "${request['propertyTitle']}". The fee was returned to them.',
+            'type': 'tour_request',
+            'read': false,
+            'timestamp': FieldValue.serverTimestamp(),
+          });
+        }
+
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Refund of $amount FCFA sent to your Mobile Money!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
         return;
       }
 
