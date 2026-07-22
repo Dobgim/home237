@@ -16,6 +16,7 @@ import 'widgets/language_toggle.dart';
 import 'widgets/floating_nav_bar.dart';
 import 'app_localizations.dart';
 import 'rent_tracker_screen.dart';
+import 'tour_pass_scanner_screen.dart';
 
 class LandlordDashboard extends StatefulWidget {
   const LandlordDashboard({super.key});
@@ -1153,6 +1154,22 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
                 ),
               ),
             ],
+          ),
+          const SizedBox(height: 12),
+          // Scan a visitor's escrow QR (Tour Pass) to release the visit fee.
+          SizedBox(
+            width: double.infinity,
+            child: _buildActionCard(
+              'Scan Visit Pass',
+              Icons.qr_code_scanner,
+              const Color(0xFF059669),
+              () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => const TourPassScannerScreen()),
+              ),
+              isDark,
+            ),
           ),
         ],
       ),

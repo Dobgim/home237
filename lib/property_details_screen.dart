@@ -631,7 +631,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
   }
 
   // Fixed displacement (visit) fee held in escrow until the agent shows up.
-  static const int _displacementFee = 5000;
+  static const int _displacementFee = 10000;
 
   Future<void> _requestTour() async {
     if (!authService.isLoggedIn) {
@@ -710,7 +710,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'A 5,000 FCFA visit fee is held safely by Home237. '
+                              'A 10,000 FCFA visit fee is held safely by Home237. '
                               'It is released to the agent only after you meet. '
                               'If the agent doesn\'t show up, you can request a full '
                               'refund from your Tour Requests.',
@@ -855,7 +855,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                           elevation: 0,
                         ),
-                        child: const Text('Pay 5,000 FCFA',
+                        child: const Text('Pay 10,000 FCFA',
                             style: TextStyle(fontWeight: FontWeight.bold)),
                       ),
                     ),
@@ -869,7 +869,7 @@ class _PropertyDetailsScreenState extends State<PropertyDetailsScreen> {
     );
   }
 
-  /// Charges the 5,000 FCFA displacement fee via Fapshi and, on success,
+  /// Charges the 10,000 FCFA displacement fee via Fapshi and, on success,
   /// creates an ESCROWED tour request the agent can later scan to get paid.
   Future<void> _processTourEscrow({
     required DateTime visitDate,

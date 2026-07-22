@@ -430,7 +430,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
           ),
           _safetyBullet(
             '✅',
-            'Tours on Home237 are completely free to request and view',
+            'Visit fees are held safely in escrow and refunded if the agent doesn\'t show',
             isDark,
           ),
           _safetyBullet(

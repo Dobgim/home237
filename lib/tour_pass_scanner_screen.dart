@@ -3,6 +3,7 @@ import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'auth_service.dart';
 import 'services/fapshi_service.dart';
+import 'email_service.dart';
 
 class TourPassScannerScreen extends StatefulWidget {
   const TourPassScannerScreen({super.key});
@@ -17,7 +18,7 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
 
   Future<void> _processQRCode(String rawData) async {
     if (_isProcessing) return;
-    
+
     // Expected format: home237_escrow:TOUR_REQUEST_ID:ESCROW_CODE
     if (!rawData.startsWith('home237_escrow:')) {
       _showError('Invalid QR Code. This is not a Home237 Tour Pass.');
@@ -33,8 +34,8 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
       final tourRequestId = parts[1];
       final escrowCode = parts[2];
 
-      // Verify the tour request
-      final docRef = FirebaseFirestore.instance.collection('tour_requests').doc(tourRequestId);
+      final docRef =
+          FirebaseFirestore.instance.collection('tour_requests').doc(tourRequestId);
       final docSnapshot = await docRef.get();
 
       if (!docSnapshot.exists) {
@@ -43,115 +44,248 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
 
       final data = docSnapshot.data() as Map<String, dynamic>;
 
-      // Check if this landlord owns the request
       if (data['landlordId'] != authService.userId) {
         throw Exception('Unauthorized: This pass is for a different landlord.');
       }
-
-      // Check tour pass code
       if (data['escrowCode'] != escrowCode) {
         throw Exception('Security Alert: Tour pass code mismatch.');
       }
-
-      // Check status
       if (data['status'] == 'completed') {
         throw Exception('This pass has already been scanned and completed.');
       }
-
       if (data['status'] != 'escrowed' && data['status'] != 'approved') {
         throw Exception('This tour request is not currently approved or active.');
       }
 
-      final transId = data['transId'];
-      final amount = data['amount'] ?? 0;
-      
-      String? payoutMedium;
-      String? landlordPhone;
-
-      if (transId != null && amount > 0) {
-        // --- Automated Payout to Landlord (legacy paid tours only) ---
-        final landlordDoc = await FirebaseFirestore.instance
-            .collection('users')
-            .doc(data['landlordId'])
-            .get();
-
-        if (!landlordDoc.exists) {
-          throw Exception('Landlord profile not found. Cannot payout.');
-        }
-
-        landlordPhone = landlordDoc.data()?['phone'] as String?;
-        if (landlordPhone == null || landlordPhone.isEmpty) {
-          throw Exception('Landlord has no registered phone number in their profile to receive the payout.');
-        }
-
-        payoutMedium = landlordPhone.startsWith('67') || landlordPhone.startsWith('65') || landlordPhone.startsWith('68')
-            ? FapshiService.mediumMTN
-            : FapshiService.mediumOrange;
-
-        final FapshiService fapshiService = FapshiService();
-        
-        final payoutSuccess = await fapshiService.sendPayout(
-          amount: amount,
-          phone: landlordPhone,
-          medium: payoutMedium,
-        );
-
-        if (!payoutSuccess) {
-          throw Exception('Payout transfer failed. Please check Fapshi balance.');
-        }
-      }
-
-      // Update to completed!
-      final updates = <String, dynamic>{
-        'status': 'completed',
-        'completedAt': DateTime.now(),
-      };
-      
-      if (transId != null && amount > 0) {
-        updates['escrowPayoutStatus'] = 'payout_sent';
-        if (payoutMedium != null) updates['escrowPayoutMedium'] = payoutMedium;
-        if (landlordPhone != null) updates['escrowPayoutNumber'] = landlordPhone;
-      }
-      
-      await docRef.update(updates);
-
+      // Valid pass — stop the camera and collect the agent's payout details.
+      _scannerController.stop();
       if (mounted) {
-        _scannerController.stop();
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (ctx) => AlertDialog(
-            title: const Row(
-              children: [
-                Icon(Icons.check_circle, color: Color(0xFF10B981)),
-                SizedBox(width: 8),
-                Text('Visit Verified!'),
-              ],
-            ),
-            content: Text(
-              transId != null && amount > 0
-                  ? 'Successfully verified! The viewing fee has been released to your account.'
-                  : 'Successfully verified! The tour check-in has been recorded and marked as completed.',
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  Navigator.pop(context); // close scanner
-                },
-                child: const Text('Great'),
-              )
-            ],
-          ),
-        );
+        setState(() => _isProcessing = false);
+        await _showAgentPayoutForm(docRef, data);
       }
     } catch (e) {
       _showError(e.toString());
-    } finally {
-      if (mounted) {
-        setState(() => _isProcessing = false);
-      }
+      if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  /// After a valid scan, ask the agent for the name + Mobile Money number the
+  /// fee should be sent to (the agent never stored a number before).
+  Future<void> _showAgentPayoutForm(
+      DocumentReference docRef, Map<String, dynamic> data) async {
+    final amount = (data['amount'] ?? 0) is int ? (data['amount'] ?? 0) as int : 0;
+
+    // Free / legacy check-in (no fee) — just mark completed.
+    if (amount <= 0) {
+      await docRef.update({'status': 'completed', 'completedAt': DateTime.now()});
+      if (mounted) _showSuccessDialog(released: false, amount: 0);
+      return;
+    }
+
+    final nameCtrl = TextEditingController(text: authService.userName ?? '');
+    final phoneCtrl = TextEditingController();
+
+    await showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) {
+        bool submitting = false;
+        return StatefulBuilder(
+          builder: (context, setStateDialog) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.verified_user, color: Color(0xFF10B981)),
+                SizedBox(width: 8),
+                Expanded(child: Text('Receive Visit Fee')),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Enter the name and Mobile Money number to receive the '
+                    '${_money(amount)} FCFA visit fee.',
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF64748B))),
+                const SizedBox(height: 16),
+                TextField(
+                  controller: nameCtrl,
+                  enabled: !submitting,
+                  decoration: const InputDecoration(
+                    labelText: 'Agent name *',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: phoneCtrl,
+                  enabled: !submitting,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    labelText: 'Mobile Money number *',
+                    hintText: '6XXXXXXXX',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: submitting ? null : () => Navigator.pop(ctx),
+                child: const Text('Cancel'),
+              ),
+              ElevatedButton(
+                onPressed: submitting
+                    ? null
+                    : () async {
+                        final name = nameCtrl.text.trim();
+                        final phone = phoneCtrl.text.trim();
+                        if (name.isEmpty) {
+                          _showError('Please enter the agent name');
+                          return;
+                        }
+                        if (phone.length < 9) {
+                          _showError('Enter a valid Mobile Money number');
+                          return;
+                        }
+                        setStateDialog(() => submitting = true);
+                        try {
+                          await _releasePayout(docRef, data, name, phone, amount);
+                          if (mounted) Navigator.pop(ctx);
+                        } catch (e) {
+                          setStateDialog(() => submitting = false);
+                          _showError(e.toString().replaceAll('Exception: ', ''));
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF10B981),
+                    foregroundColor: Colors.white),
+                child: submitting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                            color: Colors.white, strokeWidth: 2))
+                    : Text('Release ${_money(amount)} FCFA'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Sends the fee to the agent's number, marks the request completed, and
+  /// emails a receipt to the home-seeker.
+  Future<void> _releasePayout(DocumentReference docRef, Map<String, dynamic> data,
+      String agentName, String agentPhone, int amount) async {
+    final last9 = agentPhone.replaceAll(RegExp(r'[^0-9]'), '');
+    final medium = (last9.startsWith('67') || last9.startsWith('65') || last9.startsWith('68'))
+        ? FapshiService.mediumMTN
+        : FapshiService.mediumOrange;
+
+    final ok = await FapshiService()
+        .sendPayout(amount: amount, phone: agentPhone, medium: medium);
+    if (!ok) {
+      throw Exception('Payout failed. Please check the Fapshi balance and try again.');
+    }
+
+    await docRef.update({
+      'status': 'completed',
+      'completedAt': DateTime.now(),
+      'escrowPayoutStatus': 'payout_sent',
+      'escrowPayoutMedium': medium,
+      'escrowPayoutNumber': agentPhone,
+      'agentName': agentName,
+    });
+
+    // Best-effort receipt email to the home-seeker (never blocks the payout).
+    await _sendReceiptEmail(docRef.id, data, agentName, agentPhone, amount);
+
+    if (mounted) _showSuccessDialog(released: true, amount: amount);
+  }
+
+  Future<void> _sendReceiptEmail(String requestId, Map<String, dynamic> data,
+      String agentName, String agentPhone, int amount) async {
+    try {
+      final tenantId = data['tenantId'];
+      if (tenantId == null) return;
+      final tenantDoc = await FirebaseFirestore.instance
+          .collection('users')
+          .doc(tenantId.toString())
+          .get();
+      final email = tenantDoc.data()?['email']?.toString();
+      if (email == null || email.isEmpty) return;
+
+      final receiptNo = requestId.substring(0, 8).toUpperCase();
+      final now = DateTime.now();
+      final dateStr = '${now.day}/${now.month}/${now.year} ${now.hour}:${now.minute.toString().padLeft(2, '0')}';
+      final maskedPhone = agentPhone.length >= 4
+          ? '****${agentPhone.substring(agentPhone.length - 4)}'
+          : agentPhone;
+      final property = data['propertyTitle'] ?? 'Property';
+
+      final html = '''
+<div style="font-family: Arial, sans-serif; max-width: 520px; margin: 0 auto; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden;">
+  <div style="background: #1E3A5F; padding: 24px; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 22px;">🏠 Home237 — Visit Fee Receipt</h1>
+  </div>
+  <div style="padding: 28px; background: #f9fafb;">
+    <p style="color: #10B981; font-weight: bold; font-size: 16px; margin-top: 0;">✅ Visit fee released &amp; received by the agent</p>
+    <p style="color: #475569; font-size: 14px;">This confirms your visit fee has been released from escrow to the agent who met you.</p>
+    <table style="width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 14px; color: #334155;">
+      <tr><td style="padding: 8px 0; color:#64748b;">Receipt No.</td><td style="padding: 8px 0; text-align:right; font-weight:bold;">$receiptNo</td></tr>
+      <tr><td style="padding: 8px 0; color:#64748b;">Date</td><td style="padding: 8px 0; text-align:right;">$dateStr</td></tr>
+      <tr><td style="padding: 8px 0; color:#64748b;">Property</td><td style="padding: 8px 0; text-align:right;">$property</td></tr>
+      <tr><td style="padding: 8px 0; color:#64748b;">Agent</td><td style="padding: 8px 0; text-align:right; font-weight:bold;">$agentName</td></tr>
+      <tr><td style="padding: 8px 0; color:#64748b;">Agent MoMo</td><td style="padding: 8px 0; text-align:right;">$maskedPhone</td></tr>
+      <tr><td style="padding: 12px 0; color:#64748b; border-top:1px solid #e2e8f0;">Amount</td><td style="padding: 12px 0; text-align:right; border-top:1px solid #e2e8f0; font-weight:bold; font-size:16px;">${_money(amount)} FCFA</td></tr>
+    </table>
+    <p style="color: #9ca3af; font-size: 12px; margin-top: 20px;">Thank you for using Home237. If you did not attend this visit, please contact support immediately.</p>
+  </div>
+</div>
+''';
+
+      await EmailService.sendHtmlEmail(
+          email, 'Home237 Visit Fee Receipt — $receiptNo', html);
+    } catch (e) {
+      // Receipt email is non-critical; swallow errors.
+      debugPrint('Receipt email failed: $e');
+    }
+  }
+
+  String _money(int amount) => amount.toString().replaceAllMapped(
+      RegExp(r'(\d)(?=(\d{3})+(?!\d))'), (m) => '${m[1]},');
+
+  void _showSuccessDialog({required bool released, required int amount}) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        title: const Row(
+          children: [
+            Icon(Icons.check_circle, color: Color(0xFF10B981)),
+            SizedBox(width: 8),
+            Text('Visit Verified!'),
+          ],
+        ),
+        content: Text(
+          released
+              ? 'The ${_money(amount)} FCFA visit fee has been sent to the number you entered, '
+                  'and a receipt was emailed to the home-seeker.'
+              : 'The visit check-in has been recorded and marked as completed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              Navigator.pop(context); // close scanner
+            },
+            child: const Text('Great'),
+          )
+        ],
+      ),
+    );
   }
 
 

@@ -33,8 +33,8 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
           ],
         ),
         content: const Text(
-          'Are you sure you want to cancel this tour request and receive a refund of 5,000 FCFA?\n\n'
-          'The 2,000 FCFA platform service fee is non-refundable, but your 5,000 FCFA escrow deposit will be instantly returned to your phone.'
+          'The agent didn\'t show up? Request your refund.\n\n'
+          'Your full 10,000 FCFA visit fee will be returned to your Mobile Money instantly.'
         ),
         actions: [
           TextButton(
@@ -75,7 +75,7 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
         throw Exception('Could not find your phone number to process the refund. Please update your profile or contact support.');
       }
 
-      final amount = request['amount'] as int? ?? 5000;
+      final amount = request['amount'] as int? ?? 10000;
 
       final payoutMedium = tenantPhone.startsWith('67') || tenantPhone.startsWith('65') || tenantPhone.startsWith('68')
           ? FapshiService.mediumMTN
@@ -114,8 +114,8 @@ class _TourRequestsScreenState extends State<TourRequestsScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Refund of 5,000 FCFA has been successfully sent to your phone!'),
+          SnackBar(
+            content: Text('Refund of $amount FCFA has been successfully sent to your phone!'),
             backgroundColor: Colors.green,
             behavior: SnackBarBehavior.floating,
           ),
