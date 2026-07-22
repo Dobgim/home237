@@ -15,9 +15,12 @@ class TourPassScannerScreen extends StatefulWidget {
 class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
   final MobileScannerController _scannerController = MobileScannerController();
   bool _isProcessing = false;
+  // Once a valid pass is scanned we ignore every further camera detection —
+  // otherwise stray reads fire "invalid QR" errors over the payout dialog.
+  bool _scanHandled = false;
 
   Future<void> _processQRCode(String rawData) async {
-    if (_isProcessing) return;
+    if (_isProcessing || _scanHandled) return;
 
     // Expected format: home237_escrow:TOUR_REQUEST_ID:ESCROW_CODE
     if (!rawData.startsWith('home237_escrow:')) {
@@ -58,6 +61,8 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
       }
 
       // Valid pass — stop the camera and collect the agent's payout details.
+      // From here on, ignore every further camera detection.
+      _scanHandled = true;
       _scannerController.stop();
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -151,7 +156,12 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
                         setStateDialog(() => submitting = true);
                         try {
                           await _releasePayout(docRef, data, name, phone, amount);
-                          if (mounted) Navigator.pop(ctx);
+                          // Close the form FIRST, then show the success dialog
+                          // (otherwise the pop would dismiss the success dialog).
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          if (mounted) {
+                            _showSuccessDialog(released: true, amount: amount);
+                          }
                         } catch (e) {
                           setStateDialog(() => submitting = false);
                           _showError(e.toString().replaceAll('Exception: ', ''));
@@ -185,7 +195,10 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
         : FapshiService.mediumOrange;
 
     final ok = await FapshiService()
-        .sendPayout(amount: amount, phone: agentPhone, medium: medium);
+        .sendPayout(amount: amount, phone: agentPhone, medium: medium)
+        .timeout(const Duration(seconds: 60),
+            onTimeout: () => throw Exception(
+                'The transfer is taking too long. Please check your connection and try again.'));
     if (!ok) {
       throw Exception('Payout failed. Please check the Fapshi balance and try again.');
     }
@@ -199,10 +212,10 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
       'agentName': agentName,
     });
 
-    // Best-effort receipt email to the home-seeker (never blocks the payout).
-    await _sendReceiptEmail(docRef.id, data, agentName, agentPhone, amount);
-
-    if (mounted) _showSuccessDialog(released: true, amount: amount);
+    // Fire-and-forget receipt email with a hard timeout — SMTP can be slow on
+    // mobile networks and must never block the payout UI.
+    // ignore: unawaited_futures
+    _sendReceiptEmail(docRef.id, data, agentName, agentPhone, amount);
   }
 
   Future<void> _sendReceiptEmail(String requestId, Map<String, dynamic> data,
@@ -247,7 +260,8 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
 ''';
 
       await EmailService.sendHtmlEmail(
-          email, 'Home237 Visit Fee Receipt — $receiptNo', html);
+              email, 'Home237 Visit Fee Receipt — $receiptNo', html)
+          .timeout(const Duration(seconds: 30));
     } catch (e) {
       // Receipt email is non-critical; swallow errors.
       debugPrint('Receipt email failed: $e');
@@ -271,8 +285,8 @@ class _TourPassScannerScreenState extends State<TourPassScannerScreen> {
         ),
         content: Text(
           released
-              ? 'The ${_money(amount)} FCFA visit fee has been sent to the number you entered, '
-                  'and a receipt was emailed to the home-seeker.'
+              ? '✅ Successfully released!\n\nThe ${_money(amount)} FCFA visit fee has been sent '
+                  'to the number you entered. A receipt is being emailed to the home-seeker.'
               : 'The visit check-in has been recorded and marked as completed.',
         ),
         actions: [
