@@ -135193,7 +135193,8 @@ p.r=new A.aY(r,new A.b8z(),A.ag(r).i("aY<1>")).gN(0)
 p.w=s.b},
 $S:0}
 A.b8z.prototype={
-$1(a){return J.e(a.bA().h(0,"status"),"pending")},
+$1(a){var s=a.bA().h(0,"status")
+return J.e(s,"pending")||J.e(s,"escrowed")||J.e(s,"approved")},
 $S:845}
 A.b8P.prototype={
 $1(a){var s=null,r=this.a.c

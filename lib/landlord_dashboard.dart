@@ -67,7 +67,12 @@ class _LandlordDashboardState extends State<LandlordDashboard> {
         setState(() {
           _totalProperties = propertiesSnapshot.docs.length;
           _activeProperties = active;
-          _pendingRequests = toursSnapshot.docs.where((d) => (d.data())['status'] == 'pending').length;
+          // Awaiting-visit tours: unpaid requests (pending), paid escrow
+          // bookings (escrowed), and approved-but-not-yet-visited ones.
+          _pendingRequests = toursSnapshot.docs.where((d) {
+            final s = (d.data())['status'];
+            return s == 'pending' || s == 'escrowed' || s == 'approved';
+          }).length;
           _totalViews = views;
         });
       }
