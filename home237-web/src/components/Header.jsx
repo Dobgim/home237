@@ -51,8 +51,11 @@ export default function Header() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
-            <a href="/app" className="text-ink-900 hover:text-blue-900 transition font-medium">
-              Explore app
+            <a
+              href="https://home237.com"
+              className="text-ink-900 hover:text-blue-900 transition font-medium"
+            >
+              Explore website
             </a>
             <button
               disabled

@@ -86,8 +86,8 @@ export default function Hero() {
           <p className="text-sm font-semibold text-slate-400 tracking-wider uppercase">
             Apps launching Q4 2026
           </p>
-          <a href="/app" className="btn btn-primary btn-primary-lg">
-            Explore the web app
+          <a href="https://home237.com" className="btn btn-primary btn-primary-lg">
+            Explore website
           </a>
         </motion.div>
 

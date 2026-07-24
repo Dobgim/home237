@@ -27,8 +27,8 @@ export default function FinalCTA() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-          <a href="/app" className="btn btn-white btn-primary-lg">
-            Open web app
+          <a href="https://home237.com" className="btn btn-white btn-primary-lg">
+            Explore website
           </a>
           <a href="#features" className="btn btn-ghost-light btn-primary-lg">
             Learn more
