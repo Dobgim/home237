@@ -52,7 +52,7 @@ export default function Header() {
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-4">
             <a
-              href="https://home237.com"
+              href="https://app.home237.com"
               className="text-ink-900 hover:text-blue-900 transition font-medium"
             >
               Explore website

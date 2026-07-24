@@ -14,7 +14,7 @@ export default function MobileMenu({ navLinks, onClose }) {
         ))}
         <div className="border-t border-slate-100 pt-4 space-y-3">
           <a
-            href="https://home237.com"
+            href="https://app.home237.com"
             className="block text-ink-900 font-medium hover:text-blue-900"
             onClick={onClose}
           >
