@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Home237 — Narrated Promo</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/favicon.png">
+<meta name="description" content="A self-playing, narrated Home237 promo — press play and screen-record it into a video with voiceover.">
+<meta name="theme-color" content="#0B1E38">
+<style>
+  :root{
+    --navy-900:#0B1E38; --navy-800:#123055; --navy-700:#1E3A5F;
+    --cream:#F7F4EE; --ink:#0B1E38;
+    --green:#10B981; --green-deep:#0E9E6E;
+    --mtn:#FFCB05; --orange:#FF6A00;
+    --muted:#8FA6C0;
+    --card:#12294a; --card-line:#24436e;
+    --stage-w: min(92vw, calc((88vh) * 9 / 16));
+    --font: "Segoe UI", system-ui, -apple-system, Roboto, Helvetica, Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{
+    font-family:var(--font);
+    background:
+      radial-gradient(120% 90% at 50% -10%, #16406e 0%, var(--navy-900) 55%, #06132a 100%);
+    color:var(--cream);
+    min-height:100vh;
+    display:flex; flex-direction:column; align-items:center;
+    padding:22px 16px 40px;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  .masthead{ text-align:center; max-width:620px; margin-bottom:14px; }
+  .masthead .kicker{
+    font-size:11px; letter-spacing:.28em; text-transform:uppercase;
+    color:var(--muted); font-weight:700;
+  }
+  .masthead h1{
+    font-size:clamp(20px,4.4vw,28px); margin:.35em 0 .2em; font-weight:800;
+    letter-spacing:-.01em; text-wrap:balance;
+  }
+  .masthead p{ margin:0; color:#C7D6E8; font-size:14px; line-height:1.5; }
+  .masthead b{ color:var(--green); }
+
+  /* ---- Phone stage (this is what you record) ---- */
+  .stage-wrap{ display:flex; flex-direction:column; align-items:center; gap:18px; width:100%; }
+  .phone{
+    position:relative;
+    width:var(--stage-w);
+    aspect-ratio:9/16;
+    border-radius:38px;
+    background:#04101f;
+    padding:12px;
+    box-shadow:0 30px 80px -30px #000, 0 0 0 2px #223a5c, inset 0 0 0 1px #0a1b32;
+  }
+  .screen{
+    position:relative; width:100%; height:100%;
+    border-radius:28px; overflow:hidden;
+    background:linear-gradient(180deg,#0d2544 0%, #0a1c34 100%);
+  }
+
+  .scene{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    padding:26px 20px 116px;
+    opacity:0; transform:scale(1.04);
+    transition:opacity .6s ease, transform .6s ease;
+    pointer-events:none;
+  }
+  .scene.active{ opacity:1; transform:scale(1); }
+  @media (prefers-reduced-motion:reduce){
+    .scene{ transition:opacity .3s linear; transform:none; }
+    .scene.active{ transform:none; }
+  }
+
+  .brandrow{ display:flex; align-items:center; gap:8px; font-weight:800; font-size:19px; }
+  .brandrow .dot{ width:26px;height:26px;border-radius:8px;background:var(--green);
+    display:grid;place-items:center;font-size:15px; }
+
+  .eyebrow{ font-size:11px; letter-spacing:.22em; text-transform:uppercase;
+    color:var(--muted); font-weight:700; }
+
+  .big{ font-size:clamp(26px,7.4vw,40px); font-weight:800; line-height:1.08;
+    letter-spacing:-.02em; text-wrap:balance; margin:10px 0; }
+
+  /* Scene 1 — scam chats */
+  .chat{ background:#122c4d; border:1px solid #23446f; border-radius:14px;
+    padding:11px 12px; margin-top:10px; font-size:13px; color:#D6E2F0;
+    display:flex; justify-content:space-between; align-items:center; gap:10px;
+    transform:translateY(14px); opacity:0; }
+  .scene.active .chat{ animation:rise .5s ease forwards; }
+  .scene.active .chat:nth-child(3){ animation-delay:.15s }
+  .scene.active .chat:nth-child(4){ animation-delay:.3s }
+  .scene.active .chat:nth-child(5){ animation-delay:.45s }
+  .flag-fake{ background:#3a1620; color:#FF7D7D; border:1px solid #7d2734;
+    font-size:10px; font-weight:800; padding:3px 7px; border-radius:20px; white-space:nowrap;
+    letter-spacing:.04em; }
+  @keyframes rise{ to{ transform:translateY(0); opacity:1; } }
+
+  /* Listing cards (scene 2 & 3) */
+  .card{
+    background:var(--card); border:1px solid var(--card-line); border-radius:16px;
+    overflow:hidden; margin-top:12px; transform:translateY(16px); opacity:0;
+  }
+  .scene.active .card{ animation:rise .55s ease forwards; }
+  .scene.active .card:nth-of-type(2){ animation-delay:.12s }
+  .card .thumb{ height:82px; background:linear-gradient(120deg,#1c4b7a,#2f6ea8); position:relative; }
+  .card .thumb.two{ background:linear-gradient(120deg,#245a4a,#2f8f6f); }
+  .card .body{ padding:10px 12px; }
+  .card .price{ font-weight:800; font-size:15px; }
+  .card .loc{ color:var(--muted); font-size:12px; margin-top:2px; }
+  .badge-verified{
+    position:absolute; top:8px; left:8px;
+    background:rgba(16,185,129,.16); color:#5EE6B4; border:1px solid rgba(16,185,129,.5);
+    font-size:10.5px; font-weight:800; padding:4px 8px; border-radius:20px;
+    display:flex; align-items:center; gap:4px; letter-spacing:.02em;
+  }
+
+  /* Scene 3 — hero verified card */
+  .agent{ display:flex; align-items:center; gap:10px; margin-top:14px; }
+  .agent .av{ width:44px;height:44px;border-radius:50%;
+    background:linear-gradient(135deg,#2f6ea8,#1E3A5F); display:grid;place-items:center;
+    font-weight:800; font-size:17px; }
+  .agent .nm{ font-weight:700; font-size:15px; }
+  .agent .sub{ color:var(--green); font-size:12px; font-weight:700; }
+  .pulse-badge{
+    margin:16px auto 0; width:96px;height:96px;border-radius:50%;
+    background:rgba(16,185,129,.14); display:grid;place-items:center; position:relative;
+  }
+  .pulse-badge::before{ content:""; position:absolute; inset:0; border-radius:50%;
+    border:2px solid var(--green); opacity:.7; }
+  .scene.active .pulse-badge::before{ animation:pulse 1.8s ease-out infinite; }
+  .pulse-badge .chk{ width:60px;height:60px;border-radius:50%;background:var(--green);
+    display:grid;place-items:center;font-size:30px;color:#04231a; font-weight:900; }
+  @keyframes pulse{ 0%{transform:scale(1);opacity:.7} 100%{transform:scale(1.9);opacity:0} }
+
+  /* Scene 4 — MoMo pay sheet */
+  .sheet{ margin-top:auto; background:#0e2545; border:1px solid #26466f; border-radius:20px; padding:16px;
+    transform:translateY(30px); opacity:0; }
+  .scene.active .sheet{ animation:rise .5s ease .1s forwards; }
+  .sheet .row{ display:flex; justify-content:space-between; align-items:center; }
+  .sheet .amt{ font-size:26px; font-weight:800; }
+  .sheet .lbl{ color:var(--muted); font-size:12px; }
+  .pay{ display:flex; gap:10px; margin-top:14px; }
+  .pay button{ flex:1; border:none; border-radius:12px; padding:12px; font-weight:800;
+    font-size:13px; font-family:var(--font); display:flex;align-items:center;justify-content:center;gap:6px; }
+  .pay .mtn{ background:var(--mtn); color:#1a1400; }
+  .pay .org{ background:var(--orange); color:#fff; }
+  .tap{ position:relative; overflow:hidden; }
+  .scene.active .tap::after{ content:""; position:absolute; inset:0; border-radius:12px;
+    background:radial-gradient(circle, rgba(255,255,255,.7), transparent 60%);
+    transform:scale(0); opacity:0; animation:tap 1.6s ease-in-out .8s infinite; }
+  @keyframes tap{ 0%{transform:scale(0);opacity:.8} 60%{transform:scale(1.6);opacity:0} 100%{opacity:0} }
+
+  /* Scene 5 — escrow / QR */
+  .qrwrap{ margin:16px auto 0; background:#fff; padding:12px; border-radius:16px; width:150px; }
+  #qr{ display:block; width:126px; height:126px; image-rendering:pixelated; }
+  .escrow-pill{ margin:16px auto 0; display:inline-flex; align-items:center; gap:8px;
+    background:rgba(16,185,129,.14); color:#5EE6B4; border:1px solid rgba(16,185,129,.45);
+    padding:9px 14px; border-radius:30px; font-weight:800; font-size:13px; }
+  .center{ text-align:center; align-items:center; }
+
+  /* Scene 6 — keys */
+  .key{ font-size:74px; text-align:center; margin-top:6px;
+    filter:drop-shadow(0 10px 24px rgba(0,0,0,.5)); }
+  .scene.active .key{ animation:pop .6s cubic-bezier(.2,1.4,.4,1) forwards; transform:scale(0); }
+  @keyframes pop{ to{ transform:scale(1) rotate(-8deg); } }
+  .confetti{ position:absolute; top:0; left:0; right:0; height:60%; pointer-events:none; }
+  .confetti i{ position:absolute; width:8px;height:12px; border-radius:2px; top:-16px; opacity:0; }
+  .scene.active .confetti i{ animation:fall 2.4s linear infinite; }
+
+  /* Scene 7 — CTA */
+  .cta-logo{ font-size:30px; font-weight:800; display:flex; gap:10px; align-items:center; justify-content:center; }
+  .cta-logo .dot{ width:38px;height:38px;font-size:22px; }
+  .flagbar{ height:8px; width:120px; margin:16px auto; border-radius:6px;
+    background:linear-gradient(90deg,#007A5E 0 33%, #CE1126 33% 66%, #FCD116 66% 100%); }
+  .url{ font-size:22px; font-weight:800; letter-spacing:.01em; }
+  .store{ margin-top:14px; display:inline-flex; gap:8px; align-items:center;
+    background:#04101f; border:1px solid #2a4a72; border-radius:12px; padding:10px 16px; font-weight:700; font-size:13px; }
+
+  /* Caption bar (bottom of phone) */
+  .caption{
+    position:absolute; left:12px; right:12px; bottom:14px;
+    background:rgba(4,14,28,.78); backdrop-filter:blur(6px);
+    border:1px solid #24436e; border-radius:16px; padding:12px 14px;
+    font-size:13.5px; line-height:1.42; color:#EAF1FA; min-height:58px;
+    display:flex; align-items:center; text-wrap:balance;
+  }
+  .progress{ position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    display:flex; gap:6px; z-index:5; }
+  .progress i{ width:7px;height:7px;border-radius:50%;background:#2b476f; transition:all .3s; }
+  .progress i.on{ background:var(--green); width:20px; border-radius:6px; }
+
+  /* start overlay */
+  .startlayer{ position:absolute; inset:12px; border-radius:28px; z-index:8;
+    background:linear-gradient(180deg, rgba(6,17,34,.55), rgba(6,17,34,.86));
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px;
+    text-align:center; padding:24px; }
+  .startlayer h2{ margin:0; font-size:22px; font-weight:800; }
+  .startlayer p{ margin:0; color:#C7D6E8; font-size:13px; max-width:240px; line-height:1.5; }
+  .playbtn{ border:none; cursor:pointer; font-family:var(--font);
+    background:var(--green); color:#04231a; font-weight:800; font-size:16px;
+    padding:14px 26px; border-radius:40px; display:flex; align-items:center; gap:10px;
+    box-shadow:0 12px 30px -8px rgba(16,185,129,.6); }
+  .playbtn:hover{ filter:brightness(1.05); }
+  .playbtn:focus-visible{ outline:3px solid #fff; outline-offset:3px; }
+  .hidden{ display:none !important; }
+
+  /* Controls under phone */
+  .controls{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; align-items:center;
+    max-width:var(--stage-w); }
+  .controls .btn{ border:1px solid #2f507c; background:#0e2545; color:var(--cream);
+    font-family:var(--font); font-weight:700; font-size:13px; padding:10px 16px; border-radius:10px;
+    cursor:pointer; display:flex; align-items:center; gap:7px; }
+  .controls .btn:hover{ background:#143160; }
+  .controls .btn:focus-visible{ outline:2px solid var(--green); outline-offset:2px; }
+  .controls select{ background:#0e2545; color:var(--cream); border:1px solid #2f507c;
+    border-radius:10px; padding:10px 12px; font-family:var(--font); font-size:13px; max-width:200px; }
+
+  .tip{ max-width:560px; margin-top:8px; text-align:center; color:#A9BCD4; font-size:12.5px; line-height:1.6; }
+  .tip b{ color:var(--cream); }
+  .tip code{ background:#0e2545; border:1px solid #2f507c; padding:1px 6px; border-radius:6px; font-size:12px; }
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="kicker">Home237 · Narrated Promo</div>
+  <h1>Press play, then screen‑record this phone</h1>
+  <p>It plays every scene and <b>speaks the explanation aloud</b>. Record your screen with audio on and you've got a promo video with voiceover — no filming, no editing.</p>
+</div>
+
+<div class="stage-wrap">
+  <div class="phone">
+    <div class="screen" id="screen">
+      <div class="progress" id="progress"></div>
+
+      <!-- Scene 1 -->
+      <section class="scene" data-scene="0">
+        <div class="eyebrow">Renting in Cameroon</div>
+        <div class="big">Too many rental scams.</div>
+        <div class="chat">“Send 50,000 FCFA deposit first” <span class="flag-fake">⚠ FAKE</span></div>
+        <div class="chat">“The landlord travelled, just pay me” <span class="flag-fake">⚠ FAKE</span></div>
+        <div class="chat">“No visit — pay before I show you” <span class="flag-fake">⚠ SCAM</span></div>
+      </section>
+
+      <!-- Scene 2 -->
+      <section class="scene" data-scene="1">
+        <div class="brandrow"><span class="dot">🏠</span> Home237</div>
+        <div class="eyebrow" style="margin-top:14px">Verified homes near you</div>
+        <div class="card">
+          <div class="thumb"><span class="badge-verified">✓ Verified</span></div>
+          <div class="body"><div class="price">75,000 FCFA / month</div><div class="loc">Studio · Bonamoussadi, Douala</div></div>
+        </div>
+        <div class="card">
+          <div class="thumb two"><span class="badge-verified">✓ Verified</span></div>
+          <div class="body"><div class="price">120,000 FCFA / month</div><div class="loc">2 bedrooms · Molyko, Buea</div></div>
+        </div>
+      </section>
+
+      <!-- Scene 3 -->
+      <section class="scene center" data-scene="2">
+        <div class="eyebrow">Trust built in</div>
+        <div class="big" style="text-align:center">Verified agents only</div>
+        <div class="pulse-badge"><div class="chk">✓</div></div>
+        <div class="agent" style="justify-content:center">
+          <div class="av">T</div>
+          <div><div class="nm">Trust Realty Ltd</div><div class="sub">✓ Verified Agency</div></div>
+        </div>
+      </section>
+
+      <!-- Scene 4 -->
+      <section class="scene" data-scene="3">
+        <div class="eyebrow">Book a visit</div>
+        <div class="big">Pay with Mobile Money</div>
+        <div class="sheet">
+          <div class="row"><div><div class="lbl">Visit fee · Sat 12 July</div><div class="amt">10,000 FCFA</div></div><div style="font-size:26px">📅</div></div>
+          <div class="pay">
+            <button class="mtn tap">MTN MoMo</button>
+            <button class="org">Orange Money</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Scene 5 -->
+      <section class="scene center" data-scene="4">
+        <div class="eyebrow">Your money is protected</div>
+        <div class="big" style="text-align:center">Held in escrow 🔒</div>
+        <div class="qrwrap"><canvas id="qr" width="42" height="42"></canvas></div>
+        <div class="escrow-pill">🔒 Released only when you visit</div>
+      </section>
+
+      <!-- Scene 6 -->
+      <section class="scene center" data-scene="5">
+        <div class="confetti" id="confetti"></div>
+        <div class="eyebrow">Move-in day</div>
+        <div class="key">🔑</div>
+        <div class="big" style="text-align:center">Welcome home.</div>
+      </section>
+
+      <!-- Scene 7 -->
+      <section class="scene center" data-scene="6">
+        <div class="cta-logo"><span class="dot" style="background:var(--green);border-radius:11px;display:grid;place-items:center">🏠</span> Home237</div>
+        <div class="flagbar"></div>
+        <div class="big" style="text-align:center;font-size:26px">Rent without fear.</div>
+        <div class="url">home237.com</div>
+        <div class="store">▶ Download on Android</div>
+      </section>
+
+      <div class="caption" id="caption">Ready when you are.</div>
+
+      <!-- Start overlay -->
+      <div class="startlayer" id="startlayer">
+        <h2>🏠 Home237</h2>
+        <p>Plays the promo and narrates it out loud. Turn your volume up.</p>
+        <button class="playbtn" id="playbtn">▶ Play with voice</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="replay">↻ Replay</button>
+    <button class="btn" id="mute">🔊 Voice: on</button>
+    <select id="voice" aria-label="Choose narration voice"></select>
+  </div>
+</div>
+
+<p class="tip">
+  <b>To save it as a video:</b> Android → screen recorder (with “Record audio: internal”). iPhone/Mac → screen recording. Desktop → OBS or the Xbox Game Bar (<code>Win+G</code>). Press <b>Replay</b>, record just the phone, stop at the end. For best voice on desktop, pick a “Google” or “Microsoft” voice above.
+</p>
+
+<script>
+(function(){
+  // One flowing narration — the lines connect so the voice never feels chopped.
+  var scenes = [
+    "Finding a house in Cameroon can be stressful, because fake landlords and rental scams are everywhere,",
+    "and that is exactly why we built Home237 — the safe way to find and rent real homes across the country.",
+    "On Home237, every agent and every agency is verified, so you only ever deal with people you can trust.",
+    "When you find a home you love, you simply book a visit and pay a small fee with M-T-N or Orange Mobile Money,",
+    "and your money stays safe in escrow, released to the agent only when you show up and scan your tour pass.",
+    "So there are no more scams, and no more wasted trips — you just move in, with total peace of mind.",
+    "Home237. Rent without fear. Download it today at home237 dot com."
+  ];
+  var captions = [
+    "Finding a house in Cameroon can be stressful — scams are everywhere,",
+    "…so we built Home237: the safe way to find and rent real homes.",
+    "Every agent and agency is verified — you only deal with people you can trust.",
+    "Book a visit and pay a small fee with MTN or Orange Mobile Money,",
+    "…and your money stays in escrow until you show up and scan your tour pass.",
+    "No more scams, no more wasted trips — just move in with peace of mind.",
+    "Home237 — rent without fear. Download today at home237.com"
+  ];
+
+  var sceneEls = Array.prototype.slice.call(document.querySelectorAll('.scene'));
+  var caption = document.getElementById('caption');
+  var progress = document.getElementById('progress');
+  var startlayer = document.getElementById('startlayer');
+  var playbtn = document.getElementById('playbtn');
+  var replay = document.getElementById('replay');
+  var muteBtn = document.getElementById('mute');
+  var voiceSel = document.getElementById('voice');
+
+  // progress dots
+  scenes.forEach(function(_,k){ var d=document.createElement('i'); if(k===0)d.className='on'; progress.appendChild(d); });
+  var dots = Array.prototype.slice.call(progress.children);
+
+  var supportsTTS = 'speechSynthesis' in window;
+  var voices = [], chosen = null, voiceOn = true, running = false, timer = null, keepAlive = null;
+
+  function loadVoices(){
+    if(!supportsTTS) return;
+    voices = window.speechSynthesis.getVoices() || [];
+    var en = voices.filter(function(v){ return /^en(-|_|$)/i.test(v.lang); });
+    var list = en.length ? en : voices;
+    voiceSel.innerHTML='';
+    list.forEach(function(v){
+      var o=document.createElement('option'); o.value=v.name;
+      o.textContent=v.name.replace(/Microsoft |Google /,'')+' · '+v.lang; voiceSel.appendChild(o);
+    });
+    // prefer a natural-sounding voice
+    var pref = list.find(function(v){return /google/i.test(v.name)&&/female|us/i.test(v.name);})
+            || list.find(function(v){return /google/i.test(v.name);})
+            || list.find(function(v){return /zira|aria|jenny|natural/i.test(v.name);})
+            || list[0];
+    if(pref){ chosen=pref; voiceSel.value=pref.name; }
+  }
+  if(supportsTTS){
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  } else {
+    voiceSel.style.display='none';
+  }
+  voiceSel.addEventListener('change', function(){
+    chosen = voices.find(function(v){return v.name===voiceSel.value;}) || chosen;
+  });
+
+  function show(n){
+    sceneEls.forEach(function(el,k){ el.classList.toggle('active', k===n); });
+    dots.forEach(function(d,k){ d.classList.toggle('on', k<=n); });
+    caption.textContent = captions[n];
+  }
+
+  function estimate(text){ return Math.max(2600, text.split(' ').length*360 + 700); }
+
+  // Continuous voice: queue every line at once so the browser speaks them
+  // back-to-back with no gaps, and flip the scene the instant each line begins.
+  function speakContinuous(){
+    try{ window.speechSynthesis.cancel(); }catch(e){}
+    // Chrome pauses queued speech after ~15s — nudge it to keep going.
+    keepAlive = setInterval(function(){
+      try{ if(running && window.speechSynthesis.speaking) window.speechSynthesis.resume(); }catch(e){}
+    }, 8000);
+    scenes.forEach(function(text, n){
+      var u = new SpeechSynthesisUtterance(text);
+      if(chosen) u.voice = chosen;
+      u.rate = 0.95; u.pitch = 1.0; u.lang = (chosen && chosen.lang) || 'en-US';
+      u.onstart = function(){ if(running) show(n); };
+      if(n === scenes.length - 1){
+        u.onend = function(){ running = false; if(keepAlive){ clearInterval(keepAlive); keepAlive = null; } };
+      }
+      window.speechSynthesis.speak(u);
+    });
+  }
+
+  // Fallback when speech is unavailable or muted: timed scenes, still gapless.
+  function timedRun(n){
+    if(!running) return;
+    show(n);
+    timer = setTimeout(function(){
+      if(!running) return;
+      if(n < scenes.length - 1) timedRun(n+1); else running = false;
+    }, estimate(scenes[n]));
+  }
+
+  function start(){
+    stop();
+    running = true;
+    startlayer.classList.add('hidden');
+    show(0);
+    if(supportsTTS && voiceOn) speakContinuous();
+    else timedRun(0);
+  }
+  function stop(){
+    running = false;
+    if(timer){ clearTimeout(timer); timer = null; }
+    if(keepAlive){ clearInterval(keepAlive); keepAlive = null; }
+    if(supportsTTS){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+  }
+
+  playbtn.addEventListener('click', start);
+  replay.addEventListener('click', start);
+  muteBtn.addEventListener('click', function(){
+    voiceOn = !voiceOn;
+    muteBtn.textContent = voiceOn ? '🔊 Voice: on' : '🔇 Voice: off';
+    if(!voiceOn && supportsTTS){ try{ window.speechSynthesis.cancel(); }catch(e){} }
+  });
+
+  // decorative QR
+  (function(){
+    var c=document.getElementById('qr'); if(!c) return; var s=42, ctx=c.getContext('2d');
+    ctx.fillStyle='#fff'; ctx.fillRect(0,0,s,s); ctx.fillStyle='#0B1E38';
+    for(var y=0;y<s;y++){ for(var x=0;x<s;x++){ if(Math.random()>0.55) ctx.fillRect(x,y,1,1); } }
+    function finder(px,py){ ctx.fillStyle='#0B1E38'; ctx.fillRect(px,py,7,7);
+      ctx.fillStyle='#fff'; ctx.fillRect(px+1,py+1,5,5);
+      ctx.fillStyle='#0B1E38'; ctx.fillRect(px+2,py+2,3,3); }
+    finder(0,0); finder(s-7,0); finder(0,s-7);
+  })();
+
+  // confetti
+  (function(){
+    var box=document.getElementById('confetti'); if(!box) return;
+    var cols=['#10B981','#FFCB05','#FF6A00','#4DA3FF','#CE1126'];
+    for(var i=0;i<26;i++){ var p=document.createElement('i');
+      p.style.left=(Math.random()*100)+'%'; p.style.background=cols[i%cols.length];
+      p.style.animationDelay=(Math.random()*2)+'s'; p.style.setProperty('--x',(Math.random()*40-20)+'px');
+      box.appendChild(p);
+    }
+    var st=document.createElement('style');
+    st.textContent='@keyframes fall{0%{transform:translateY(0) rotate(0);opacity:0}10%{opacity:1}100%{transform:translateY(360px) rotate(320deg);opacity:0}}';
+    document.head.appendChild(st);
+  })();
+
+  show(0);
+})();
+</script>
+</body>
+</html>
